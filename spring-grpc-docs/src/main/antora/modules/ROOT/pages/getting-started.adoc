@@ -1,0 +1,89 @@
+[[getting-started]]
+= Getting Started
+
+This section offers jumping off points for how to get started using Spring Grpc.
+
+You should follow the steps in each of the following section according to your needs.
+
+NOTE: Spring Grpc supports Spring Boot 3.3.x
+
+[[repositories]]
+== Add Milestone and Snapshot Repositories
+
+If you prefer to add the dependency snippets by hand, follow the directions in the following sections.
+
+To use the Milestone and Snapshot version, you need to add references to the Spring Milestone and/or Snapshot repositories in your build file.
+
+For Maven, add the following repository definitions as needed:
+
+[source,xml]
+----
+  <repositories>
+    <repository>
+      <id>spring-milestones</id>
+      <name>Spring Milestones</name>
+      <url>https://repo.spring.io/milestone</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>spring-snapshots</id>
+      <name>Spring Snapshots</name>
+      <url>https://repo.spring.io/snapshot</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+    </repository>
+  </repositories>
+----
+
+For Gradle, add the following repository definitions as needed:
+
+[source,groovy]
+----
+repositories {
+  mavenCentral()
+  maven { url 'https://repo.spring.io/milestone' }
+  maven { url 'https://repo.spring.io/snapshot' }
+}
+----
+
+
+[[dependency-management]]
+== Dependency Management
+
+The Spring Grpc Bill of Materials (BOM) declares the recommended versions of all the dependencies used by a given release of Spring Grpc.
+Using the BOM from your application’s build script avoids the need for you to specify and maintain the dependency versions yourself.
+Instead, the version of the BOM you’re using determines the utilized dependency versions.
+It also ensures that you’re using supported and tested versions of the dependencies by default, unless you choose to override them.
+
+If you’re a Maven user, you can use the BOM by adding the following to your pom.xml file -
+
+[source,xml]
+----
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-grpc-bom</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+----
+
+Gradle users can also use the Spring Grpc BOM by leveraging Gradle (5.0+) native support for declaring dependency constraints using a Maven BOM.
+This is implemented by adding a 'platform' dependency handler method to the dependencies section of your Gradle build script.
+As shown in the snippet below this can then be followed by version-less declarations of the Starter Dependencies for the one or more spring-grpc modules you wish to use, e.g. spring-grpc-openai.
+
+[source,gradle]
+----
+dependencies {
+  implementation platform("org.springframework.ai:spring-grpc-bom:1.0.0-SNAPSHOT")
+  // Replace the following with the starter dependencies of specific modules you wish to use
+  implementation 'org.springframework.ai:spring-grpc-openai'
+}
+----

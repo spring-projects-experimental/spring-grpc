@@ -1,0 +1,36 @@
+[[contribution-guidelines]]
+= Contribution Guidelines
+
+== Code Formatting and Javadoc
+
+Before submitting a PR, please run the following commands to ensure proper formatting and Javadoc processing
+
+```
+./mvnw spring-javaformat:apply javadoc:javadoc -Pjavadoc
+```
+
+The `-Pjavadoc` is a profile that enables Javadoc processing so as to avoid a long build time when developing.
+
+== Contributing a New Grpc Model Implementation
+
+This section outlines the steps for contributing a new Grpc model implementation.
+Grpc models vary significantly, with diverse inputs and outputs -- from chat models that
+translate text input into text output, to text-to-image models that generate images
+from text descriptions.
+Complex models may even handle multiple types of input and output, such as combining text,
+images, and videos to produce mixed media output.
+
+To contribute a new feature, adhere to the following steps:
+
+. *Implement Auto-Configuration and a Spring Boot Starter*: This step involves creating the
+necessary auto-configuration and Spring Boot Starter to easily instantiate the new model with
+Spring Boot applications.
+
+. *Write Tests*: All new classes should be accompanied by comprehensive tests.
+Existing tests can serve as a useful reference for structuring and implementing your tests.
+
+. *Document Your Contribution*: Ensure your documentation follows the existing format,
+using the `spring-javaformat` plugin to format your code and Javadoc comments.
+
+By following these guidelines, we can greatly expand the framework's range of supported models
+while following a common implementation and documentation pattern.

@@ -1,0 +1,12 @@
+name: grpc
+version: true
+title: Spring Grpc
+nav:
+  - modules/ROOT/nav.adoc
+ext:
+  collector:
+    - run:
+        command: mvnw process-resources
+        local: true
+      scan:
+        dir: spring-grpc-docs/target/classes/antora-resources

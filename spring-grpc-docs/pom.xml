@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.grpc</groupId>
+		<artifactId>spring-grpc</artifactId>
+		<version>0.1.0-SNAPSHOT</version>
+	</parent>
+	<artifactId>spring-grpc-docs</artifactId>
+	<name>Spring Grpc Docs</name>
+	<description>Spring Grpc documentation</description>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>io.spring.maven.antora</groupId>
+				<artifactId>antora-maven-plugin</artifactId>
+				<version>${io.spring.maven.antora-version}</version>
+				<extensions>true</extensions>
+				<configuration>
+					<playbook>src/main/antora/antora-playbook.yml</playbook>
+					<packages>
+						<package>@antora/atlas-extension@1.0.0-alpha.1</package>
+						<package>@antora/collector-extension@1.0.0-alpha.3</package>
+						<package>@asciidoctor/tabs@1.0.0-beta.3</package>
+						<package>@springio/antora-extensions@1.5.0</package>
+						<package>@springio/asciidoctor-extensions@1.0.0-alpha.9</package>
+						<package>@djencks/asciidoctor-mathjax@0.0.9</package>
+					</packages>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>io.spring.maven.antora</groupId>
+				<artifactId>antora-component-version-maven-plugin</artifactId>
+				<version>${io.spring.maven.antora-version}</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>antora-component-version</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>${maven-assembly-plugin.version}</version>
+				<configuration>
+					<descriptors>
+						<descriptor>src/assembly/javadocs.xml</descriptor>
+					</descriptors>
+					<finalName>spring-grpc-${project.version}</finalName>
+					<appendAssemblyId>true</appendAssemblyId>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<version>${maven-deploy-plugin.version}</version>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>

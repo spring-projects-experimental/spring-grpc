@@ -1,0 +1,35 @@
+# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    name: Build and Deploy On Push
+
+    runs-on: ubuntu-latest
+    if: ${{ github.repository == 'spring-projects-experimental/spring-grpc' }}
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: maven
+    - name: Deploy with Maven
+      env:
+        spring_username: ${{ secrets.ARTIFACTORY_USERNAME }}
+        spring_password: ${{ secrets.ARTIFACTORY_PASSWORD }}
+        sonatype_username: ${{ secrets.OSSRH_S01_TOKEN_USERNAME }}
+        sonatype_password: ${{ secrets.OSSRH_S01_TOKEN_PASSWORD }}
+        signing_key: ${{ secrets.GPG_PRIVATE_KEY }}
+        passphrase: ${{ secrets.GPG_PASSPHRASE }}
+      run: |
+          echo "${signing_key}" > private.asc
+          gpg --import --batch --no-tty private.asc
+          ./mvnw -B deploy -s .mvn/settings.xml
+
