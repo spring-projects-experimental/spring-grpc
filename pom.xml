@@ -19,6 +19,7 @@
 		<module>spring-grpc-core</module>
 		<module>spring-grpc-test</module>
 		<module>spring-grpc-spring-boot-autoconfigure</module>
+		<module>samples</module>
 	</modules>
 
 	<organization>
