@@ -16,7 +16,7 @@
  * Partial copy from net.devh:grpc-spring-boot-starter.
  */
 
-package org.springframework.grpc.server.event;
+package org.springframework.grpc.server.lifecycle;
 
 import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -113,7 +113,7 @@ public class GrpcServerLifecycle implements SmartLifecycle {
 			this.server = localServer.start();
 			final String address = this.server.getListenSockets().toString();
 			final int port = this.server.getPort();
-			logger.info("gRPC Server started, listening on address: " + address + ", port: " + port);
+			logger.info("gRPC Server started, listening on address: " + this.server.getListenSockets());
 			this.eventPublisher.publishEvent(new GrpcServerStartedEvent(this, localServer, address, port));
 
 			// Prevent the JVM from shutting down while the server is running

@@ -10,14 +10,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.grpc.sample.proto.HelloReply;
 import org.springframework.grpc.sample.proto.HelloRequest;
 import org.springframework.grpc.sample.proto.SimpleGrpc;
 import org.springframework.test.annotation.DirtiesContext;
 
+import io.grpc.Grpc;
+import io.grpc.InsecureChannelCredentials;
+
 @SpringBootTest(properties = { "grpc.client.test.address=static://localhost:9090",
 		"grpc.client.test.negotiationType=plaintext", "debug=true" })
-@Disabled("Until client is autoconfigured")
 public class GrpcServerApplicationTests {
 
 	private static Log log = LogFactory.getLog(GrpcServerApplicationTests.class);
@@ -42,4 +46,13 @@ public class GrpcServerApplicationTests {
 		assertEquals("Hello ==> Alien", response.getMessage());
 	}
 
+	@TestConfiguration
+	static class ExtraConfiguration {
+		@Bean
+		SimpleGrpc.SimpleBlockingStub stub() {
+			var channel = Grpc.newChannelBuilderForAddress("0.0.0.0", 9090, InsecureChannelCredentials.create())
+					.build();
+			return SimpleGrpc.newBlockingStub(channel);
+		}
+	}
 }

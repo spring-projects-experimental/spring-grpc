@@ -32,6 +32,7 @@ class YetAnotherApplicationTests {
 
 	@TestConfiguration
 	static class ExtraConfiguration {
+
 	}
 
 }

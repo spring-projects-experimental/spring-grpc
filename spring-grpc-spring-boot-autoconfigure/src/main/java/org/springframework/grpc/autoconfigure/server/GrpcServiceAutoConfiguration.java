@@ -25,7 +25,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.grpc.server.GrpcServerFactory;
-import org.springframework.grpc.server.event.GrpcServerLifecycle;
+import org.springframework.grpc.server.lifecycle.GrpcServerLifecycle;
 
 import io.grpc.BindableService;
 import io.grpc.ServerServiceDefinition;

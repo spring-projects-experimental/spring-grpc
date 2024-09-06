@@ -15,7 +15,7 @@
  *
  * Partial copy from net.devh:grpc-spring-boot-starter.
  */
-package org.springframework.grpc.server.event;
+package org.springframework.grpc.server.lifecycle;
 
 import java.time.Clock;
 

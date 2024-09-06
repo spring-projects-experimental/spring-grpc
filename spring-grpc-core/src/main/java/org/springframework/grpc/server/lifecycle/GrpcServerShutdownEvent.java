@@ -16,60 +16,43 @@
  * Partial copy from net.devh:grpc-spring-boot-starter.
  */
 
-package org.springframework.grpc.server.event;
-
-import static java.util.Objects.requireNonNull;
+package org.springframework.grpc.server.lifecycle;
 
 import java.time.Clock;
-
-import org.springframework.context.ApplicationEvent;
 
 import io.grpc.Server;
 
 /**
- * The base event for {@link GrpcServerLifecycle}.
+ * This event will be fired before the server starts to shutdown. The server will no
+ * longer process new requests.
+ *
+ * @see Server#shutdown()
+ * @see Server#isShutdown()
+ * @author Daniel Theuke (daniel.theuke@heuboe.de)
  */
-public abstract class GrpcServerLifecycleEvent extends ApplicationEvent {
+public class GrpcServerShutdownEvent extends GrpcServerLifecycleEvent {
 
 	private static final long serialVersionUID = 1L;
 
-	private final Server server;
-
 	/**
-	 * Creates a new GrpcServerLifecycleEvent.
+	 * Creates a new GrpcServerShutdownEvent.
 	 * @param lifecyle The lifecycle that caused this event.
 	 * @param clock The clock used to determine the timestamp.
 	 * @param server The server related to this event.
 	 */
-	protected GrpcServerLifecycleEvent(final GrpcServerLifecycle lifecyle, final Clock clock, final Server server) {
-		super(lifecyle, clock);
-		this.server = requireNonNull(server, "server");
+	public GrpcServerShutdownEvent(final GrpcServerLifecycle lifecyle, final Clock clock, final Server server) {
+
+		super(lifecyle, clock, server);
 	}
 
 	/**
-	 * Creates a new GrpcServerLifecycleEvent.
+	 * Creates a new GrpcServerShutdownEvent.
 	 * @param lifecyle The lifecycle that caused this event.
 	 * @param server The server related to this event.
 	 */
-	protected GrpcServerLifecycleEvent(final GrpcServerLifecycle lifecyle, final Server server) {
-		super(lifecyle);
-		this.server = requireNonNull(server, "server");
-	}
+	public GrpcServerShutdownEvent(final GrpcServerLifecycle lifecyle, final Server server) {
 
-	/**
-	 * Gets the server related to this event.
-	 * @return The server instance.
-	 */
-	public Server getServer() {
-		return this.server;
-	}
-
-	/**
-	 * Gets the lifecycle instance that triggered this event.
-	 */
-	@Override
-	public GrpcServerLifecycle getSource() {
-		return (GrpcServerLifecycle) super.getSource();
+		super(lifecyle, server);
 	}
 
 }
