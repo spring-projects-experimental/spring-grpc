@@ -16,7 +16,8 @@
 package org.springframework.grpc.client;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.DisposableBean;
 
@@ -28,17 +29,17 @@ import io.grpc.ManagedChannelBuilder;
 
 public class DefaultGrpcChannelFactory implements GrpcChannelFactory, DisposableBean {
 
-	private Collection<ManagedChannel> channels = new ArrayList<>();
+	private Map<String, ManagedChannel> channels = new ConcurrentHashMap<>();
 
 	@Override
 	public ManagedChannelBuilder<?> createChannel(String authority) {
 		ManagedChannelBuilder<?> target = Grpc.newChannelBuilder(authority, InsecureChannelCredentials.create());
-		return new DisposableChannelBuilder(target);
+		return new DisposableChannelBuilder(authority, target);
 	}
 
 	@Override
 	public void destroy() throws Exception {
-		for (ManagedChannel channel : channels) {
+		for (ManagedChannel channel : channels.values()) {
 			channel.shutdown();
 		}
 	}
@@ -47,7 +48,10 @@ public class DefaultGrpcChannelFactory implements GrpcChannelFactory, Disposable
 
 		private final ManagedChannelBuilder<?> delegate;
 
-		public DisposableChannelBuilder(ManagedChannelBuilder<?> delegate) {
+		private final String authority;
+
+		public DisposableChannelBuilder(String authority, ManagedChannelBuilder<?> delegate) {
+			this.authority = authority;
 			this.delegate = delegate;
 		}
 
@@ -58,8 +62,7 @@ public class DefaultGrpcChannelFactory implements GrpcChannelFactory, Disposable
 
 		@Override
 		public ManagedChannel build() {
-			ManagedChannel channel = super.build();
-			channels.add(channel);
+			ManagedChannel channel = channels.computeIfAbsent(authority, name -> super.build());
 			return channel;
 		}
 
