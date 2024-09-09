@@ -50,7 +50,7 @@ public class DefaultGrpcServerFactory<T extends ServerBuilder<T>> implements Grp
 		this.port = port;
 	}
 
-	protected String getAddres() {
+	protected String getAddress() {
 		return this.address;
 	}
 
@@ -71,8 +71,26 @@ public class DefaultGrpcServerFactory<T extends ServerBuilder<T>> implements Grp
 	 */
 	@SuppressWarnings("unchecked")
 	protected T newServerBuilder() {
-		// TODO: Add support for address resolution
+		if (getAddress() != null) {
+			if (getAddress().startsWith("unix:")) {
+				String path = getAddress().substring(5);
+				return unixDomainServerBuilder(path);
+			}
+			// TODO: Add more support for address resolution
+		}
 		return (T) ServerBuilder.forPort(getPort());
+	}
+
+	@SuppressWarnings("unchecked")
+	private T unixDomainServerBuilder(String path) {
+		if (NettyServerFactoryHelper.isAvailable()) {
+			return (T) NettyServerFactoryHelper.forUnixDomainSocket(path);
+		}
+		else if (ShadedNettyServerFactoryHelper.isAvailable()) {
+			return (T) ShadedNettyServerFactoryHelper.forUnixDomainSocket(path);
+		}
+		throw new IllegalStateException(
+				"Netty Epoll not available. Add io.netty:netty-transport-native-epoll:linux-x86_64 to your classpath.");
 	}
 
 	/**
