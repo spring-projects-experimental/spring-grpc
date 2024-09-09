@@ -16,6 +16,7 @@
 package org.springframework.grpc.client;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -29,11 +30,23 @@ import io.grpc.ManagedChannelBuilder;
 
 public class DefaultGrpcChannelFactory implements GrpcChannelFactory, DisposableBean {
 
-	private Map<String, ManagedChannel> channels = new ConcurrentHashMap<>();
+	private final Map<String, ManagedChannel> channels = new ConcurrentHashMap<>();
+
+	private final List<GrpcChannelConfigurer> configurers = new ArrayList<>();
+
+	public DefaultGrpcChannelFactory() {
+	}
+
+	public DefaultGrpcChannelFactory(List<GrpcChannelConfigurer> configurers) {
+		configurers.addAll(configurers);
+	}
 
 	@Override
 	public ManagedChannelBuilder<?> createChannel(String authority) {
 		ManagedChannelBuilder<?> target = Grpc.newChannelBuilder(authority, InsecureChannelCredentials.create());
+		for (GrpcChannelConfigurer configurer : configurers) {
+			configurer.accept(target);
+		}
 		return new DisposableChannelBuilder(authority, target);
 	}
 

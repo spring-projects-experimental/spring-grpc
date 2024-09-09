@@ -15,10 +15,13 @@
  */
 package org.springframework.grpc.autoconfigure.client;
 
+import java.util.List;
+
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.grpc.client.DefaultGrpcChannelFactory;
+import org.springframework.grpc.client.GrpcChannelConfigurer;
 import org.springframework.grpc.client.GrpcChannelFactory;
 
 @Configuration(proxyBeanMethods = false)
@@ -26,8 +29,8 @@ public class GrpcClientAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(GrpcChannelFactory.class)
-	public DefaultGrpcChannelFactory defaultGrpcChannelFactory() {
-		return new DefaultGrpcChannelFactory();
+	public DefaultGrpcChannelFactory defaultGrpcChannelFactory(final List<GrpcChannelConfigurer> configurers) {
+		return new DefaultGrpcChannelFactory(configurers);
 	}
 
 }
