@@ -103,6 +103,10 @@ public class GrpcServerLifecycle implements SmartLifecycle {
 		return true;
 	}
 
+	public int getPort() {
+		return this.server == null ? 0 : this.server.getPort();
+	}
+
 	/**
 	 * Creates and starts the grpc server.
 	 * @throws IOException If the server is unable to bind the port.
