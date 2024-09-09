@@ -15,10 +15,10 @@
  */
 package org.springframework.grpc.client;
 
-import io.grpc.Channel;
+import io.grpc.ManagedChannelBuilder;
 
-public interface GrpcChannelFactory extends AutoCloseable {
+public interface GrpcChannelFactory {
 
-	Channel createChannel(String name);
+	ManagedChannelBuilder<?> createChannel(String authority);
 
 }
