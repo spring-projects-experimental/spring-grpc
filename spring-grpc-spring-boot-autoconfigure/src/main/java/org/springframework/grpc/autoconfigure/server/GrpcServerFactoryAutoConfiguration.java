@@ -17,17 +17,14 @@ package org.springframework.grpc.autoconfigure.server;
 
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.grpc.server.DefaultGrpcServerFactory;
 import org.springframework.grpc.server.GrpcServerConfigurer;
 import org.springframework.grpc.server.GrpcServerFactory;
-import org.springframework.grpc.server.NettyGrpcServerFactory;
 
 import io.grpc.ServerServiceDefinition;
 
@@ -37,17 +34,12 @@ import io.grpc.ServerServiceDefinition;
 @EnableConfigurationProperties(GrpcServerProperties.class)
 public class GrpcServerFactoryAutoConfiguration {
 
-	private static final Log logger = LogFactory.getLog(GrpcServerFactoryAutoConfiguration.class);
-
 	@ConditionalOnMissingBean(GrpcServerFactory.class)
-	@ConditionalOnClass(name = { "io.netty.channel.Channel", "io.grpc.netty.NettyServerBuilder" })
 	@Bean
-	public NettyGrpcServerFactory nettyGrpcServerFactory(final GrpcServerProperties properties,
+	public DefaultGrpcServerFactory<?> defaultGrpcServerFactory(final GrpcServerProperties properties,
 			final GrpcServiceDiscoverer serviceDiscoverer, final List<GrpcServerConfigurer> serverConfigurers) {
-
-		logger.info("Detected grpc-netty: Creating NettyGrpcServerFactory");
-		final NettyGrpcServerFactory factory = new NettyGrpcServerFactory(properties.getAddress(), properties.getPort(),
-				serverConfigurers);
+		final DefaultGrpcServerFactory<?> factory = new DefaultGrpcServerFactory<>(properties.getAddress(),
+				properties.getPort(), serverConfigurers);
 		for (final ServerServiceDefinition service : serviceDiscoverer.findGrpcServices()) {
 			factory.addService(service);
 		}

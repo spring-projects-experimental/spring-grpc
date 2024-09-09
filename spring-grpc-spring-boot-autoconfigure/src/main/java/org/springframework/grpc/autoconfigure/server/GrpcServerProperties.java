@@ -20,12 +20,11 @@ import java.time.temporal.ChronoUnit;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.convert.DurationUnit;
-import org.springframework.grpc.util.GrpcUtils;
 
 @ConfigurationProperties(prefix = "spring.grpc.server")
 public class GrpcServerProperties {
 
-	private String address = GrpcUtils.ANY_IP_ADDRESS;
+	private String address = "*";
 
 	private int port = 9090;
 

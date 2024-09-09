@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2024 the original author or authors.
+ * Copyright 2024-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Partial copy from net.devh:grpc-spring-boot-starter.
  */
 package org.springframework.grpc.server;
 
@@ -32,7 +31,7 @@ import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.ServerServiceDefinition;
 
-public abstract class AbstractGrpcServerFactory<T extends ServerBuilder<T>> implements GrpcServerFactory {
+public class DefaultGrpcServerFactory<T extends ServerBuilder<T>> implements GrpcServerFactory {
 
 	/** Logger available to subclasses. */
 	protected final Log logger = LogFactory.getLog(getClass());
@@ -45,7 +44,7 @@ public abstract class AbstractGrpcServerFactory<T extends ServerBuilder<T>> impl
 
 	private final int port;
 
-	protected AbstractGrpcServerFactory(String address, int port, final List<GrpcServerConfigurer> serverConfigurers) {
+	public DefaultGrpcServerFactory(String address, int port, final List<GrpcServerConfigurer> serverConfigurers) {
 		this.serverConfigurers = requireNonNull(serverConfigurers, "serverConfigurers");
 		this.address = address;
 		this.port = port;
@@ -70,7 +69,11 @@ public abstract class AbstractGrpcServerFactory<T extends ServerBuilder<T>> impl
 	 * Creates a new server builder.
 	 * @return The newly created server builder.
 	 */
-	protected abstract T newServerBuilder();
+	@SuppressWarnings("unchecked")
+	protected T newServerBuilder() {
+		// TODO: Add support for address resolution
+		return (T) ServerBuilder.forPort(getPort());
+	}
 
 	/**
 	 * Configures the given server builder. This method can be overwritten to add features

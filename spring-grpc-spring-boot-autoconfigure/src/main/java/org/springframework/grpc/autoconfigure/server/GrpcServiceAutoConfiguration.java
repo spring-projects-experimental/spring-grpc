@@ -37,7 +37,7 @@ public class GrpcServiceAutoConfiguration {
 	@ConditionalOnMissingBean
 	@Bean
 	public GrpcServiceDiscoverer defaultGrpcServiceDiscoverer(ApplicationContext applicationContext) {
-		return new AnnotationGrpcServiceDiscoverer(applicationContext);
+		return new DefaultGrpcServiceDiscoverer(applicationContext);
 	}
 
 	@ConditionalOnMissingBean
@@ -49,11 +49,11 @@ public class GrpcServiceAutoConfiguration {
 
 }
 
-class AnnotationGrpcServiceDiscoverer implements GrpcServiceDiscoverer {
+class DefaultGrpcServiceDiscoverer implements GrpcServiceDiscoverer {
 
 	private final ApplicationContext applicationContext;
 
-	public AnnotationGrpcServiceDiscoverer(ApplicationContext applicationContext) {
+	public DefaultGrpcServiceDiscoverer(ApplicationContext applicationContext) {
 		this.applicationContext = applicationContext;
 	}
 

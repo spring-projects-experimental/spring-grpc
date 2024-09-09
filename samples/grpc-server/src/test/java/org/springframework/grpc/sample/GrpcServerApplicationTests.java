@@ -15,6 +15,7 @@ import org.springframework.grpc.sample.proto.HelloRequest;
 import org.springframework.grpc.sample.proto.SimpleGrpc;
 import org.springframework.test.annotation.DirtiesContext;
 
+import io.grpc.Channel;
 import io.grpc.Grpc;
 import io.grpc.InsecureChannelCredentials;
 
@@ -45,11 +46,17 @@ public class GrpcServerApplicationTests {
 
 	@TestConfiguration
 	static class ExtraConfiguration {
+
 		@Bean
-		SimpleGrpc.SimpleBlockingStub stub() {
-			var channel = Grpc.newChannelBuilderForAddress("0.0.0.0", 9090, InsecureChannelCredentials.create())
-					.build();
+		SimpleGrpc.SimpleBlockingStub stub(Channel channel) {
 			return SimpleGrpc.newBlockingStub(channel);
 		}
+
+		@Bean(destroyMethod = "shutdown")
+		Channel channel() {
+			return Grpc.newChannelBuilderForAddress("0.0.0.0", 9090, InsecureChannelCredentials.create()).build();
+		}
+
 	}
+
 }
