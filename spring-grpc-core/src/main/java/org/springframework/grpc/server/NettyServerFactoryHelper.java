@@ -15,7 +15,11 @@
  */
 package org.springframework.grpc.server;
 
+import java.net.InetSocketAddress;
+
 import org.springframework.util.ClassUtils;
+
+import com.google.common.net.InetAddresses;
 
 import io.grpc.ServerBuilder;
 import io.grpc.netty.NettyServerBuilder;
@@ -38,6 +42,10 @@ class NettyServerFactoryHelper {
 			.channelType(EpollServerDomainSocketChannel.class)
 			.bossEventLoopGroup(new EpollEventLoopGroup(1))
 			.workerEventLoopGroup(new EpollEventLoopGroup());
+	}
+
+	public static ServerBuilder<?> forInetAddress(String address, int port) {
+		return NettyServerBuilder.forAddress(new InetSocketAddress(InetAddresses.forString(address), port));
 	}
 
 }

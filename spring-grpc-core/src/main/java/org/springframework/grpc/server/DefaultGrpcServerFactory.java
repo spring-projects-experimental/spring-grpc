@@ -33,6 +33,8 @@ import io.grpc.ServerServiceDefinition;
 
 public class DefaultGrpcServerFactory<T extends ServerBuilder<T>> implements GrpcServerFactory {
 
+	private static final String ANY_IP_ADDRESS = "*";
+
 	/** Logger available to subclasses. */
 	protected final Log logger = LogFactory.getLog(getClass());
 
@@ -71,14 +73,31 @@ public class DefaultGrpcServerFactory<T extends ServerBuilder<T>> implements Grp
 	 */
 	@SuppressWarnings("unchecked")
 	protected T newServerBuilder() {
-		if (getAddress() != null) {
-			if (getAddress().startsWith("unix:")) {
-				String path = getAddress().substring(5);
+		String address = getAddress();
+		int port = getPort();
+		if (address != null) {
+			if (address.startsWith("unix:")) {
+				String path = address.substring(5);
 				return unixDomainServerBuilder(path);
+			}
+			if (!ANY_IP_ADDRESS.equals(address)) {
+				return inetSocketServerBuilder(address, port);
 			}
 			// TODO: Add more support for address resolution
 		}
-		return (T) ServerBuilder.forPort(getPort());
+		return (T) ServerBuilder.forPort(port);
+	}
+
+	@SuppressWarnings("unchecked")
+	private T inetSocketServerBuilder(String path, int port) {
+		if (NettyServerFactoryHelper.isAvailable()) {
+			return (T) NettyServerFactoryHelper.forInetAddress(path, port);
+		}
+		else if (ShadedNettyServerFactoryHelper.isAvailable()) {
+			return (T) ShadedNettyServerFactoryHelper.forInetAddress(path, port);
+		}
+		throw new IllegalStateException(
+				"Netty Epoll not available. Add io.netty:netty-transport-native-epoll:linux-x86_64 to your classpath.");
 	}
 
 	@SuppressWarnings("unchecked")
