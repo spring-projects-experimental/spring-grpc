@@ -18,6 +18,7 @@ package org.springframework.grpc.autoconfigure.server;
 import java.util.List;
 
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -26,10 +27,12 @@ import org.springframework.grpc.server.DefaultGrpcServerFactory;
 import org.springframework.grpc.server.GrpcServerConfigurer;
 import org.springframework.grpc.server.GrpcServerFactory;
 
+import io.grpc.BindableService;
 import io.grpc.ServerServiceDefinition;
 
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnMissingBean(GrpcServerFactory.class)
+@ConditionalOnBean(BindableService.class)
 @AutoConfigureBefore(GrpcServiceAutoConfiguration.class)
 @EnableConfigurationProperties(GrpcServerProperties.class)
 public class GrpcServerFactoryAutoConfiguration {
