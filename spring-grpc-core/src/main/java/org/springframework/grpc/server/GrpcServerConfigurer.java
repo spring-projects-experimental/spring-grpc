@@ -15,21 +15,11 @@
  */
 package org.springframework.grpc.server;
 
-import java.util.Objects;
 import java.util.function.Consumer;
 
 import io.grpc.ServerBuilder;
 
 @FunctionalInterface
 public interface GrpcServerConfigurer extends Consumer<ServerBuilder<?>> {
-
-	@Override
-	default GrpcServerConfigurer andThen(final Consumer<? super ServerBuilder<?>> after) {
-		Objects.requireNonNull(after);
-		return t -> {
-			accept(t);
-			after.accept(t);
-		};
-	}
 
 }

@@ -15,21 +15,11 @@
  */
 package org.springframework.grpc.client;
 
-import java.util.Objects;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 import io.grpc.ManagedChannelBuilder;
 
 @FunctionalInterface
-public interface GrpcChannelConfigurer extends Consumer<ManagedChannelBuilder<?>> {
-
-	@Override
-	default GrpcChannelConfigurer andThen(final Consumer<? super ManagedChannelBuilder<?>> after) {
-		Objects.requireNonNull(after);
-		return t -> {
-			accept(t);
-			after.accept(t);
-		};
-	}
+public interface GrpcChannelConfigurer extends BiConsumer<String, ManagedChannelBuilder<?>> {
 
 }

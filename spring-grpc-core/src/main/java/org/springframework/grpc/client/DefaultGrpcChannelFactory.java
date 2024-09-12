@@ -30,6 +30,8 @@ import io.grpc.ManagedChannelBuilder;
 
 public class DefaultGrpcChannelFactory implements GrpcChannelFactory, DisposableBean {
 
+	private final Map<String, ManagedChannelBuilder<?>> builders = new ConcurrentHashMap<>();
+
 	private final Map<String, ManagedChannel> channels = new ConcurrentHashMap<>();
 
 	private final List<GrpcChannelConfigurer> configurers = new ArrayList<>();
@@ -43,11 +45,15 @@ public class DefaultGrpcChannelFactory implements GrpcChannelFactory, Disposable
 
 	@Override
 	public ManagedChannelBuilder<?> createChannel(String authority) {
-		ManagedChannelBuilder<?> target = Grpc.newChannelBuilder(authority, InsecureChannelCredentials.create());
-		for (GrpcChannelConfigurer configurer : configurers) {
-			configurer.accept(target);
-		}
+		ManagedChannelBuilder<?> target = builders.computeIfAbsent(authority, path -> {
+			ManagedChannelBuilder<?> builder = Grpc.newChannelBuilder(path, InsecureChannelCredentials.create());
+			for (GrpcChannelConfigurer configurer : configurers) {
+				configurer.accept(path, builder);
+			}
+			return builder;
+		});
 		return new DisposableChannelBuilder(authority, target);
+
 	}
 
 	@Override
