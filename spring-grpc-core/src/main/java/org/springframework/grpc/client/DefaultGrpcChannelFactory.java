@@ -37,23 +37,28 @@ public class DefaultGrpcChannelFactory implements GrpcChannelFactory, Disposable
 	private final List<GrpcChannelConfigurer> configurers = new ArrayList<>();
 
 	public DefaultGrpcChannelFactory() {
+		this(List.of());
 	}
 
 	public DefaultGrpcChannelFactory(List<GrpcChannelConfigurer> configurers) {
-		configurers.addAll(configurers);
+		this.configurers.addAll(configurers);
 	}
 
 	@Override
 	public ManagedChannelBuilder<?> createChannel(String authority) {
 		ManagedChannelBuilder<?> target = builders.computeIfAbsent(authority, path -> {
-			ManagedChannelBuilder<?> builder = Grpc.newChannelBuilder(path, InsecureChannelCredentials.create());
+			ManagedChannelBuilder<?> builder = newChannel(path);
 			for (GrpcChannelConfigurer configurer : configurers) {
-				configurer.accept(path, builder);
+				configurer.configure(path, builder);
 			}
 			return builder;
 		});
 		return new DisposableChannelBuilder(authority, target);
 
+	}
+
+	protected ManagedChannelBuilder<?> newChannel(String path) {
+		return Grpc.newChannelBuilder(path, InsecureChannelCredentials.create());
 	}
 
 	@Override
