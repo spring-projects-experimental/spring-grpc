@@ -102,10 +102,10 @@ public class DefaultGrpcServerFactory<T extends ServerBuilder<T>> implements Grp
 
 	@SuppressWarnings("unchecked")
 	private T unixDomainServerBuilder(String path) {
-		if (NettyServerFactoryHelper.isAvailable()) {
+		if (NettyServerFactoryHelper.isEpollAvailable()) {
 			return (T) NettyServerFactoryHelper.forUnixDomainSocket(path);
 		}
-		else if (ShadedNettyServerFactoryHelper.isAvailable()) {
+		else if (ShadedNettyServerFactoryHelper.isEpollAvailable()) {
 			return (T) ShadedNettyServerFactoryHelper.forUnixDomainSocket(path);
 		}
 		throw new IllegalStateException(

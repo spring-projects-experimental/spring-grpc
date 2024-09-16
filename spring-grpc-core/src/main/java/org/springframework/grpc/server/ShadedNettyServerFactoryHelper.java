@@ -31,10 +31,16 @@ import io.grpc.netty.shaded.io.netty.channel.unix.DomainSocketAddress;
 class ShadedNettyServerFactoryHelper {
 
 	private static final boolean AVAILABLE = ClassUtils.isPresent("io.grpc.netty.shaded.io.netty.channel.epoll.Epoll",
-			null) && Epoll.isAvailable();
+			null);
+
+	private static final boolean EPOLL_AVAILABLE = AVAILABLE && Epoll.isAvailable();
 
 	public static boolean isAvailable() {
 		return AVAILABLE;
+	}
+
+	public static boolean isEpollAvailable() {
+		return EPOLL_AVAILABLE;
 	}
 
 	public static ServerBuilder<?> forUnixDomainSocket(String path) {

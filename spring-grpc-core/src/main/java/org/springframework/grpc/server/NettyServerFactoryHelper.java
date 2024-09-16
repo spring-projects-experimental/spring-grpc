@@ -30,11 +30,16 @@ import io.netty.channel.unix.DomainSocketAddress;
 
 class NettyServerFactoryHelper {
 
-	private static final boolean AVAILABLE = ClassUtils.isPresent("io.netty.channel.epoll.Epoll", null)
-			&& Epoll.isAvailable();
+	private static final boolean AVAILABLE = ClassUtils.isPresent("io.netty.channel.epoll.Epoll", null);
+
+	private static final boolean EPOLL_AVAILABLE = AVAILABLE && Epoll.isAvailable();
 
 	public static boolean isAvailable() {
 		return AVAILABLE;
+	}
+
+	public static boolean isEpollAvailable() {
+		return EPOLL_AVAILABLE;
 	}
 
 	public static ServerBuilder<?> forUnixDomainSocket(String path) {
