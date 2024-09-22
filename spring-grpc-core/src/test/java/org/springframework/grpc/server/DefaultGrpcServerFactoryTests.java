@@ -13,14 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.grpc.autoconfigure.server;
 
-import java.util.Collection;
+package org.springframework.grpc.server;
 
-import io.grpc.ServerServiceDefinition;
+import org.junit.jupiter.api.Test;
 
-public interface GrpcServiceDiscoverer {
+/**
+ * Tests for {@link DefaultGrpcServerFactory}/
+ */
+class DefaultGrpcServerFactoryTests {
 
-	public Collection<ServerServiceDefinition> findGrpcServices();
+	@Test
+	void placeholderTest() {
+	}
 
 }
