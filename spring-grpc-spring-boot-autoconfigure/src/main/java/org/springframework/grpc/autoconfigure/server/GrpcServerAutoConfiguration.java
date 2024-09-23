@@ -25,6 +25,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.grpc.server.DefaultGrpcServerFactory;
 import org.springframework.grpc.server.GrpcServerConfigurer;
@@ -60,8 +61,8 @@ public class GrpcServerAutoConfiguration {
 
 	@ConditionalOnMissingBean
 	@Bean
-	GrpcServerLifecycle grpcServerLifecycle(GrpcServerFactory factory) {
-		return new GrpcServerLifecycle(factory, this.properties.getShutdownGracePeriod());
+	GrpcServerLifecycle grpcServerLifecycle(GrpcServerFactory factory, ApplicationEventPublisher eventPublisher) {
+		return new GrpcServerLifecycle(factory, this.properties.getShutdownGracePeriod(), eventPublisher);
 	}
 
 }
