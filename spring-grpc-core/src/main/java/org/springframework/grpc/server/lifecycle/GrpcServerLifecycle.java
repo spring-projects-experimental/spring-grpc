@@ -28,7 +28,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.grpc.server.GrpcServerFactory;
 
@@ -39,9 +38,8 @@ import io.grpc.Server;
  *
  * @author Michael (yidongnan@gmail.com)
  * @author Dave Syer
- * @author Chris Bono
  */
-public class GrpcServerLifecycle implements SmartLifecycle, ApplicationEventPublisherAware {
+public class GrpcServerLifecycle implements SmartLifecycle {
 
 	private static final Log logger = LogFactory.getLog(GrpcServerLifecycle.class);
 
@@ -51,7 +49,7 @@ public class GrpcServerLifecycle implements SmartLifecycle, ApplicationEventPubl
 
 	private final Duration shutdownGracePeriod;
 
-	private ApplicationEventPublisher eventPublisher;
+	private final ApplicationEventPublisher eventPublisher;
 
 	private Server server;
 
@@ -59,10 +57,13 @@ public class GrpcServerLifecycle implements SmartLifecycle, ApplicationEventPubl
 	 * Creates a new GrpcServerLifecycle
 	 * @param factory The server factory to use.
 	 * @param shutdownGracePeriod The time to wait for the server to gracefully shut down.
+	 * @param eventPublisher The event publisher to use.
 	 */
-	public GrpcServerLifecycle(final GrpcServerFactory factory, final Duration shutdownGracePeriod) {
+	public GrpcServerLifecycle(GrpcServerFactory factory, Duration shutdownGracePeriod,
+			ApplicationEventPublisher eventPublisher) {
 		this.factory = requireNonNull(factory, "factory");
 		this.shutdownGracePeriod = requireNonNull(shutdownGracePeriod, "shutdownGracePeriod");
+		this.eventPublisher = eventPublisher;
 	}
 
 	@Override
@@ -70,7 +71,7 @@ public class GrpcServerLifecycle implements SmartLifecycle, ApplicationEventPubl
 		try {
 			createAndStartGrpcServer();
 		}
-		catch (final IOException e) {
+		catch (IOException e) {
 			throw new IllegalStateException("Failed to start the grpc server", e);
 		}
 	}
@@ -103,11 +104,6 @@ public class GrpcServerLifecycle implements SmartLifecycle, ApplicationEventPubl
 
 	public int getPort() {
 		return this.server == null ? 0 : this.server.getPort();
-	}
-
-	@Override
-	public void setApplicationEventPublisher(ApplicationEventPublisher eventPublisher) {
-		this.eventPublisher = eventPublisher;
 	}
 
 	/**
