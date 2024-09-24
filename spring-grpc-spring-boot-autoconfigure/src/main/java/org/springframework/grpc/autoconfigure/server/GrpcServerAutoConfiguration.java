@@ -22,6 +22,7 @@ import io.grpc.BindableService;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -34,12 +35,16 @@ import org.springframework.grpc.server.lifecycle.GrpcServerLifecycle;
 
 /**
  * {@link EnableAutoConfiguration Auto-configuration} for gRPC server-side components.
+ * <p>
+ * gRPC must be on the classpath and at least one {@link BindableService} bean registered
+ * in the context in order for the auto-configuration to execute.
  *
  * @author David Syer
  * @author Chris Bono
  */
 @AutoConfiguration
 @ConditionalOnClass(BindableService.class)
+@ConditionalOnBean(BindableService.class)
 @EnableConfigurationProperties(GrpcServerProperties.class)
 public class GrpcServerAutoConfiguration {
 
