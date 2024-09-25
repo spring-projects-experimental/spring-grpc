@@ -15,11 +15,20 @@
  */
 package org.springframework.grpc.server;
 
-import java.util.function.Consumer;
-
 import io.grpc.ServerBuilder;
 
+/**
+ * Callback interface that can be used to customize a {@link ServerBuilder}.
+ *
+ * @author Chris Bono
+ */
 @FunctionalInterface
-public interface GrpcServerConfigurer extends Consumer<ServerBuilder<?>> {
+public interface ServerBuilderCustomizer {
+
+	/**
+	 * Callback to customize a {@link ServerBuilder} instance.
+	 * @param serverBuilder the builder to customize
+	 */
+	void customize(ServerBuilder<?> serverBuilder);
 
 }

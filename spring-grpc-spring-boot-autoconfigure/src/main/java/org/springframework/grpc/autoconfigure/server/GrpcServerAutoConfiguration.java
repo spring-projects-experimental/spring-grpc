@@ -15,8 +15,6 @@
  */
 package org.springframework.grpc.autoconfigure.server;
 
-import java.util.List;
-
 import io.grpc.BindableService;
 
 import org.springframework.beans.factory.ObjectProvider;
@@ -29,8 +27,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.grpc.server.DefaultGrpcServerFactory;
-import org.springframework.grpc.server.GrpcServerConfigurer;
 import org.springframework.grpc.server.GrpcServerFactory;
+import org.springframework.grpc.server.ServerBuilderCustomizer;
 import org.springframework.grpc.server.lifecycle.GrpcServerLifecycle;
 
 /**
@@ -57,9 +55,9 @@ public class GrpcServerAutoConfiguration {
 	@ConditionalOnMissingBean(GrpcServerFactory.class)
 	@Bean
 	DefaultGrpcServerFactory<?> defaultGrpcServerFactory(ObjectProvider<BindableService> grpcServicesProvider,
-			List<GrpcServerConfigurer> serverConfigurers) {
+			ObjectProvider<ServerBuilderCustomizer> builderCustomizersProvider) {
 		DefaultGrpcServerFactory<?> factory = new DefaultGrpcServerFactory<>(this.properties.getAddress(),
-				this.properties.getPort(), serverConfigurers);
+				this.properties.getPort(), builderCustomizersProvider.orderedStream().toList());
 		grpcServicesProvider.orderedStream().map(BindableService::bindService).forEach(factory::addService);
 		return factory;
 	}
