@@ -20,12 +20,17 @@ import java.util.List;
 
 import io.grpc.BindableService;
 import io.grpc.ServerServiceDefinition;
+import io.grpc.ServiceDescriptor;
+import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.grpc.autoconfigure.server.GrpcServerAutoConfiguration;
 import org.springframework.grpc.server.lifecycle.GrpcServerLifecycle;
 
@@ -89,7 +94,22 @@ class GrpcServerAutoConfigurationTests {
 			.run((context) -> assertThat(context).getBean(DefaultGrpcServerFactory.class)
 				.hasFieldOrPropertyWithValue("address", "myhost")
 				.hasFieldOrPropertyWithValue("port", 6160)
-				.hasFieldOrPropertyWithValue("serverConfigurers", List.of()));
+				.hasFieldOrPropertyWithValue("serverBuilderCustomizers", List.of())
+				.extracting("serviceList", InstanceOfAssertFactories.list(ServerServiceDefinition.class))
+				.singleElement()
+				.extracting(ServerServiceDefinition::getServiceDescriptor)
+				.extracting(ServiceDescriptor::getName)
+				.isEqualTo("my-service"));
+	}
+
+	@Test
+	void serverFactoryAutoConfiguredWithCustomizers() {
+		this.validContextRunner()
+			.withUserConfiguration(ServerFactoryCustomizersConfig.class)
+			.run((context) -> assertThat(context).getBean(DefaultGrpcServerFactory.class)
+				.extracting("serverBuilderCustomizers", InstanceOfAssertFactories.list(ServerBuilderCustomizer.class))
+				.containsExactly(ServerFactoryCustomizersConfig.CUSTOMIZER_BAR,
+						ServerFactoryCustomizersConfig.CUSTOMIZER_FOO));
 	}
 
 	@Test
@@ -97,6 +117,29 @@ class GrpcServerAutoConfigurationTests {
 		this.validContextRunner()
 			.run((context) -> assertThat(context).getBean(GrpcServerLifecycle.class)
 				.hasFieldOrPropertyWithValue("factory", context.getBean(DefaultGrpcServerFactory.class)));
+	}
+
+	@Configuration(proxyBeanMethods = false)
+	static class ServerFactoryCustomizersConfig {
+
+		static ServerBuilderCustomizer CUSTOMIZER_FOO = (serverBuilder) -> {
+		};
+
+		static ServerBuilderCustomizer CUSTOMIZER_BAR = (serverBuilder) -> {
+		};
+
+		@Bean
+		@Order(200)
+		ServerBuilderCustomizer customizerFoo() {
+			return CUSTOMIZER_FOO;
+		}
+
+		@Bean
+		@Order(100)
+		ServerBuilderCustomizer customizerBar() {
+			return CUSTOMIZER_BAR;
+		}
+
 	}
 
 }
