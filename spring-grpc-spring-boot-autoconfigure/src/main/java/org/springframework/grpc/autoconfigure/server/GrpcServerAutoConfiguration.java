@@ -19,6 +19,7 @@ import io.grpc.BindableService;
 
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -26,7 +27,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
-import org.springframework.grpc.server.DefaultGrpcServerFactory;
+import org.springframework.context.annotation.Import;
+import org.springframework.core.Ordered;
 import org.springframework.grpc.server.GrpcServerFactory;
 import org.springframework.grpc.server.ServerBuilderCustomizer;
 import org.springframework.grpc.server.lifecycle.GrpcServerLifecycle;
@@ -41,9 +43,13 @@ import org.springframework.grpc.server.lifecycle.GrpcServerLifecycle;
  * @author Chris Bono
  */
 @AutoConfiguration
+@AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
 @ConditionalOnClass(BindableService.class)
 @ConditionalOnBean(BindableService.class)
 @EnableConfigurationProperties(GrpcServerProperties.class)
+@Import({ GrpcServerFactoryConfigurations.ShadedNettyServerFactoryConfiguration.class,
+		GrpcServerFactoryConfigurations.NettyServerFactoryConfiguration.class,
+		GrpcServerFactoryConfigurations.ServiceProviderServerFactoryConfiguration.class })
 public class GrpcServerAutoConfiguration {
 
 	private final GrpcServerProperties properties;
@@ -52,20 +58,16 @@ public class GrpcServerAutoConfiguration {
 		this.properties = properties;
 	}
 
-	@ConditionalOnMissingBean(GrpcServerFactory.class)
-	@Bean
-	DefaultGrpcServerFactory<?> defaultGrpcServerFactory(ObjectProvider<BindableService> grpcServicesProvider,
-			ObjectProvider<ServerBuilderCustomizer> builderCustomizersProvider) {
-		DefaultGrpcServerFactory<?> factory = new DefaultGrpcServerFactory<>(this.properties.getAddress(),
-				this.properties.getPort(), builderCustomizersProvider.orderedStream().toList());
-		grpcServicesProvider.orderedStream().map(BindableService::bindService).forEach(factory::addService);
-		return factory;
-	}
-
 	@ConditionalOnMissingBean
 	@Bean
 	GrpcServerLifecycle grpcServerLifecycle(GrpcServerFactory factory, ApplicationEventPublisher eventPublisher) {
 		return new GrpcServerLifecycle(factory, this.properties.getShutdownGracePeriod(), eventPublisher);
+	}
+
+	@ConditionalOnMissingBean
+	@Bean
+	ServerBuilderCustomizers serverBuilderCustomizers(ObjectProvider<ServerBuilderCustomizer<?>> customizers) {
+		return new ServerBuilderCustomizers(customizers.orderedStream().toList());
 	}
 
 }

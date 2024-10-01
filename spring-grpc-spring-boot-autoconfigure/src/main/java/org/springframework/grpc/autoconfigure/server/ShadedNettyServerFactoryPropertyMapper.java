@@ -13,23 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.grpc.server;
 
-import io.grpc.ServerBuilder;
+package org.springframework.grpc.autoconfigure.server;
+
+import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
 
 /**
- * Callback interface that can be used to customize a {@link ServerBuilder}.
+ * Helper class used to map {@link GrpcServerProperties} to the shaded
+ * {@link NettyServerBuilder}.
  *
  * @author Chris Bono
- * @param <T> the type of server builder
  */
-@FunctionalInterface
-public interface ServerBuilderCustomizer<T extends ServerBuilder<T>> {
+class ShadedNettyServerFactoryPropertyMapper extends BaseServerFactoryPropertyMapper<NettyServerBuilder> {
 
-	/**
-	 * Callback to customize a {@link ServerBuilder} instance.
-	 * @param serverBuilder the builder to customize
-	 */
-	void customize(T serverBuilder);
+	ShadedNettyServerFactoryPropertyMapper(GrpcServerProperties properties) {
+		super(properties);
+	}
+
+	@Override
+	void customizeServerBuilder(NettyServerBuilder nettyServerBuilder) {
+		super.customizeServerBuilder(nettyServerBuilder);
+	}
 
 }
