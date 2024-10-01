@@ -1,9 +1,9 @@
 [[introduction]]
-= Spring Grpc
+= Spring GRPC
 
-The `Spring Grpc` project aims to streamline the development of Grpc applications.
+The `Spring gRPC` project aims to streamline the development of gRPC applications.
 
-The xref:concepts.adoc[concepts section] provides a high-level overview of Grpc concepts and their representation in Spring Grpc.
+The xref:concepts.adoc[concepts section] provides a high-level overview of gRPC concepts and their representation in Spring gRPC.
 
-The xref:getting-started.adoc[Getting Started] section shows you how to create your first Grpc application.
+The xref:getting-started.adoc[Getting Started] section shows you how to create your first gRPC application.
 Subsequent sections delve into each component and common use cases with a code-focused approach.

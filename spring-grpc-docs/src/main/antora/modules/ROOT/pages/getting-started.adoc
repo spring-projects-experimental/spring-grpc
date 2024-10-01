@@ -1,11 +1,11 @@
 [[getting-started]]
 = Getting Started
 
-This section offers jumping off points for how to get started using Spring Grpc.
+This section offers jumping off points for how to get started using Spring gRPC.
 
 You should follow the steps in each of the following section according to your needs.
 
-NOTE: Spring Grpc supports Spring Boot 3.3.x
+NOTE: Spring gRPC supports Spring Boot 3.3.x
 
 [[repositories]]
 == Add Milestone and Snapshot Repositories
@@ -53,7 +53,7 @@ repositories {
 [[dependency-management]]
 == Dependency Management
 
-The Spring Grpc Bill of Materials (BOM) declares the recommended versions of all the dependencies used by a given release of Spring Grpc.
+The Spring gRPC Bill of Materials (BOM) declares the recommended versions of all the dependencies used by a given release of Spring gRPC.
 Using the BOM from your application’s build script avoids the need for you to specify and maintain the dependency versions yourself.
 Instead, the version of the BOM you’re using determines the utilized dependency versions.
 It also ensures that you’re using supported and tested versions of the dependencies by default, unless you choose to override them.
@@ -75,7 +75,7 @@ If you’re a Maven user, you can use the BOM by adding the following to your po
 </dependencyManagement>
 ----
 
-Gradle users can also use the Spring Grpc BOM by leveraging Gradle (5.0+) native support for declaring dependency constraints using a Maven BOM.
+Gradle users can also use the Spring gRPC BOM by leveraging Gradle (5.0+) native support for declaring dependency constraints using a Maven BOM.
 This is implemented by adding a 'platform' dependency handler method to the dependencies section of your Gradle build script.
 As shown in the snippet below this can then be followed by version-less declarations of the Starter Dependencies for the one or more spring-grpc modules you wish to use, e.g. spring-grpc-openai.
 

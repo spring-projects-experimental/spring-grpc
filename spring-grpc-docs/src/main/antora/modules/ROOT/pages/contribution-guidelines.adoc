@@ -11,14 +11,7 @@ Before submitting a PR, please run the following commands to ensure proper forma
 
 The `-Pjavadoc` is a profile that enables Javadoc processing so as to avoid a long build time when developing.
 
-== Contributing a New Grpc Model Implementation
-
-This section outlines the steps for contributing a new Grpc model implementation.
-Grpc models vary significantly, with diverse inputs and outputs -- from chat models that
-translate text input into text output, to text-to-image models that generate images
-from text descriptions.
-Complex models may even handle multiple types of input and output, such as combining text,
-images, and videos to produce mixed media output.
+== Contributing a New GRPC Features
 
 To contribute a new feature, adhere to the following steps:
 

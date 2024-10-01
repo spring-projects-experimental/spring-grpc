@@ -1,4 +1,4 @@
 [[concepts]]
-= Grpc Concepts
+= GRPC Concepts
 
-This section describes core concepts that Spring Grpc uses. We recommend reading it closely to understand the ideas behind how Spring Grpc is implemented.
+This section describes core concepts that Spring gRPC uses. We recommend reading it closely to understand the ideas behind how Spring gRPC is implemented.
