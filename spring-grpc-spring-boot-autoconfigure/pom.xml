@@ -10,8 +10,8 @@
 	</parent>
 	<artifactId>spring-grpc-spring-boot-autoconfigure</artifactId>
 	<packaging>jar</packaging>
-	<name>Spring Grpc Auto Configuration</name>
-	<description>Spring Grpc Auto Configuration</description>
+	<name>Spring gRPC Auto Configuration</name>
+	<description>Spring gRPC Auto Configuration</description>
 	<url>https://github.com/spring-projects-experimental/spring-grpc</url>
 
 	<scm>

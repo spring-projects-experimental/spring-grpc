@@ -7,7 +7,7 @@ antora:
     - require: '@springio/antora-extensions/root-component-extension'
       root_component_name: 'grpc'
 site:
-  title: Spring Grpc Reference
+  title: Spring gRPC Reference
   url: https://docs.spring.io/spring-grpc/reference
 content:
   sources:

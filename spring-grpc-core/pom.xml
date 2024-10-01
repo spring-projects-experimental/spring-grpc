@@ -10,8 +10,8 @@
 	</parent>
 	<artifactId>spring-grpc-core</artifactId>
 	<packaging>jar</packaging>
-	<name>Spring Grpc Core</name>
-	<description>Core domgrpcn for Grpc programming</description>
+	<name>Spring gRPC Core</name>
+	<description>Core domgrpcn for gRPC programming</description>
 	<url>https://github.com/spring-projects-experimental/spring-grpc</url>
 
 	<scm>

@@ -13,8 +13,8 @@
 	<artifactId>spring-grpc-bom</artifactId>
 	<packaging>pom</packaging>
 
-	<name>Spring Grpc BOM</name>
-	<description>Bill of Materials POM (BOM) for the Spring Grpc modules</description>
+	<name>Spring gRPC BOM</name>
+	<description>Bill of Materials POM (BOM) for the Spring gRPC modules</description>
 
 	<url>https://github.com/spring-projects-experimental/spring-grpc</url>
 

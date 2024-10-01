@@ -12,8 +12,8 @@
 	<groupId>org.springframework.grpc</groupId>
 	<artifactId>grpc-server-sample</artifactId>
 	<version>0.1.0-SNAPSHOT</version>
-	<name>Spring Grpc Server Sample</name>
-	<description>Demo project for Spring Grpc</description>
+	<name>Spring gRPC Server Sample</name>
+	<description>Demo project for Spring gRPC</description>
 	<url />
 	<licenses>
 		<license />

@@ -1,6 +1,6 @@
 name: grpc
 version: true
-title: Spring Grpc
+title: Spring gRPC
 nav:
   - modules/ROOT/nav.adoc
 ext:

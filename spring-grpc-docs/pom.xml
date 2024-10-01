@@ -9,8 +9,8 @@
 		<version>0.1.0-SNAPSHOT</version>
 	</parent>
 	<artifactId>spring-grpc-docs</artifactId>
-	<name>Spring Grpc Docs</name>
-	<description>Spring Grpc documentation</description>
+	<name>Spring gRPC Docs</name>
+	<description>Spring gRPC documentation</description>
 
 	<build>
 		<plugins>

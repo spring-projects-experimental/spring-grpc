@@ -10,8 +10,8 @@
 	<packaging>pom</packaging>
 	<url>https://github.com/spring-projects-experimental/spring-grpc</url>
 
-	<name>Spring Grpc</name>
-	<description>Building Grpc applications with Spring Boot</description>
+	<name>Spring gRPC</name>
+	<description>Building gRPC applications with Spring Boot</description>
 
 	<modules>
 		<module>spring-grpc-docs</module>

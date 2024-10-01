@@ -10,8 +10,8 @@
 	</parent>
 	<artifactId>spring-grpc-test</artifactId>
 	<packaging>jar</packaging>
-	<name>Spring Grpc Test</name>
-	<description>Test support for Grpc programming</description>
+	<name>Spring gRPC Test</name>
+	<description>Test support for gRPC programming</description>
 	<url>https://github.com/spring-projects-experimental/spring-grpc</url>
 
 	<scm>
