@@ -28,8 +28,6 @@ public class GrpcServerProperties {
 
 	/**
 	 * Server port to listen on. When the value is 0, a random available port is selected.
-	 * When the value is -1, the inter-process server is disabled (for example if you only
-	 * want to use the in-process server).
 	 */
 	private int port = 9090;
 
