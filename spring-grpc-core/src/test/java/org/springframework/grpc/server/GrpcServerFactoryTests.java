@@ -19,9 +19,9 @@ package org.springframework.grpc.server;
 import org.junit.jupiter.api.Test;
 
 /**
- * Tests for {@link DefaultGrpcServerFactory}/
+ * Tests for {@link GrpcServerFactory gRPC server factories}.
  */
-class DefaultGrpcServerFactoryTests {
+class GrpcServerFactoryTests {
 
 	@Test
 	void placeholderTest() {

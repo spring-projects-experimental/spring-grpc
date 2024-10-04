@@ -30,7 +30,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * Base implementation for {@link GrpcServerFactory gRPC service factories}.
+ * Default implementation for {@link GrpcServerFactory gRPC service factories}.
  * <p>
  * The server builder implementation is discovered via Java's SPI mechanism.
  *
@@ -39,7 +39,7 @@ import org.apache.commons.logging.LogFactory;
  * @param <T> the type of server builder
  * @see ServerProvider#provider()
  */
-public class BaseGrpcServerFactory<T extends ServerBuilder<T>> implements GrpcServerFactory {
+public class DefaultGrpcServerFactory<T extends ServerBuilder<T>> implements GrpcServerFactory {
 
 	// VisibleForSubclass
 	protected final Log logger = LogFactory.getLog(getClass());
@@ -52,7 +52,8 @@ public class BaseGrpcServerFactory<T extends ServerBuilder<T>> implements GrpcSe
 
 	private final List<ServerBuilderCustomizer<T>> serverBuilderCustomizers;
 
-	public BaseGrpcServerFactory(String address, int port, List<ServerBuilderCustomizer<T>> serverBuilderCustomizers) {
+	public DefaultGrpcServerFactory(String address, int port,
+			List<ServerBuilderCustomizer<T>> serverBuilderCustomizers) {
 		this.address = address;
 		this.port = port;
 		this.serverBuilderCustomizers = Objects.requireNonNull(serverBuilderCustomizers, "serverBuilderCustomizers");

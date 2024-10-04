@@ -31,7 +31,7 @@ import io.grpc.netty.shaded.io.netty.channel.unix.DomainSocketAddress;
  * @author David Syer
  * @author Chris Bono
  */
-public class ShadedNettyGrpcServerFactory extends BaseGrpcServerFactory<NettyServerBuilder> {
+public class ShadedNettyGrpcServerFactory extends DefaultGrpcServerFactory<NettyServerBuilder> {
 
 	private static final String ANY_IP_ADDRESS = "*";
 

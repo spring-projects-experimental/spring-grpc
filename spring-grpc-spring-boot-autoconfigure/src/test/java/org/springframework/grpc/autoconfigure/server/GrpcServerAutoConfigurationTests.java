@@ -38,7 +38,7 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
-import org.springframework.grpc.server.BaseGrpcServerFactory;
+import org.springframework.grpc.server.DefaultGrpcServerFactory;
 import org.springframework.grpc.server.GrpcServerFactory;
 import org.springframework.grpc.server.NettyGrpcServerFactory;
 import org.springframework.grpc.server.ServerBuilderCustomizer;
@@ -154,7 +154,7 @@ class GrpcServerAutoConfigurationTests {
 			.withClassLoader(new FilteredClassLoader(NettyServerBuilder.class,
 					io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder.class))
 			.run((context) -> assertThat(context).getBean(GrpcServerFactory.class)
-				.isInstanceOf(BaseGrpcServerFactory.class));
+				.isInstanceOf(DefaultGrpcServerFactory.class));
 	}
 
 	@Test
@@ -171,10 +171,11 @@ class GrpcServerAutoConfigurationTests {
 
 	@Test
 	void baseServerFactoryAutoConfiguredAsExpected() {
-		serverFactoryAutoConfiguredAsExpected(this.contextRunner()
-			.withClassLoader(new FilteredClassLoader(NettyServerBuilder.class,
-					io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder.class)),
-				BaseGrpcServerFactory.class);
+		serverFactoryAutoConfiguredAsExpected(
+				this.contextRunner()
+					.withClassLoader(new FilteredClassLoader(NettyServerBuilder.class,
+							io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder.class)),
+				DefaultGrpcServerFactory.class);
 	}
 
 	private void serverFactoryAutoConfiguredAsExpected(ApplicationContextRunner contextRunner,
@@ -227,7 +228,7 @@ class GrpcServerAutoConfigurationTests {
 				this.contextRunnerWithLifecyle()
 					.withClassLoader(new FilteredClassLoader(NettyServerBuilder.class,
 							io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder.class)),
-				builder, BaseGrpcServerFactory.class);
+				builder, DefaultGrpcServerFactory.class);
 	}
 
 	@SuppressWarnings("unchecked")

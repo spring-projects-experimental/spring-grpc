@@ -31,7 +31,7 @@ import io.netty.channel.unix.DomainSocketAddress;
  * @author David Syer
  * @author Chris Bono
  */
-public class NettyGrpcServerFactory extends BaseGrpcServerFactory<NettyServerBuilder> {
+public class NettyGrpcServerFactory extends DefaultGrpcServerFactory<NettyServerBuilder> {
 
 	private static final String ANY_IP_ADDRESS = "*";
 

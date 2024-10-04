@@ -28,7 +28,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.grpc.server.BaseGrpcServerFactory;
+import org.springframework.grpc.server.DefaultGrpcServerFactory;
 import org.springframework.grpc.server.GrpcServerFactory;
 import org.springframework.grpc.server.NettyGrpcServerFactory;
 import org.springframework.grpc.server.ServerBuilderCustomizer;
@@ -90,13 +90,13 @@ class GrpcServerFactoryConfigurations {
 	static class ServiceProviderServerFactoryConfiguration {
 
 		@Bean
-		<T extends ServerBuilder<T>> BaseGrpcServerFactory<T> serviceProviderGrpcServerFactory(
+		<T extends ServerBuilder<T>> DefaultGrpcServerFactory<T> serviceProviderGrpcServerFactory(
 				GrpcServerProperties properties, ObjectProvider<BindableService> grpcServicesProvider,
 				ServerBuilderCustomizers serverBuilderCustomizers) {
-			BaseServerFactoryPropertyMapper<T> mapper = new BaseServerFactoryPropertyMapper<>(properties);
+			DefaultServerFactoryPropertyMapper<T> mapper = new DefaultServerFactoryPropertyMapper<>(properties);
 			List<ServerBuilderCustomizer<T>> builderCustomizers = List.of(mapper::customizeServerBuilder,
 					serverBuilderCustomizers::customize);
-			BaseGrpcServerFactory<T> factory = new BaseGrpcServerFactory<>(properties.getAddress(),
+			DefaultGrpcServerFactory<T> factory = new DefaultGrpcServerFactory<>(properties.getAddress(),
 					properties.getPort(), builderCustomizers);
 			grpcServicesProvider.orderedStream().map(BindableService::bindService).forEach(factory::addService);
 			return factory;
