@@ -28,7 +28,7 @@ import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
 
 /**
- * Tests for {@link BaseServerFactoryPropertyMapper},
+ * Tests for {@link DefaultServerFactoryPropertyMapper},
  * {@link NettyServerFactoryPropertyMapper}, and
  * {@link ShadedNettyServerFactoryPropertyMapper}.
  *
@@ -51,10 +51,10 @@ class ServerFactoryPropertyMappersTests {
 	@Test
 	<T extends ServerBuilder<T>> void customizeBaseServerBuilder() {
 		T builder = mock();
-		customizeServerBuilder(BaseServerFactoryPropertyMapper::new, () -> builder);
+		customizeServerBuilder(DefaultServerFactoryPropertyMapper::new, () -> builder);
 	}
 
-	private <T extends ServerBuilder<T>, X extends BaseServerFactoryPropertyMapper<T>> void customizeServerBuilder(
+	private <T extends ServerBuilder<T>, X extends DefaultServerFactoryPropertyMapper<T>> void customizeServerBuilder(
 			Function<GrpcServerProperties, X> mapperFactory, Supplier<T> mockBuilderToCustomize) {
 		GrpcServerProperties properties = new GrpcServerProperties();
 		properties.getKeepAlive().setTime(Duration.ofHours(1));

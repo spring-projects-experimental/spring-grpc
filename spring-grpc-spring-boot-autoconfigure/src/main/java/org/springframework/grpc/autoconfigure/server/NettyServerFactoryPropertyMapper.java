@@ -18,12 +18,15 @@ package org.springframework.grpc.autoconfigure.server;
 
 import io.grpc.netty.NettyServerBuilder;
 
+import org.springframework.grpc.server.NettyGrpcServerFactory;
+
 /**
- * Helper class used to map {@link GrpcServerProperties} to {@link NettyServerBuilder}.
+ * Helper class used to map {@link GrpcServerProperties} to
+ * {@link NettyGrpcServerFactory}.
  *
  * @author Chris Bono
  */
-class NettyServerFactoryPropertyMapper extends BaseServerFactoryPropertyMapper<NettyServerBuilder> {
+class NettyServerFactoryPropertyMapper extends DefaultServerFactoryPropertyMapper<NettyServerBuilder> {
 
 	NettyServerFactoryPropertyMapper(GrpcServerProperties properties) {
 		super(properties);

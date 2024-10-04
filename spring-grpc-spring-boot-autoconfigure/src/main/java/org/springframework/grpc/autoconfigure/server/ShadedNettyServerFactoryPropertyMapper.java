@@ -18,13 +18,15 @@ package org.springframework.grpc.autoconfigure.server;
 
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
 
+import org.springframework.grpc.server.ShadedNettyGrpcServerFactory;
+
 /**
- * Helper class used to map {@link GrpcServerProperties} to the shaded
- * {@link NettyServerBuilder}.
+ * Helper class used to map {@link GrpcServerProperties} to
+ * {@link ShadedNettyGrpcServerFactory}.
  *
  * @author Chris Bono
  */
-class ShadedNettyServerFactoryPropertyMapper extends BaseServerFactoryPropertyMapper<NettyServerBuilder> {
+class ShadedNettyServerFactoryPropertyMapper extends DefaultServerFactoryPropertyMapper<NettyServerBuilder> {
 
 	ShadedNettyServerFactoryPropertyMapper(GrpcServerProperties properties) {
 		super(properties);

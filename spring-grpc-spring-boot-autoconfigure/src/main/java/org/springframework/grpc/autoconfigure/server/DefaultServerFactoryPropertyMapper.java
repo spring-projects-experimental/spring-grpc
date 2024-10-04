@@ -24,23 +24,25 @@ import java.util.function.Consumer;
 import io.grpc.ServerBuilder;
 
 import org.springframework.boot.context.properties.PropertyMapper;
+import org.springframework.grpc.server.DefaultGrpcServerFactory;
 
 /**
- * Helper class used to map {@link GrpcServerProperties} to various {@link ServerBuilder}.
+ * Helper class used to map {@link GrpcServerProperties} to
+ * {@link DefaultGrpcServerFactory}.
  *
  * @author Chris Bono
  * @param <T> the type of server builder
  */
-class BaseServerFactoryPropertyMapper<T extends ServerBuilder<T>> {
+class DefaultServerFactoryPropertyMapper<T extends ServerBuilder<T>> {
 
 	final GrpcServerProperties properties;
 
-	BaseServerFactoryPropertyMapper(GrpcServerProperties properties) {
+	DefaultServerFactoryPropertyMapper(GrpcServerProperties properties) {
 		this.properties = properties;
 	}
 
 	/**
-	 * Maps the properties to the server builder.
+	 * Map the properties to the server factory's server builder.
 	 * @param serverBuilder the builder
 	 */
 	void customizeServerBuilder(T serverBuilder) {
