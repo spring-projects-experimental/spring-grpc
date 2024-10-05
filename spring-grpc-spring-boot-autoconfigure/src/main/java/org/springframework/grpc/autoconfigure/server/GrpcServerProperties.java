@@ -24,7 +24,25 @@ import org.springframework.boot.convert.DurationUnit;
 @ConfigurationProperties(prefix = "spring.grpc.server")
 public class GrpcServerProperties {
 
-	private String address = "*";
+	/**
+	 * Server should listen to any IPv4 and IPv6 address.
+	 */
+	public static final String ANY_IP_ADDRESS = "*";
+
+	/**
+	 * Server should listen to any IPv4 address.
+	 */
+	public static final String ANY_IPv4_ADDRESS = "0.0.0.0";
+
+	/**
+	 * Server should listen to any IPv6 address.
+	 */
+	public static final String ANY_IPv6_ADDRESS = "::";
+
+	/**
+	 * Server address to bind to. The default is any IP address ('*').
+	 */
+	private String address = ANY_IP_ADDRESS;
 
 	/**
 	 * Server port to listen on. When the value is 0, a random available port is selected.
