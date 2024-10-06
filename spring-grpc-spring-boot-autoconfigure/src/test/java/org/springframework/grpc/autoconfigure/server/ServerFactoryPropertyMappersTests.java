@@ -24,6 +24,8 @@ import java.util.function.Supplier;
 import io.grpc.ServerBuilder;
 import org.junit.jupiter.api.Test;
 
+import org.springframework.util.unit.DataSize;
+
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
 
@@ -59,11 +61,25 @@ class ServerFactoryPropertyMappersTests {
 		GrpcServerProperties properties = new GrpcServerProperties();
 		properties.getKeepAlive().setTime(Duration.ofHours(1));
 		properties.getKeepAlive().setTimeout(Duration.ofSeconds(10));
+		properties.getKeepAlive().setMaxIdle(Duration.ofHours(2));
+		properties.getKeepAlive().setMaxAge(Duration.ofHours(3));
+		properties.getKeepAlive().setMaxAgeGrace(Duration.ofSeconds(45));
+		properties.getKeepAlive().setPermitTime(Duration.ofMinutes(7));
+		properties.getKeepAlive().setPermitWithoutCalls(true);
+		properties.setMaxInboundMessageSize(DataSize.ofMegabytes(333));
+		properties.setMaxInboundMetadataSize(DataSize.ofKilobytes(111));
 		X mapper = mapperFactory.apply(properties);
 		T builder = mockBuilderToCustomize.get();
 		mapper.customizeServerBuilder(builder);
 		then(builder).should().keepAliveTime(Duration.ofHours(1).toNanos(), TimeUnit.NANOSECONDS);
 		then(builder).should().keepAliveTimeout(Duration.ofSeconds(10).toNanos(), TimeUnit.NANOSECONDS);
+		then(builder).should().maxConnectionIdle(Duration.ofHours(2).toNanos(), TimeUnit.NANOSECONDS);
+		then(builder).should().maxConnectionAge(Duration.ofHours(3).toNanos(), TimeUnit.NANOSECONDS);
+		then(builder).should().maxConnectionAgeGrace(Duration.ofSeconds(45).toNanos(), TimeUnit.NANOSECONDS);
+		then(builder).should().permitKeepAliveTime(Duration.ofMinutes(7).toNanos(), TimeUnit.NANOSECONDS);
+		then(builder).should().permitKeepAliveWithoutCalls(true);
+		then(builder).should().maxInboundMessageSize(Math.toIntExact(DataSize.ofMegabytes(333).toBytes()));
+		then(builder).should().maxInboundMetadataSize(Math.toIntExact(DataSize.ofKilobytes(111).toBytes()));
 	}
 
 }
