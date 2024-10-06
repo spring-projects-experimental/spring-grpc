@@ -19,7 +19,10 @@ import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.convert.DataSizeUnit;
 import org.springframework.boot.convert.DurationUnit;
+import org.springframework.util.unit.DataSize;
+import org.springframework.util.unit.DataUnit;
 
 @ConfigurationProperties(prefix = "spring.grpc.server")
 public class GrpcServerProperties {
@@ -30,22 +33,13 @@ public class GrpcServerProperties {
 	public static final String ANY_IP_ADDRESS = "*";
 
 	/**
-	 * Server should listen to any IPv4 address.
-	 */
-	public static final String ANY_IPv4_ADDRESS = "0.0.0.0";
-
-	/**
-	 * Server should listen to any IPv6 address.
-	 */
-	public static final String ANY_IPv6_ADDRESS = "::";
-
-	/**
 	 * Server address to bind to. The default is any IP address ('*').
 	 */
 	private String address = ANY_IP_ADDRESS;
 
 	/**
 	 * Server port to listen on. When the value is 0, a random available port is selected.
+	 * The default is 9090.
 	 */
 	private int port = 9090;
 
@@ -57,10 +51,22 @@ public class GrpcServerProperties {
 	@DurationUnit(ChronoUnit.SECONDS)
 	private Duration shutdownGracePeriod = Duration.of(30, ChronoUnit.SECONDS);
 
+	/**
+	 * Maximum message size allowed to be received by the server (default 4MiB).
+	 */
+	@DataSizeUnit(DataUnit.BYTES)
+	private DataSize maxInboundMessageSize = DataSize.ofBytes(4 * 1024 * 1024);
+
+	/**
+	 * Maximum metadata size allowed to be received by the server (default 8KiB).
+	 */
+	@DataSizeUnit(DataUnit.BYTES)
+	private DataSize maxInboundMetadataSize = DataSize.ofBytes(8192);
+
 	private final KeepAlive keepAlive = new KeepAlive();
 
 	public String getAddress() {
-		return address;
+		return this.address;
 	}
 
 	public void setAddress(String address) {
@@ -68,7 +74,7 @@ public class GrpcServerProperties {
 	}
 
 	public int getPort() {
-		return port;
+		return this.port;
 	}
 
 	public void setPort(int port) {
@@ -76,11 +82,27 @@ public class GrpcServerProperties {
 	}
 
 	public Duration getShutdownGracePeriod() {
-		return shutdownGracePeriod;
+		return this.shutdownGracePeriod;
 	}
 
 	public void setShutdownGracePeriod(Duration shutdownGracePeriod) {
 		this.shutdownGracePeriod = shutdownGracePeriod;
+	}
+
+	public DataSize getMaxInboundMessageSize() {
+		return this.maxInboundMessageSize;
+	}
+
+	public void setMaxInboundMessageSize(DataSize maxInboundMessageSize) {
+		this.maxInboundMessageSize = maxInboundMessageSize;
+	}
+
+	public DataSize getMaxInboundMetadataSize() {
+		return this.maxInboundMetadataSize;
+	}
+
+	public void setMaxInboundMetadataSize(DataSize maxInboundMetadataSize) {
+		this.maxInboundMetadataSize = maxInboundMetadataSize;
 	}
 
 	public KeepAlive getKeepAlive() {
@@ -103,8 +125,40 @@ public class GrpcServerProperties {
 		@DurationUnit(ChronoUnit.SECONDS)
 		private Duration timeout = Duration.of(20, ChronoUnit.SECONDS);
 
+		/**
+		 * Maximum time a connection can remain idle before being gracefully terminated
+		 * (default infinite).
+		 */
+		@DurationUnit(ChronoUnit.SECONDS)
+		private Duration maxIdle = null;
+
+		/**
+		 * Maximum time a connection may exist before being gracefully terminated (default
+		 * infinite).
+		 */
+		@DurationUnit(ChronoUnit.SECONDS)
+		private Duration maxAge = null;
+
+		/**
+		 * Maximum time for graceful connection termination (default infinite).
+		 */
+		@DurationUnit(ChronoUnit.SECONDS)
+		private Duration maxAgeGrace = null;
+
+		/**
+		 * Maximum keep-alive time clients are permitted to configure (default 5m).
+		 */
+		@DurationUnit(ChronoUnit.SECONDS)
+		private Duration permitTime = Duration.of(5, ChronoUnit.MINUTES);
+
+		/**
+		 * Whether clients are permitted to send keep alive pings when there are no
+		 * outstanding RPCs on the connection (default false).
+		 */
+		private boolean permitWithoutCalls = false;
+
 		public Duration getTime() {
-			return time;
+			return this.time;
 		}
 
 		public void setTime(Duration time) {
@@ -112,11 +166,51 @@ public class GrpcServerProperties {
 		}
 
 		public Duration getTimeout() {
-			return timeout;
+			return this.timeout;
 		}
 
 		public void setTimeout(Duration timeout) {
 			this.timeout = timeout;
+		}
+
+		public Duration getMaxIdle() {
+			return this.maxIdle;
+		}
+
+		public void setMaxIdle(Duration maxIdle) {
+			this.maxIdle = maxIdle;
+		}
+
+		public Duration getMaxAge() {
+			return this.maxAge;
+		}
+
+		public void setMaxAge(Duration maxAge) {
+			this.maxAge = maxAge;
+		}
+
+		public Duration getMaxAgeGrace() {
+			return this.maxAgeGrace;
+		}
+
+		public void setMaxAgeGrace(Duration maxAgeGrace) {
+			this.maxAgeGrace = maxAgeGrace;
+		}
+
+		public Duration getPermitTime() {
+			return this.permitTime;
+		}
+
+		public void setPermitTime(Duration permitTime) {
+			this.permitTime = permitTime;
+		}
+
+		public boolean isPermitWithoutCalls() {
+			return this.permitWithoutCalls;
+		}
+
+		public void setPermitWithoutCalls(boolean permitWithoutCalls) {
+			this.permitWithoutCalls = permitWithoutCalls;
 		}
 
 	}
