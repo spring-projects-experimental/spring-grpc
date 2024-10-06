@@ -49,13 +49,13 @@ public class GrpcServerProperties {
 	 * shutdown immediately. The default is 30 seconds.
 	 */
 	@DurationUnit(ChronoUnit.SECONDS)
-	private Duration shutdownGracePeriod = Duration.of(30, ChronoUnit.SECONDS);
+	private Duration shutdownGracePeriod = Duration.ofSeconds(30);
 
 	/**
 	 * Maximum message size allowed to be received by the server (default 4MiB).
 	 */
 	@DataSizeUnit(DataUnit.BYTES)
-	private DataSize maxInboundMessageSize = DataSize.ofBytes(4 * 1024 * 1024);
+	private DataSize maxInboundMessageSize = DataSize.ofBytes(4194304);
 
 	/**
 	 * Maximum metadata size allowed to be received by the server (default 8KiB).
@@ -115,7 +115,7 @@ public class GrpcServerProperties {
 		 * Duration without read activity before sending a keep alive ping (default 2h).
 		 */
 		@DurationUnit(ChronoUnit.SECONDS)
-		private Duration time = Duration.of(2, ChronoUnit.HOURS);
+		private Duration time = Duration.ofHours(2);
 
 		/**
 		 * Maximum time to wait for read activity after sending a keep alive ping. If
@@ -123,7 +123,7 @@ public class GrpcServerProperties {
 		 * connection (default 20s).
 		 */
 		@DurationUnit(ChronoUnit.SECONDS)
-		private Duration timeout = Duration.of(20, ChronoUnit.SECONDS);
+		private Duration timeout = Duration.ofSeconds(20);
 
 		/**
 		 * Maximum time a connection can remain idle before being gracefully terminated
@@ -149,7 +149,7 @@ public class GrpcServerProperties {
 		 * Maximum keep-alive time clients are permitted to configure (default 5m).
 		 */
 		@DurationUnit(ChronoUnit.SECONDS)
-		private Duration permitTime = Duration.of(5, ChronoUnit.MINUTES);
+		private Duration permitTime = Duration.ofMinutes(5);
 
 		/**
 		 * Whether clients are permitted to send keep alive pings when there are no
