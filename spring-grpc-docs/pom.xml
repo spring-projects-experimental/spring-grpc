@@ -12,6 +12,27 @@
 	<name>Spring gRPC Docs</name>
 	<description>Spring gRPC documentation</description>
 
+	<properties>
+		<exec-maven-plugin.version>3.4.1</exec-maven-plugin.version>
+		<configprops.path>${project.basedir}/src/main/antora/modules/ROOT/partials/_configprops.adoc</configprops.path>
+		<configprops.inclusionPattern>spring.grpc.*</configprops.inclusionPattern>
+	</properties>
+	<!-- Dependencies used to build the config props doc generator -->
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.grpc</groupId>
+			<artifactId>spring-grpc-spring-boot-autoconfigure</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+	</dependencies>
 	<build>
 		<plugins>
 			<plugin>
@@ -61,6 +82,29 @@
 				<version>${maven-deploy-plugin.version}</version>
 				<configuration>
 					<skip>true</skip>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>${exec-maven-plugin.version}</version>
+				<executions>
+					<execution>
+						<id>generate-configprops</id>
+						<phase>package</phase>
+						<goals>
+							<goal>java</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<includeProjectDependencies>true</includeProjectDependencies>
+					<includePluginDependencies>false</includePluginDependencies>
+					<mainClass>org.springframework.grpc.internal.ConfigurationPropertiesAsciidocGenerator</mainClass>
+					<arguments>
+						<argument>${configprops.path}</argument>
+						<argument>${configprops.inclusionPattern}</argument>
+					</arguments>
 				</configuration>
 			</plugin>
 		</plugins>
