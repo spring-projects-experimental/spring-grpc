@@ -29,15 +29,29 @@
 	</scm>
 	<properties>
 		<java.version>17</java.version>
+		<spring-javaformat-maven-plugin.version>0.0.39</spring-javaformat-maven-plugin.version>
 		<protobuf-java.version>3.25.2</protobuf-java.version>
 		<grpc.version>1.63.0</grpc.version>
-		<spring-javaformat-maven-plugin.version>0.0.39</spring-javaformat-maven-plugin.version>
 	</properties>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.grpc</groupId>
+				<artifactId>spring-grpc-bom</artifactId>
+				<version>0.1.0-SNAPSHOT</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.grpc</groupId>
 			<artifactId>spring-grpc-spring-boot-autoconfigure</artifactId>
-			<version>0.1.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>io.grpc</groupId>
+			<artifactId>grpc-services</artifactId>
 		</dependency>
 
 		<dependency>
@@ -55,7 +69,6 @@
 		<dependency>
 			<groupId>org.springframework.grpc</groupId>
 			<artifactId>spring-grpc-test</artifactId>
-			<version>0.1.0-SNAPSHOT</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -69,6 +82,15 @@
 			</extension>
 		</extensions>
 		<plugins>
+			<plugin>
+				<groupId>org.graalvm.buildtools</groupId>
+				<artifactId>native-maven-plugin</artifactId>
+				<configuration>
+					<buildArgs>
+						<buildArg>--verbose</buildArg>
+					</buildArgs>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
@@ -86,6 +108,7 @@
 				<version>${spring-javaformat-maven-plugin.version}</version>
 				<executions>
 					<execution>
+						<?m2e ignore?>
 						<phase>validate</phase>
 						<inherited>true</inherited>
 						<goals>
