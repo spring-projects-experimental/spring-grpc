@@ -33,6 +33,7 @@ import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.autoconfigure.ssl.SslAutoConfiguration;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
@@ -64,7 +65,7 @@ class GrpcServerAutoConfigurationTests {
 		when(service.bindService()).thenReturn(serviceDefinition);
 		// NOTE: we use noop server lifecycle to avoid startup
 		return new ApplicationContextRunner()
-			.withConfiguration(AutoConfigurations.of(GrpcServerAutoConfiguration.class))
+			.withConfiguration(AutoConfigurations.of(GrpcServerAutoConfiguration.class, SslAutoConfiguration.class))
 			.withBean("noopServerLifecycle", GrpcServerLifecycle.class, Mockito::mock)
 			.withBean(BindableService.class, () -> service);
 	}
@@ -75,7 +76,7 @@ class GrpcServerAutoConfigurationTests {
 		when(service.bindService()).thenReturn(serviceDefinition);
 		// NOTE: we use noop server lifecycle to avoid startup
 		return new ApplicationContextRunner()
-			.withConfiguration(AutoConfigurations.of(GrpcServerAutoConfiguration.class))
+			.withConfiguration(AutoConfigurations.of(GrpcServerAutoConfiguration.class, SslAutoConfiguration.class))
 			.withBean(BindableService.class, () -> service);
 	}
 
@@ -121,7 +122,7 @@ class GrpcServerAutoConfigurationTests {
 			.withUserConfiguration(ServerBuilderCustomizersConfig.class)
 			.run((context) -> assertThat(context).getBean(ServerBuilderCustomizers.class)
 				.extracting("customizers", InstanceOfAssertFactories.list(ServerBuilderCustomizer.class))
-				.containsExactly(ServerBuilderCustomizersConfig.CUSTOMIZER_BAR,
+				.contains(ServerBuilderCustomizersConfig.CUSTOMIZER_BAR,
 						ServerBuilderCustomizersConfig.CUSTOMIZER_FOO));
 	}
 
@@ -251,6 +252,17 @@ class GrpcServerAutoConfigurationTests {
 					ordered.verify(mockServerBuilder).keepAliveTime(40L, TimeUnit.SECONDS);
 					ordered.verify(mockServerBuilder).keepAliveTime(50L, TimeUnit.SECONDS);
 				}));
+	}
+
+	@Test
+	void nettyServerFactoryAutoConfiguredWithSsl() {
+		serverFactoryAutoConfiguredAsExpected(
+				this.contextRunner()
+					.withPropertyValues("spring.grpc.server.ssl.bundle=ssltest",
+							"spring.ssl.bundle.jks.ssltest.keystore.location=classpath:test.jks")
+					.withClassLoader(
+							new FilteredClassLoader(io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder.class)),
+				NettyGrpcServerFactory.class);
 	}
 
 	@Configuration(proxyBeanMethods = false)

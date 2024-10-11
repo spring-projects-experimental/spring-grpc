@@ -215,4 +215,51 @@ public class GrpcServerProperties {
 
 	}
 
+	private final Ssl ssl = new Ssl();
+
+	public Ssl getSsl() {
+		return this.ssl;
+	}
+
+	public static class Ssl {
+
+		/**
+		 * Whether to enable SSL support. Enabled automatically if "bundle" is provided
+		 * unless specified otherwise.
+		 */
+		private Boolean enabled;
+
+		/**
+		 * SSL bundle name.
+		 */
+		private String bundle;
+
+		public boolean isEnabled() {
+			return (this.enabled != null) ? this.enabled : this.bundle != null;
+		}
+
+		public void copyDefaultsFrom(Ssl config) {
+			if (this.enabled == null) {
+				this.enabled = config.enabled;
+			}
+			if (this.bundle == null) {
+				this.bundle = config.bundle;
+			}
+
+		}
+
+		public void setEnabled(boolean enabled) {
+			this.enabled = enabled;
+		}
+
+		public String getBundle() {
+			return this.bundle;
+		}
+
+		public void setBundle(String bundle) {
+			this.bundle = bundle;
+		}
+
+	}
+
 }

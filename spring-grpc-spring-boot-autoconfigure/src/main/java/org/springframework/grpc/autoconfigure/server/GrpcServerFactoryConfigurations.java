@@ -18,14 +18,14 @@ package org.springframework.grpc.autoconfigure.server;
 
 import java.util.List;
 
-import io.grpc.BindableService;
-import io.grpc.ServerBuilder;
-import io.grpc.netty.NettyServerBuilder;
+import javax.net.ssl.SSLException;
 
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.ssl.SslBundle;
+import org.springframework.boot.ssl.SslBundles;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.grpc.server.DefaultGrpcServerFactory;
@@ -33,6 +33,15 @@ import org.springframework.grpc.server.GrpcServerFactory;
 import org.springframework.grpc.server.NettyGrpcServerFactory;
 import org.springframework.grpc.server.ServerBuilderCustomizer;
 import org.springframework.grpc.server.ShadedNettyGrpcServerFactory;
+
+import io.grpc.BindableService;
+import io.grpc.ServerBuilder;
+import io.grpc.netty.GrpcSslContexts;
+import io.grpc.netty.NettyServerBuilder;
+import io.netty.handler.ssl.ClientAuth;
+import io.netty.handler.ssl.JdkSslContext;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
 
 /**
  * Configurations for {@link GrpcServerFactory gRPC server factories}.
@@ -60,6 +69,29 @@ class GrpcServerFactoryConfigurations {
 			return factory;
 		}
 
+		@Bean
+		ServerBuilderCustomizer<io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder> sslServerCustomizer(
+				GrpcServerProperties properties, SslBundles bundles) {
+			if (properties.getSsl().isEnabled()) {
+				SslBundle bundle = bundles.getBundle(properties.getSsl().getBundle());
+				return builder -> {
+					try {
+						builder.sslContext(io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts
+							.configure(io.grpc.netty.shaded.io.netty.handler.ssl.SslContextBuilder
+								.forServer(bundle.getManagers().getKeyManagerFactory()))
+							.build());
+					}
+					catch (SSLException e) {
+						throw new IllegalStateException("Failed to create SSL context", e);
+					}
+				};
+			}
+			else {
+				return builder -> {
+				};
+			}
+		}
+
 	}
 
 	@Configuration(proxyBeanMethods = false)
@@ -79,6 +111,28 @@ class GrpcServerFactoryConfigurations {
 					builderCustomizers);
 			grpcServicesProvider.orderedStream().map(BindableService::bindService).forEach(factory::addService);
 			return factory;
+		}
+
+		@Bean
+		ServerBuilderCustomizer<NettyServerBuilder> sslServerCustomizer(GrpcServerProperties properties,
+				SslBundles bundles) {
+			if (properties.getSsl().isEnabled()) {
+				SslBundle bundle = bundles.getBundle(properties.getSsl().getBundle());
+				return builder -> {
+					try {
+						builder.sslContext(GrpcSslContexts
+							.configure(SslContextBuilder.forServer(bundle.getManagers().getKeyManagerFactory()))
+							.build());
+					}
+					catch (SSLException e) {
+						throw new IllegalStateException("Failed to create SSL context", e);
+					}
+				};
+			}
+			else {
+				return builder -> {
+				};
+			}
 		}
 
 	}
