@@ -25,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.convert.DataSizeUnit;
 import org.springframework.boot.convert.DurationUnit;
+import org.springframework.grpc.client.NegotiationType;
 import org.springframework.util.unit.DataSize;
 import org.springframework.util.unit.DataUnit;
 
@@ -36,10 +37,48 @@ import io.grpc.netty.NettyChannelBuilder;
 @ConfigurationProperties(prefix = "spring.grpc.client")
 public class GrpcClientProperties {
 
-	private Map<String, NamedChannel> channels = new HashMap<>();
+	private NamedChannel defaultChannel = new NamedChannel();
+
+	private Map<String, NamedChannel> channels = new HashMap<>(Map.of("default", defaultChannel));
+
+	GrpcClientProperties() {
+		this.defaultChannel.setAddress(URI.create("static://localhost:9090"));
+	}
 
 	public Map<String, NamedChannel> getChannels() {
 		return channels;
+	}
+
+	/**
+	 * Gets the default {@link NamedChannel} configured for the GRPC client.
+	 * @return the default {@link NamedChannel}
+	 */
+	public NamedChannel getDefaultChannel() {
+		return defaultChannel;
+	}
+
+	public NamedChannel getChannel(String name) {
+		if ("default".equals(name)) {
+			return defaultChannel;
+		}
+		return channels.computeIfAbsent(name, authority -> {
+			NamedChannel channel = new NamedChannel();
+			channel.copyDefaultsFrom(defaultChannel);
+			if (!authority.contains(":/") && !authority.startsWith("unix:")) {
+				authority = "static://" + authority;
+			}
+			channel.setAddress(URI.create(authority));
+			return channel;
+		});
+	}
+
+	public String getTarget(String authority) {
+		NamedChannel channel = getChannel(authority);
+		URI address = channel.getAddress();
+		if (address.getScheme().equals("static") || address.getScheme().equals("tcp")) {
+			return address.getAuthority();
+		}
+		return address.toString();
 	}
 
 	public static class NamedChannel {
@@ -97,6 +136,22 @@ public class GrpcClientProperties {
 		 */
 		public void setDefaultLoadBalancingPolicy(final String defaultLoadBalancingPolicy) {
 			this.defaultLoadBalancingPolicy = defaultLoadBalancingPolicy;
+		}
+
+		// --------------------------------------------------
+
+		/**
+		 * The negotiation type for the channel. Default is
+		 * {@link NegotiationType#PLAINTEXT}.
+		 */
+		private NegotiationType negotiationType = NegotiationType.PLAINTEXT;
+
+		public NegotiationType getNegotiationType() {
+			return negotiationType;
+		}
+
+		public void setNegotiationType(NegotiationType negotiationType) {
+			this.negotiationType = negotiationType;
 		}
 
 		// --------------------------------------------------
@@ -389,6 +444,22 @@ public class GrpcClientProperties {
 				this.userAgent = config.userAgent;
 			}
 			this.ssl.copyDefaultsFrom(config.ssl);
+		}
+
+		// --------------------------------------------------
+
+		/**
+		 * Flag to say that strict SSL checks are not enabled (so the remote certificate
+		 * could be anonymous).
+		 */
+		private boolean secure = true;
+
+		public boolean isSecure() {
+			return this.secure;
+		}
+
+		public void setSecure(boolean secure) {
+			this.secure = secure;
 		}
 
 		// --------------------------------------------------

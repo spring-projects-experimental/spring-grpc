@@ -22,6 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.DisposableBean;
 
+import io.grpc.ChannelCredentials;
 import io.grpc.ForwardingChannelBuilder2;
 import io.grpc.Grpc;
 import io.grpc.InsecureChannelCredentials;
@@ -36,6 +37,8 @@ public class DefaultGrpcChannelFactory implements GrpcChannelFactory, Disposable
 
 	private final List<GrpcChannelConfigurer> configurers = new ArrayList<>();
 
+	private VirtualTargets targets = VirtualTargets.DEFAULT;
+
 	public DefaultGrpcChannelFactory() {
 		this(List.of());
 	}
@@ -44,10 +47,14 @@ public class DefaultGrpcChannelFactory implements GrpcChannelFactory, Disposable
 		this.configurers.addAll(configurers);
 	}
 
+	public void setVirtualTargets(VirtualTargets targets) {
+		this.targets = targets;
+	}
+
 	@Override
 	public ManagedChannelBuilder<?> createChannel(String authority) {
 		ManagedChannelBuilder<?> target = builders.computeIfAbsent(authority, path -> {
-			ManagedChannelBuilder<?> builder = newChannel(path);
+			ManagedChannelBuilder<?> builder = newChannel(targets.getTarget(path));
 			for (GrpcChannelConfigurer configurer : configurers) {
 				configurer.configure(path, builder);
 			}
@@ -57,8 +64,12 @@ public class DefaultGrpcChannelFactory implements GrpcChannelFactory, Disposable
 
 	}
 
+	protected ChannelCredentials channelCredentials(String path) {
+		return InsecureChannelCredentials.create();
+	}
+
 	protected ManagedChannelBuilder<?> newChannel(String path) {
-		return Grpc.newChannelBuilder(path, InsecureChannelCredentials.create());
+		return Grpc.newChannelBuilder(path, channelCredentials(path));
 	}
 
 	@Override

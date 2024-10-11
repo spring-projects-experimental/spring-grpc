@@ -15,12 +15,14 @@
  */
 package org.springframework.grpc.autoconfigure.client;
 
+import javax.net.ssl.SSLException;
+
 import org.springframework.boot.ssl.SslBundle;
 import org.springframework.util.ClassUtils;
 
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
-import io.grpc.netty.shaded.io.netty.handler.ssl.JdkSslContext;
+import io.grpc.netty.shaded.io.netty.handler.ssl.SslContextBuilder;
 
 class ShadedNettyChannelFactoryHelper {
 
@@ -33,7 +35,13 @@ class ShadedNettyChannelFactoryHelper {
 
 	public static void sslContext(ManagedChannelBuilder<?> builder, SslBundle bundle) {
 		if (builder instanceof NettyChannelBuilder nettyBuilder) {
-			nettyBuilder.sslContext(new JdkSslContext(bundle.createSslContext(), true, null));
+			try {
+				nettyBuilder.sslContext(
+						SslContextBuilder.forClient().keyManager(bundle.getManagers().getKeyManagerFactory()).build());
+			}
+			catch (SSLException e) {
+				throw new IllegalStateException("Failed to create SSL context", e);
+			}
 		}
 	}
 

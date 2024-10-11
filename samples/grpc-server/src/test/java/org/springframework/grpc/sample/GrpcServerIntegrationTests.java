@@ -31,6 +31,8 @@ import org.springframework.grpc.sample.proto.HelloRequest;
 import org.springframework.grpc.sample.proto.SimpleGrpc;
 import org.springframework.grpc.server.GrpcServerFactory;
 import org.springframework.grpc.test.LocalGrpcPort;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 
 import io.grpc.ManagedChannel;
 
@@ -78,6 +80,7 @@ class GrpcServerIntegrationTests {
 
 	@Nested
 	@SpringBootTest(properties = "spring.grpc.client.channels.test-channel.address=static://0.0.0.0:9090")
+	@DirtiesContext
 	class ServerConfiguredWithStaticClientChannel {
 
 		@Test
@@ -95,6 +98,21 @@ class GrpcServerIntegrationTests {
 		@Test
 		void clientChannelWithUnixDomain(@Autowired GrpcChannelFactory channels) {
 			assertThatResponseIsServedToChannel(channels.createChannel("unix:unix-test-channel").build());
+		}
+
+	}
+
+	@Nested
+	@SpringBootTest(properties = { "spring.grpc.client.channels.test-channel.address=static://0.0.0.0:9090",
+			"spring.grpc.client.channels.test-channel.negotiation-type=TLS",
+			"spring.grpc.client.channels.test-channel.secure=false" })
+	@ActiveProfiles("ssl")
+	@DirtiesContext
+	class ServerWithSsl {
+
+		@Test
+		void clientChannelWithSsl(@Autowired GrpcChannelFactory channels) {
+			assertThatResponseIsServedToChannel(channels.createChannel("test-channel").build());
 		}
 
 	}

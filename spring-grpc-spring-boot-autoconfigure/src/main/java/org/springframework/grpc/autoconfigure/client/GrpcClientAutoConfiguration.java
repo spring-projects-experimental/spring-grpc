@@ -15,46 +15,23 @@
  */
 package org.springframework.grpc.autoconfigure.client;
 
-import java.net.URI;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.ssl.SslBundle;
 import org.springframework.boot.ssl.SslBundles;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.grpc.autoconfigure.client.GrpcClientProperties.NamedChannel;
-import org.springframework.grpc.client.DefaultGrpcChannelFactory;
 import org.springframework.grpc.client.GrpcChannelConfigurer;
-import org.springframework.grpc.client.GrpcChannelFactory;
-
-import io.grpc.ManagedChannelBuilder;
 
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(GrpcClientProperties.class)
+@Import({ GrpcChannelFactoryConfigurations.ShadedNettyChannelFactoryConfiguration.class,
+		GrpcChannelFactoryConfigurations.NettyChannelFactoryConfiguration.class,
+		GrpcChannelFactoryConfigurations.DefaultChannelFactoryConfiguration.class })
 public class GrpcClientAutoConfiguration {
-
-	@Bean
-	@ConditionalOnMissingBean(GrpcChannelFactory.class)
-	public DefaultGrpcChannelFactory defaultGrpcChannelFactory(final List<GrpcChannelConfigurer> configurers,
-			GrpcClientProperties channels) {
-		return new DefaultGrpcChannelFactory(configurers) {
-			@Override
-			public ManagedChannelBuilder<?> newChannel(String authority) {
-				if (channels.getChannels().containsKey(authority)) {
-					NamedChannel channel = channels.getChannels().get(authority);
-					URI address = channel.getAddress();
-					if (address.getScheme().equals("static") || address.getScheme().equals("tcp")) {
-						return super.newChannel(address.getAuthority());
-					}
-					return super.newChannel(address.toString());
-				}
-				return super.newChannel(authority);
-			}
-		};
-	}
 
 	@Bean
 	public GrpcChannelConfigurer sslGrpcChannelConfigurer(GrpcClientProperties channels, SslBundles bundles) {
