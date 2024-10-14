@@ -79,7 +79,8 @@ class GrpcServerIntegrationTests {
 	}
 
 	@Nested
-	@SpringBootTest(properties = "spring.grpc.client.channels.test-channel.address=static://0.0.0.0:9090")
+	@SpringBootTest(properties = { "spring.grpc.server.port=0",
+			"spring.grpc.client.channels.test-channel.address=static://0.0.0.0:${local.grpc.port}" })
 	@DirtiesContext
 	class ServerConfiguredWithStaticClientChannel {
 
@@ -103,7 +104,8 @@ class GrpcServerIntegrationTests {
 	}
 
 	@Nested
-	@SpringBootTest(properties = { "spring.grpc.client.channels.test-channel.address=static://0.0.0.0:9090",
+	@SpringBootTest(properties = { "spring.grpc.server.port=0",
+			"spring.grpc.client.channels.test-channel.address=static://0.0.0.0:${local.grpc.port}",
 			"spring.grpc.client.channels.test-channel.negotiation-type=TLS",
 			"spring.grpc.client.channels.test-channel.secure=false" })
 	@ActiveProfiles("ssl")

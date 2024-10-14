@@ -168,11 +168,8 @@ public class GrpcChannelFactoryConfigurations {
 		@Override
 		public String getTarget(String authority) {
 			NamedChannel channel = this.channels.getChannel(authority);
-			URI address = channel.getAddress();
-			if (address.getScheme().equals("static") || address.getScheme().equals("tcp")) {
-				return address.getAuthority();
-			}
-			return address.toString();
+			String address = channels.getTarget(channel.getAddress());
+			return address;
 		}
 
 	}

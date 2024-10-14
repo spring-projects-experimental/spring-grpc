@@ -15,7 +15,6 @@
  */
 package org.springframework.grpc.autoconfigure.client;
 
-import java.net.URI;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
@@ -25,6 +24,9 @@ import java.util.concurrent.TimeUnit;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.convert.DataSizeUnit;
 import org.springframework.boot.convert.DurationUnit;
+import org.springframework.context.EnvironmentAware;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.StandardEnvironment;
 import org.springframework.grpc.client.NegotiationType;
 import org.springframework.util.unit.DataSize;
 import org.springframework.util.unit.DataUnit;
@@ -35,14 +37,21 @@ import io.grpc.internal.GrpcUtil;
 import io.grpc.netty.NettyChannelBuilder;
 
 @ConfigurationProperties(prefix = "spring.grpc.client")
-public class GrpcClientProperties {
+public class GrpcClientProperties implements EnvironmentAware {
 
 	private NamedChannel defaultChannel = new NamedChannel();
 
 	private Map<String, NamedChannel> channels = new HashMap<>(Map.of("default", defaultChannel));
 
+	private Environment environment = new StandardEnvironment();
+
 	GrpcClientProperties() {
-		this.defaultChannel.setAddress(URI.create("static://localhost:9090"));
+		this.defaultChannel.setAddress("static://localhost:9090");
+	}
+
+	@Override
+	public void setEnvironment(Environment environment) {
+		this.environment = environment;
 	}
 
 	public Map<String, NamedChannel> getChannels() {
@@ -67,30 +76,31 @@ public class GrpcClientProperties {
 			if (!authority.contains(":/") && !authority.startsWith("unix:")) {
 				authority = "static://" + authority;
 			}
-			channel.setAddress(URI.create(authority));
+			channel.setAddress(authority);
 			return channel;
 		});
 	}
 
 	public String getTarget(String authority) {
 		NamedChannel channel = getChannel(authority);
-		URI address = channel.getAddress();
-		if (address.getScheme().equals("static") || address.getScheme().equals("tcp")) {
-			return address.getAuthority();
+		String address = channel.getAddress();
+		if (address.startsWith("static:") || address.startsWith("tcp:")) {
+			address = address.substring(address.indexOf(":") + 1).replaceFirst("/*", "");
 		}
+		address = environment.resolvePlaceholders(address);
 		return address.toString();
 	}
 
 	public static class NamedChannel {
 
-		private URI address = null;
+		private String address = null;
 
 		/**
 		 * Gets the target address uri.
 		 * @return The address to connect to or null
 		 * @see #setAddress(String)
 		 */
-		public URI getAddress() {
+		public String getAddress() {
 			return this.address;
 		}
 
@@ -103,7 +113,7 @@ public class GrpcClientProperties {
 		 *
 		 * @see #setAddress(String)
 		 */
-		public void setAddress(final URI address) {
+		public void setAddress(final String address) {
 			this.address = address;
 		}
 
