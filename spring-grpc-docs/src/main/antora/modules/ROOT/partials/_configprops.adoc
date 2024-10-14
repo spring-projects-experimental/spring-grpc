@@ -12,6 +12,7 @@
 |spring.grpc.client.default-channel.max-inbound-message-size |  | 
 |spring.grpc.client.default-channel.max-inbound-metadata-size |  | 
 |spring.grpc.client.default-channel.negotiation-type |  | The negotiation type for the channel. Default is {@link NegotiationType#PLAINTEXT}.
+|spring.grpc.client.default-channel.secure | `+++true+++` | Flag to say that strict SSL checks are not enabled (so the remote certificate could be anonymous).
 |spring.grpc.client.default-channel.ssl.bundle |  | SSL bundle name.
 |spring.grpc.client.default-channel.ssl.enabled |  | Whether to enable SSL support. Enabled automatically if "bundle" is provided unless specified otherwise.
 |spring.grpc.client.default-channel.user-agent |  | 
