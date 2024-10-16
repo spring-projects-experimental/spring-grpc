@@ -26,6 +26,34 @@ or for Gradle:
 implementation 'org.springframework.grpc:spring-grpc-spring-boot-autoconfigure:0.1.0-SNAPSHOT'
 ```
 
+For convenience, you can use the Spring gRPC BOM to manage dependencies. With Maven:
+
+```xml
+<dependencyManagement>
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.grpc</groupId>
+			<artifactId>spring-grpc-bom</artifactId>
+			<version>0.1.0-SNAPSHOT</version>
+			<type>pom</type>
+			<scope>import</scope>
+		</dependency>
+	</dependencies>
+</dependencyManagement>
+```
+
+or Gradle:
+
+```groovy
+dependencyManagement {
+	imports {
+		mavenBom 'org.springframework.grpc:spring-grpc-bom:0.1.0-SNAPSHOT'
+	}
+}
+```
+
+Then you can omit the version from the dependencies.
+
 You need a Protobuf file that defines your service and messages, and you will need to configure your build tools to compile it into Java sources. This is a standard part of gRPC development (i.e. nothing to do with Spring). We now come to the Spring gRPC features.
 
 ### gPRC Server
@@ -53,25 +81,6 @@ public class GrpcServerApplication {
 ```
 
 Run it from your IDE, or on the command line with `mvn spring-boot:run` or `gradle bootRun`.
-
-For convenience, you can use the Spring gRPC BOM to manage dependencies:
-
-```xml
-<dependencyManagement>
-	<dependencies>
-		<dependency>
-			<groupId>org.springframework.grpc</groupId>
-			<artifactId>spring-grpc-bom</artifactId>
-			<version>0.1.0-SNAPSHOT</version>
-			<type>pom</type>
-			<scope>import</scope>
-		</dependency>
-	</dependencies>
-</dependencyManagement>
-```
-
-Then you can omit the version from the dependencies:
-
 
 ### gRPC Client
 

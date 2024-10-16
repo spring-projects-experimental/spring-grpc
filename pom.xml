@@ -103,7 +103,6 @@
 		<maven-javadoc-plugin.version>3.5.0</maven-javadoc-plugin.version>
 		<maven-source-plugin.version>3.3.0</maven-source-plugin.version>
 		<jacoco-maven-plugin.version>0.8.10</jacoco-maven-plugin.version>
-		<flatten-maven-plugin.version>1.5.0</flatten-maven-plugin.version>
 		<maven-deploy-plugin.version>3.1.1</maven-deploy-plugin.version>
 		<asciidoctor-maven-plugin.version>2.2.3</asciidoctor-maven-plugin.version>
 		<maven-assembly-plugin.version>3.7.0</maven-assembly-plugin.version>
@@ -179,39 +178,6 @@
 						<phase>package</phase>
 						<goals>
 							<goal>jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>flatten-maven-plugin</artifactId>
-				<version>${flatten-maven-plugin.version}</version>
-				<executions>
-					<execution>
-						<id>flatten</id>
-						<phase>process-resources</phase>
-						<goals>
-							<goal>flatten</goal>
-						</goals>
-						<configuration>
-							<updatePomFile>true</updatePomFile>
-							<flattenMode>ossrh</flattenMode>
-							<pomElements>
-								<distributionManagement>remove</distributionManagement>
-								<dependencyManagement>remove</dependencyManagement>
-								<repositories>remove</repositories>
-								<scm>keep</scm>
-								<url>keep</url>
-								<organization>resolve</organization>
-							</pomElements>
-						</configuration>
-					</execution>
-					<execution>
-						<id>clean</id>
-						<phase>clean</phase>
-						<goals>
-							<goal>clean</goal>
 						</goals>
 					</execution>
 				</executions>
