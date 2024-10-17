@@ -43,14 +43,11 @@ tasks.named('test') {
 
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc:3.25.3"
-    }
-    clean {
-        delete generatedFilesBaseDir
+        artifact = "com.google.protobuf:protoc:${dependencyManagement.importedProperties['protobuf-java.version']}"
     }
     plugins {
         grpc {
-            artifact = "io.grpc:protoc-gen-grpc-java:1.63.0"
+            artifact = "io.grpc:protoc-gen-grpc-java:${dependencyManagement.importedProperties['grpc.version']}"
         }
     }
     generateProtoTasks {
