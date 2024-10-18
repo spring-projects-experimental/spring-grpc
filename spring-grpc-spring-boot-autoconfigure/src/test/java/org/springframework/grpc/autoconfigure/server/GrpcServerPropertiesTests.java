@@ -48,11 +48,11 @@ class GrpcServerPropertiesTests {
 		@Test
 		void bind() {
 			Map<String, String> map = new HashMap<>();
-			map.put("spring.grpc.server.address", "my-server-ip");
+			map.put("spring.grpc.server.host", "my-server-ip");
 			map.put("spring.grpc.server.port", "3130");
 			map.put("spring.grpc.server.shutdown-grace-period", "15");
 			GrpcServerProperties properties = bindProperties(map);
-			assertThat(properties.getAddress()).isEqualTo("my-server-ip");
+			assertThat(properties.getAddress()).isEqualTo("my-server-ip:3130");
 			assertThat(properties.getPort()).isEqualTo(3130);
 			assertThat(properties.getShutdownGracePeriod()).isEqualTo(Duration.ofSeconds(15));
 		}

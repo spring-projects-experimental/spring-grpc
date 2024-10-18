@@ -27,6 +27,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.Ordered;
 import org.springframework.grpc.server.GrpcServerFactory;
@@ -48,8 +49,7 @@ import org.springframework.grpc.server.lifecycle.GrpcServerLifecycle;
 @ConditionalOnBean(BindableService.class)
 @EnableConfigurationProperties(GrpcServerProperties.class)
 @Import({ GrpcServerFactoryConfigurations.ShadedNettyServerFactoryConfiguration.class,
-		GrpcServerFactoryConfigurations.NettyServerFactoryConfiguration.class,
-		GrpcServerFactoryConfigurations.ServiceProviderServerFactoryConfiguration.class })
+		GrpcServerFactoryConfigurations.NettyServerFactoryConfiguration.class })
 public class GrpcServerAutoConfiguration {
 
 	private final GrpcServerProperties properties;
@@ -58,6 +58,7 @@ public class GrpcServerAutoConfiguration {
 		this.properties = properties;
 	}
 
+	@ConditionalOnBean(GrpcServerFactory.class)
 	@ConditionalOnMissingBean
 	@Bean
 	GrpcServerLifecycle grpcServerLifecycle(GrpcServerFactory factory, ApplicationEventPublisher eventPublisher) {
