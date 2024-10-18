@@ -18,7 +18,7 @@ package org.springframework.grpc.autoconfigure.server;
 
 import java.util.List;
 
-import javax.net.ssl.SSLException;
+import javax.net.ssl.KeyManagerFactory;
 
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -28,17 +28,13 @@ import org.springframework.boot.ssl.SslBundle;
 import org.springframework.boot.ssl.SslBundles;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.grpc.server.DefaultGrpcServerFactory;
 import org.springframework.grpc.server.GrpcServerFactory;
 import org.springframework.grpc.server.NettyGrpcServerFactory;
 import org.springframework.grpc.server.ServerBuilderCustomizer;
 import org.springframework.grpc.server.ShadedNettyGrpcServerFactory;
 
 import io.grpc.BindableService;
-import io.grpc.ServerBuilder;
-import io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.NettyServerBuilder;
-import io.netty.handler.ssl.SslContextBuilder;
 
 /**
  * Configurations for {@link GrpcServerFactory gRPC server factories}.
@@ -55,38 +51,20 @@ class GrpcServerFactoryConfigurations {
 
 		@Bean
 		ShadedNettyGrpcServerFactory shadedNettyGrpcServerFactory(GrpcServerProperties properties,
-				ObjectProvider<BindableService> grpcServicesProvider,
-				ServerBuilderCustomizers serverBuilderCustomizers) {
+				ObjectProvider<BindableService> grpcServicesProvider, ServerBuilderCustomizers serverBuilderCustomizers,
+				SslBundles bundles) {
 			ShadedNettyServerFactoryPropertyMapper mapper = new ShadedNettyServerFactoryPropertyMapper(properties);
 			List<ServerBuilderCustomizer<io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder>> builderCustomizers = List
 				.of(mapper::customizeServerBuilder, serverBuilderCustomizers::customize);
-			ShadedNettyGrpcServerFactory factory = new ShadedNettyGrpcServerFactory(properties.getAddress(),
-					properties.getPort(), builderCustomizers);
-			grpcServicesProvider.orderedStream().map(BindableService::bindService).forEach(factory::addService);
-			return factory;
-		}
-
-		@Bean
-		ServerBuilderCustomizer<io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder> sslServerCustomizer(
-				GrpcServerProperties properties, SslBundles bundles) {
+			KeyManagerFactory keyManager = null;
 			if (properties.getSsl().isEnabled()) {
 				SslBundle bundle = bundles.getBundle(properties.getSsl().getBundle());
-				return builder -> {
-					try {
-						builder.sslContext(io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts
-							.configure(io.grpc.netty.shaded.io.netty.handler.ssl.SslContextBuilder
-								.forServer(bundle.getManagers().getKeyManagerFactory()))
-							.build());
-					}
-					catch (SSLException e) {
-						throw new IllegalStateException("Failed to create SSL context", e);
-					}
-				};
+				keyManager = bundle.getManagers().getKeyManagerFactory();
 			}
-			else {
-				return builder -> {
-				};
-			}
+			ShadedNettyGrpcServerFactory factory = new ShadedNettyGrpcServerFactory(properties.getAddress(), keyManager,
+					builderCustomizers);
+			grpcServicesProvider.orderedStream().map(BindableService::bindService).forEach(factory::addService);
+			return factory;
 		}
 
 	}
@@ -99,56 +77,18 @@ class GrpcServerFactoryConfigurations {
 
 		@Bean
 		NettyGrpcServerFactory nettyGrpcServerFactory(GrpcServerProperties properties,
-				ObjectProvider<BindableService> grpcServicesProvider,
-				ServerBuilderCustomizers serverBuilderCustomizers) {
+				ObjectProvider<BindableService> grpcServicesProvider, ServerBuilderCustomizers serverBuilderCustomizers,
+				SslBundles bundles) {
 			NettyServerFactoryPropertyMapper mapper = new NettyServerFactoryPropertyMapper(properties);
 			List<ServerBuilderCustomizer<NettyServerBuilder>> builderCustomizers = List
 				.of(mapper::customizeServerBuilder, serverBuilderCustomizers::customize);
-			NettyGrpcServerFactory factory = new NettyGrpcServerFactory(properties.getAddress(), properties.getPort(),
-					builderCustomizers);
-			grpcServicesProvider.orderedStream().map(BindableService::bindService).forEach(factory::addService);
-			return factory;
-		}
-
-		@Bean
-		ServerBuilderCustomizer<NettyServerBuilder> sslServerCustomizer(GrpcServerProperties properties,
-				SslBundles bundles) {
+			KeyManagerFactory keyManager = null;
 			if (properties.getSsl().isEnabled()) {
 				SslBundle bundle = bundles.getBundle(properties.getSsl().getBundle());
-				return builder -> {
-					try {
-						builder.sslContext(GrpcSslContexts
-							.configure(SslContextBuilder.forServer(bundle.getManagers().getKeyManagerFactory()))
-							.build());
-					}
-					catch (SSLException e) {
-						throw new IllegalStateException("Failed to create SSL context", e);
-					}
-				};
+				keyManager = bundle.getManagers().getKeyManagerFactory();
 			}
-			else {
-				return builder -> {
-				};
-			}
-		}
-
-	}
-
-	@Configuration(proxyBeanMethods = false)
-	@ConditionalOnClass(ServerBuilder.class)
-	@ConditionalOnMissingBean(GrpcServerFactory.class)
-	@EnableConfigurationProperties(GrpcServerProperties.class)
-	static class ServiceProviderServerFactoryConfiguration {
-
-		@Bean
-		<T extends ServerBuilder<T>> DefaultGrpcServerFactory<T> serviceProviderGrpcServerFactory(
-				GrpcServerProperties properties, ObjectProvider<BindableService> grpcServicesProvider,
-				ServerBuilderCustomizers serverBuilderCustomizers) {
-			DefaultServerFactoryPropertyMapper<T> mapper = new DefaultServerFactoryPropertyMapper<>(properties);
-			List<ServerBuilderCustomizer<T>> builderCustomizers = List.of(mapper::customizeServerBuilder,
-					serverBuilderCustomizers::customize);
-			DefaultGrpcServerFactory<T> factory = new DefaultGrpcServerFactory<>(properties.getAddress(),
-					properties.getPort(), builderCustomizers);
+			NettyGrpcServerFactory factory = new NettyGrpcServerFactory(properties.getAddress(), keyManager,
+					builderCustomizers);
 			grpcServicesProvider.orderedStream().map(BindableService::bindService).forEach(factory::addService);
 			return factory;
 		}

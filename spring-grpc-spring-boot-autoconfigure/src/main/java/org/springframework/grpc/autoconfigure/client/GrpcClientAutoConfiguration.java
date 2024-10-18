@@ -29,8 +29,7 @@ import org.springframework.grpc.client.GrpcChannelConfigurer;
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(GrpcClientProperties.class)
 @Import({ GrpcChannelFactoryConfigurations.ShadedNettyChannelFactoryConfiguration.class,
-		GrpcChannelFactoryConfigurations.NettyChannelFactoryConfiguration.class,
-		GrpcChannelFactoryConfigurations.DefaultChannelFactoryConfiguration.class })
+		GrpcChannelFactoryConfigurations.NettyChannelFactoryConfiguration.class })
 public class GrpcClientAutoConfiguration {
 
 	@Bean

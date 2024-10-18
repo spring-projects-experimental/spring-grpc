@@ -21,6 +21,7 @@ import java.time.temporal.ChronoUnit;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.convert.DataSizeUnit;
 import org.springframework.boot.convert.DurationUnit;
+import org.springframework.grpc.internal.GrpcUtils;
 import org.springframework.util.unit.DataSize;
 import org.springframework.util.unit.DataUnit;
 
@@ -35,13 +36,13 @@ public class GrpcServerProperties {
 	/**
 	 * Server address to bind to. The default is any IP address ('*').
 	 */
-	private String address = ANY_IP_ADDRESS;
+	private String host = ANY_IP_ADDRESS;
 
 	/**
 	 * Server port to listen on. When the value is 0, a random available port is selected.
 	 * The default is 9090.
 	 */
-	private int port = 9090;
+	private int port = GrpcUtils.DEFAULT_PORT;
 
 	/**
 	 * Maximum time to wait for the server to gracefully shutdown. When the value is
@@ -65,19 +66,42 @@ public class GrpcServerProperties {
 
 	private final KeepAlive keepAlive = new KeepAlive();
 
+	/**
+	 * The address to bind to. could be a host:port combination or a pseudo URL like
+	 * static://host:port. Can not be set if host or port are set independently.
+	 */
+	private String address;
+
 	public String getAddress() {
-		return this.address;
+		return this.address == null ? this.host + ":" + this.port : this.address;
 	}
 
 	public void setAddress(String address) {
 		this.address = address;
 	}
 
+	public String getHost() {
+		return host;
+	}
+
+	public void setHost(String host) {
+		if (this.address != null) {
+			throw new IllegalStateException("Cannot set host when address is already set");
+		}
+		this.host = host;
+	}
+
 	public int getPort() {
+		if (this.address != null) {
+			return GrpcUtils.getPort(this.address);
+		}
 		return this.port;
 	}
 
 	public void setPort(int port) {
+		if (this.address != null) {
+			throw new IllegalStateException("Cannot set port when address is already set");
+		}
 		this.port = port;
 	}
 

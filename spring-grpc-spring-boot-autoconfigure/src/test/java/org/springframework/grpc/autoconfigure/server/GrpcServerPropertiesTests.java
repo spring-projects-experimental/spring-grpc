@@ -22,12 +22,13 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-
+import org.springframework.boot.context.properties.bind.BindException;
 import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.boot.context.properties.source.MapConfigurationPropertySource;
 import org.springframework.util.unit.DataSize;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertThrows;
 
 /**
  * Tests for {@link GrpcServerProperties}.
@@ -48,11 +49,11 @@ class GrpcServerPropertiesTests {
 		@Test
 		void bind() {
 			Map<String, String> map = new HashMap<>();
-			map.put("spring.grpc.server.address", "my-server-ip");
+			map.put("spring.grpc.server.host", "my-server-ip");
 			map.put("spring.grpc.server.port", "3130");
 			map.put("spring.grpc.server.shutdown-grace-period", "15");
 			GrpcServerProperties properties = bindProperties(map);
-			assertThat(properties.getAddress()).isEqualTo("my-server-ip");
+			assertThat(properties.getAddress()).isEqualTo("my-server-ip:3130");
 			assertThat(properties.getPort()).isEqualTo(3130);
 			assertThat(properties.getShutdownGracePeriod()).isEqualTo(Duration.ofSeconds(15));
 		}
@@ -123,6 +124,28 @@ class GrpcServerPropertiesTests {
 			GrpcServerProperties properties = bindProperties(map);
 			assertThat(properties.getMaxInboundMessageSize()).isEqualTo(DataSize.ofMegabytes(1));
 			assertThat(properties.getMaxInboundMetadataSize()).isEqualTo(DataSize.ofKilobytes(1));
+		}
+
+	}
+
+	@Nested
+	class AddressProperties {
+
+		@Test
+		void bind() {
+			Map<String, String> map = new HashMap<>();
+			map.put("spring.grpc.server.address", "my-server-ip:3130");
+			GrpcServerProperties properties = bindProperties(map);
+			assertThat(properties.getAddress()).isEqualTo("my-server-ip:3130");
+			assertThat(properties.getPort()).isEqualTo(3130);
+		}
+
+		@Test
+		void illegalBecauseAddressAndPortSpecified() {
+			Map<String, String> map = new HashMap<>();
+			map.put("spring.grpc.server.address", "my-server-ip:3130");
+			map.put("spring.grpc.server.port", "10000");
+			assertThrows(BindException.class, () -> bindProperties(map));
 		}
 
 	}
