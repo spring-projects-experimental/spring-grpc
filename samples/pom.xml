@@ -17,6 +17,7 @@
 
 	<modules>
 		<module>grpc-server</module>
+		<module>grpc-tomcat</module>
 	</modules>
 
 	<build>
