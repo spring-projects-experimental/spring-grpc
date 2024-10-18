@@ -16,22 +16,23 @@
 
 package org.springframework.grpc.autoconfigure.server;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import io.grpc.BindableService;
-import io.grpc.ServerBuilder;
-import io.grpc.ServerServiceDefinition;
-import io.grpc.ServiceDescriptor;
-import io.grpc.netty.NettyServerBuilder;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
-
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.ssl.SslAutoConfiguration;
 import org.springframework.boot.test.context.FilteredClassLoader;
@@ -39,18 +40,18 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
-import org.springframework.grpc.server.DefaultGrpcServerFactory;
 import org.springframework.grpc.server.GrpcServerFactory;
 import org.springframework.grpc.server.NettyGrpcServerFactory;
 import org.springframework.grpc.server.ServerBuilderCustomizer;
 import org.springframework.grpc.server.ShadedNettyGrpcServerFactory;
 import org.springframework.grpc.server.lifecycle.GrpcServerLifecycle;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import io.grpc.BindableService;
+import io.grpc.Grpc;
+import io.grpc.ServerBuilder;
+import io.grpc.ServerServiceDefinition;
+import io.grpc.ServiceDescriptor;
+import io.grpc.netty.NettyServerBuilder;
 
 /**
  * Tests for {@link GrpcServerAutoConfiguration}.
@@ -150,15 +151,6 @@ class GrpcServerAutoConfigurationTests {
 	}
 
 	@Test
-	void whenNeitherShadedNorNonShadedNettyOnClasspathBaseServerFactoryIsAutoConfigured() {
-		this.contextRunner()
-			.withClassLoader(new FilteredClassLoader(NettyServerBuilder.class,
-					io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder.class))
-			.run((context) -> assertThat(context).getBean(GrpcServerFactory.class)
-				.isInstanceOf(DefaultGrpcServerFactory.class));
-	}
-
-	@Test
 	void shadedNettyServerFactoryAutoConfiguredAsExpected() {
 		serverFactoryAutoConfiguredAsExpected(this.contextRunner(), ShadedNettyGrpcServerFactory.class);
 	}
@@ -171,21 +163,19 @@ class GrpcServerAutoConfigurationTests {
 	}
 
 	@Test
-	void baseServerFactoryAutoConfiguredAsExpected() {
-		serverFactoryAutoConfiguredAsExpected(
-				this.contextRunner()
-					.withClassLoader(new FilteredClassLoader(NettyServerBuilder.class,
-							io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder.class)),
-				DefaultGrpcServerFactory.class);
+	void noServerFactoryAutoConfiguredAsExpected() {
+		this.contextRunner()
+			.withClassLoader(new FilteredClassLoader(NettyServerBuilder.class,
+					io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder.class))
+			.run((context) -> assertThat(context).doesNotHaveBean(GrpcServerFactory.class));
 	}
 
 	private void serverFactoryAutoConfiguredAsExpected(ApplicationContextRunner contextRunner,
 			Class<?> expectedServerFactoryType) {
-		contextRunner.withPropertyValues("spring.grpc.server.address=myhost", "spring.grpc.server.port=6160")
+		contextRunner.withPropertyValues("spring.grpc.server.host=myhost", "spring.grpc.server.port=6160")
 			.run((context) -> assertThat(context).getBean(GrpcServerFactory.class)
 				.isInstanceOf(expectedServerFactoryType)
-				.hasFieldOrPropertyWithValue("address", "myhost")
-				.hasFieldOrPropertyWithValue("port", 6160)
+				.hasFieldOrPropertyWithValue("address", "myhost:6160")
 				.extracting("serviceList", InstanceOfAssertFactories.list(ServerServiceDefinition.class))
 				.singleElement()
 				.extracting(ServerServiceDefinition::getServiceDescriptor)
@@ -200,19 +190,16 @@ class GrpcServerAutoConfigurationTests {
 				ShadedNettyGrpcServerFactory.class);
 	}
 
-	@SuppressWarnings("rawtypes")
 	@Test
 	void nettyServerFactoryAutoConfiguredWithCustomizers() {
 		// FilteredClassLoader hides the class from the auto-configuration but not from
-		// the Java SPI
-		// used by ServerBuilder.forPort(int) which by default returns shaded Netty. This
-		// results in
-		// class cast exception when NettyGrpcServerFactory is expecting a non-shaded
-		// server builder.
-		// We static mock the builder to return non-shaded Netty - which would happen in
+		// the Java SPI used by ServerBuilder.forPort(int) which by default returns
+		// shaded Netty. This results in class cast exception when
+		// NettyGrpcServerFactory is expecting a non-shaded server builder. We static
+		// mock the builder to return non-shaded Netty - which would happen in
 		// real world.
-		try (MockedStatic<ServerBuilder> serverBuilderForPort = Mockito.mockStatic(ServerBuilder.class)) {
-			serverBuilderForPort.when(() -> ServerBuilder.forPort(anyInt()))
+		try (MockedStatic<Grpc> serverBuilderForPort = Mockito.mockStatic(Grpc.class)) {
+			serverBuilderForPort.when(() -> Grpc.newServerBuilderForPort(anyInt(), any()))
 				.thenAnswer((Answer<NettyServerBuilder>) invocation -> NettyServerBuilder
 					.forPort(invocation.getArgument(0)));
 			NettyServerBuilder builder = mock();
@@ -220,16 +207,6 @@ class GrpcServerAutoConfigurationTests {
 				.withClassLoader(new FilteredClassLoader(io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder.class)),
 					builder, NettyGrpcServerFactory.class);
 		}
-	}
-
-	@Test
-	<T extends ServerBuilder<T>> void baseServerFactoryAutoConfiguredWithCustomizers() {
-		ServerBuilder<T> builder = mock();
-		serverFactoryAutoConfiguredWithCustomizers(
-				this.contextRunnerWithLifecyle()
-					.withClassLoader(new FilteredClassLoader(NettyServerBuilder.class,
-							io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder.class)),
-				builder, DefaultGrpcServerFactory.class);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -259,7 +236,9 @@ class GrpcServerAutoConfigurationTests {
 		serverFactoryAutoConfiguredAsExpected(
 				this.contextRunner()
 					.withPropertyValues("spring.grpc.server.ssl.bundle=ssltest",
-							"spring.ssl.bundle.jks.ssltest.keystore.location=classpath:test.jks")
+							"spring.ssl.bundle.jks.ssltest.keystore.location=classpath:test.jks",
+							"spring.ssl.bundle.jks.ssltest.keystore.password=secret",
+							"spring.ssl.bundle.jks.ssltest.key.password=password")
 					.withClassLoader(
 							new FilteredClassLoader(io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder.class)),
 				NettyGrpcServerFactory.class);

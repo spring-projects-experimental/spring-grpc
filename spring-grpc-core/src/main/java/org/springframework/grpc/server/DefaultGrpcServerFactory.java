@@ -22,12 +22,18 @@ import java.util.Objects;
 import java.util.Set;
 
 import com.google.common.collect.Lists;
+
+import io.grpc.Grpc;
+import io.grpc.InsecureServerCredentials;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
+import io.grpc.ServerCredentials;
 import io.grpc.ServerProvider;
 import io.grpc.ServerServiceDefinition;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.grpc.internal.GrpcUtils;
 
 /**
  * Default implementation for {@link GrpcServerFactory gRPC service factories}.
@@ -48,23 +54,15 @@ public class DefaultGrpcServerFactory<T extends ServerBuilder<T>> implements Grp
 
 	private final String address;
 
-	private final int port;
-
 	private final List<ServerBuilderCustomizer<T>> serverBuilderCustomizers;
 
-	public DefaultGrpcServerFactory(String address, int port,
-			List<ServerBuilderCustomizer<T>> serverBuilderCustomizers) {
+	public DefaultGrpcServerFactory(String address, List<ServerBuilderCustomizer<T>> serverBuilderCustomizers) {
 		this.address = address;
-		this.port = port;
 		this.serverBuilderCustomizers = Objects.requireNonNull(serverBuilderCustomizers, "serverBuilderCustomizers");
 	}
 
-	protected String getAddress() {
+	protected String address() {
 		return this.address;
-	}
-
-	protected int getPort() {
-		return this.port;
 	}
 
 	@Override
@@ -85,7 +83,23 @@ public class DefaultGrpcServerFactory<T extends ServerBuilder<T>> implements Grp
 	 */
 	@SuppressWarnings("unchecked")
 	protected T newServerBuilder() {
-		return (T) ServerBuilder.forPort(port);
+		return (T) Grpc.newServerBuilderForPort(port(), credentials());
+	}
+
+	/**
+	 * Returns the port number on which the server should listen. Use 0 to let the system
+	 * choose a port. Use -1 to denote that this server does not listen on a socket.
+	 * @return the port number
+	 */
+	protected int port() {
+		return GrpcUtils.getPort(address());
+	}
+
+	/**
+	 * @return some server credentials (default is insecure)
+	 */
+	protected ServerCredentials credentials() {
+		return InsecureServerCredentials.create();
 	}
 
 	/**

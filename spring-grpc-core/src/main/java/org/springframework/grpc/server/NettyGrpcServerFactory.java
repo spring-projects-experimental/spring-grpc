@@ -16,10 +16,12 @@
 
 package org.springframework.grpc.server;
 
-import java.net.InetSocketAddress;
 import java.util.List;
 
-import com.google.common.net.InetAddresses;
+import javax.net.ssl.KeyManagerFactory;
+
+import io.grpc.ServerCredentials;
+import io.grpc.TlsServerCredentials;
 import io.grpc.netty.NettyServerBuilder;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerDomainSocketChannel;
@@ -33,34 +35,33 @@ import io.netty.channel.unix.DomainSocketAddress;
  */
 public class NettyGrpcServerFactory extends DefaultGrpcServerFactory<NettyServerBuilder> {
 
-	private static final String ANY_IP_ADDRESS = "*";
+	private KeyManagerFactory keyManager;
 
-	public NettyGrpcServerFactory(String address, int port,
+	public NettyGrpcServerFactory(String address, KeyManagerFactory keyManager,
 			List<ServerBuilderCustomizer<NettyServerBuilder>> serverBuilderCustomizers) {
-		super(address, port, serverBuilderCustomizers);
+		super(address, serverBuilderCustomizers);
+		this.keyManager = keyManager;
 	}
 
-	/**
-	 * Creates a new server builder.
-	 * @return The newly created server builder.
-	 */
+	@Override
 	protected NettyServerBuilder newServerBuilder() {
-		String address = getAddress();
-		int port = getPort();
-		if (address != null) {
-			if (address.startsWith("unix:")) {
-				String path = address.substring(5);
-				return NettyServerBuilder.forAddress(new DomainSocketAddress(path))
-					.channelType(EpollServerDomainSocketChannel.class)
-					.bossEventLoopGroup(new EpollEventLoopGroup(1))
-					.workerEventLoopGroup(new EpollEventLoopGroup());
-			}
-			if (!ANY_IP_ADDRESS.equals(address)) {
-				return NettyServerBuilder.forAddress(new InetSocketAddress(InetAddresses.forString(address), port));
-			}
-			// TODO: Add more support for address resolution
+		String address = address();
+		if (address.startsWith("unix:")) {
+			String path = address.substring(5);
+			return NettyServerBuilder.forAddress(new DomainSocketAddress(path))
+				.channelType(EpollServerDomainSocketChannel.class)
+				.bossEventLoopGroup(new EpollEventLoopGroup(1))
+				.workerEventLoopGroup(new EpollEventLoopGroup());
 		}
 		return super.newServerBuilder();
+	}
+
+	@Override
+	protected ServerCredentials credentials() {
+		if (this.keyManager == null || port() == -1) {
+			return super.credentials();
+		}
+		return TlsServerCredentials.newBuilder().keyManager(this.keyManager.getKeyManagers()).build();
 	}
 
 }

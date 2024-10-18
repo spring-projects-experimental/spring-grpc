@@ -16,7 +16,8 @@
 |spring.grpc.client.default-channel.ssl.bundle |  | SSL bundle name.
 |spring.grpc.client.default-channel.ssl.enabled |  | Whether to enable SSL support. Enabled automatically if "bundle" is provided unless specified otherwise.
 |spring.grpc.client.default-channel.user-agent |  | 
-|spring.grpc.server.address | `+++*+++` | Server address to bind to. The default is any IP address ('*').
+|spring.grpc.server.address |  | The address to bind to. could be a host:port combination or a pseudo URL like static://host:port. Can not be set if host or port are set independently.
+|spring.grpc.server.host | `+++*+++` | Server address to bind to. The default is any IP address ('*').
 |spring.grpc.server.keep-alive.max-age |  | Maximum time a connection may exist before being gracefully terminated (default infinite).
 |spring.grpc.server.keep-alive.max-age-grace |  | Maximum time for graceful connection termination (default infinite).
 |spring.grpc.server.keep-alive.max-idle |  | Maximum time a connection can remain idle before being gracefully terminated (default infinite).
@@ -26,7 +27,7 @@
 |spring.grpc.server.keep-alive.timeout | `+++20s+++` | Maximum time to wait for read activity after sending a keep alive ping. If sender does not receive an acknowledgment within this time, it will close the connection (default 20s).
 |spring.grpc.server.max-inbound-message-size | `+++4194304B+++` | Maximum message size allowed to be received by the server (default 4MiB).
 |spring.grpc.server.max-inbound-metadata-size | `+++8192B+++` | Maximum metadata size allowed to be received by the server (default 8KiB).
-|spring.grpc.server.port | `+++9090+++` | Server port to listen on. When the value is 0, a random available port is selected. The default is 9090.
+|spring.grpc.server.port |  | Server port to listen on. When the value is 0, a random available port is selected. The default is 9090.
 |spring.grpc.server.shutdown-grace-period | `+++30s+++` | Maximum time to wait for the server to gracefully shutdown. When the value is negative, the server waits forever. When the value is 0, the server will force shutdown immediately. The default is 30 seconds.
 |spring.grpc.server.ssl.bundle |  | SSL bundle name.
 |spring.grpc.server.ssl.enabled |  | Whether to enable SSL support. Enabled automatically if "bundle" is provided unless specified otherwise.
