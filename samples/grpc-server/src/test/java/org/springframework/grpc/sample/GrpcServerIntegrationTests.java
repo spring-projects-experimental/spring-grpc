@@ -43,7 +43,7 @@ import io.grpc.ManagedChannel;
 class GrpcServerIntegrationTests {
 
 	@Nested
-	@SpringBootTest(properties = { "spring.grpc.server.address=0.0.0.0", "spring.grpc.server.port=0" })
+	@SpringBootTest(properties = { "spring.grpc.server.host=0.0.0.0", "spring.grpc.server.port=0" })
 	class ServerWithAnyIPv4AddressAndRandomPort {
 
 		@Test
@@ -55,7 +55,7 @@ class GrpcServerIntegrationTests {
 	}
 
 	@Nested
-	@SpringBootTest(properties = { "spring.grpc.server.address=::", "spring.grpc.server.port=0" })
+	@SpringBootTest(properties = { "spring.grpc.server.host=::", "spring.grpc.server.port=0" })
 	class ServerWithAnyIPv6AddressAndRandomPort {
 
 		@Test
@@ -67,7 +67,7 @@ class GrpcServerIntegrationTests {
 	}
 
 	@Nested
-	@SpringBootTest(properties = { "spring.grpc.server.address=127.0.0.1", "spring.grpc.server.port=0" })
+	@SpringBootTest(properties = { "spring.grpc.server.host=127.0.0.1", "spring.grpc.server.port=0" })
 	class ServerWithLocalhostAndRandomPort {
 
 		@Test

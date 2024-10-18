@@ -15,7 +15,6 @@
  */
 package org.springframework.grpc.autoconfigure.client;
 
-import java.net.URI;
 import java.util.List;
 
 import javax.net.ssl.SSLException;
@@ -33,7 +32,6 @@ import org.springframework.grpc.client.NettyGrpcChannelFactory;
 import org.springframework.grpc.client.ShadedNettyGrpcChannelFactory;
 import org.springframework.grpc.client.VirtualTargets;
 
-import io.grpc.ManagedChannelBuilder;
 import io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.NettyChannelBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
@@ -138,21 +136,6 @@ public class GrpcChannelFactoryConfigurations {
 				default:
 					throw new IllegalArgumentException("Unsupported NegotiationType: " + negotiationType);
 			}
-		}
-
-	}
-
-	@Configuration(proxyBeanMethods = false)
-	@ConditionalOnClass(ManagedChannelBuilder.class)
-	@ConditionalOnMissingBean(GrpcChannelFactory.class)
-	public static class DefaultChannelFactoryConfiguration {
-
-		@Bean
-		public DefaultGrpcChannelFactory defaultGrpcChannelFactory(final List<GrpcChannelConfigurer> configurers,
-				GrpcClientProperties channels) {
-			DefaultGrpcChannelFactory factory = new DefaultGrpcChannelFactory(configurers);
-			factory.setVirtualTargets(new NamedChannelVirtualTargets(channels));
-			return factory;
 		}
 
 	}
