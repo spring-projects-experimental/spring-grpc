@@ -17,6 +17,9 @@ package org.springframework.grpc.autoconfigure.server;
 
 import io.grpc.BindableService;
 
+import io.grpc.CompressorRegistry;
+import io.grpc.DecompressorRegistry;
+import io.grpc.netty.NettyServerBuilder;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
@@ -30,6 +33,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.Ordered;
+import org.springframework.grpc.autoconfigure.common.codec.GrpcCodecConfiguration;
 import org.springframework.grpc.server.GrpcServerFactory;
 import org.springframework.grpc.server.ServerBuilderCustomizer;
 import org.springframework.grpc.server.lifecycle.GrpcServerLifecycle;
@@ -49,7 +53,7 @@ import org.springframework.grpc.server.lifecycle.GrpcServerLifecycle;
 @ConditionalOnBean(BindableService.class)
 @EnableConfigurationProperties(GrpcServerProperties.class)
 @Import({ GrpcServerFactoryConfigurations.ShadedNettyServerFactoryConfiguration.class,
-		GrpcServerFactoryConfigurations.NettyServerFactoryConfiguration.class })
+		GrpcServerFactoryConfigurations.NettyServerFactoryConfiguration.class, GrpcCodecConfiguration.class })
 public class GrpcServerAutoConfiguration {
 
 	private final GrpcServerProperties properties;
@@ -69,6 +73,18 @@ public class GrpcServerAutoConfiguration {
 	@Bean
 	ServerBuilderCustomizers serverBuilderCustomizers(ObjectProvider<ServerBuilderCustomizer<?>> customizers) {
 		return new ServerBuilderCustomizers(customizers.orderedStream().toList());
+	}
+
+	@ConditionalOnBean(CompressorRegistry.class)
+	@Bean
+	ServerBuilderCustomizer<NettyServerBuilder> compressionServerConfigurer(CompressorRegistry registry) {
+		return builder -> builder.compressorRegistry(registry);
+	}
+
+	@ConditionalOnBean(DecompressorRegistry.class)
+	@Bean
+	ServerBuilderCustomizer<NettyServerBuilder> decompressionServerConfigurer(DecompressorRegistry registry) {
+		return builder -> builder.decompressorRegistry(registry);
 	}
 
 }
