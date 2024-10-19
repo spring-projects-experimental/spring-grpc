@@ -33,7 +33,7 @@ For convenience, you can use the Spring gRPC BOM to manage dependencies. With Ma
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.grpc</groupId>
-			<artifactId>spring-grpc-bom</artifactId>
+			<artifactId>spring-grpc-dependencies</artifactId>
 			<version>0.1.0-SNAPSHOT</version>
 			<type>pom</type>
 			<scope>import</scope>
@@ -47,7 +47,7 @@ or Gradle:
 ```groovy
 dependencyManagement {
 	imports {
-		mavenBom 'org.springframework.grpc:spring-grpc-bom:0.1.0-SNAPSHOT'
+		mavenBom 'org.springframework.grpc:spring-grpc-dependencies:0.1.0-SNAPSHOT'
 	}
 }
 ```

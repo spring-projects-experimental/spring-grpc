@@ -15,7 +15,7 @@
 
 	<modules>
 		<module>spring-grpc-docs</module>
-		<module>spring-grpc-bom</module>
+		<module>spring-grpc-dependencies</module>
 		<module>spring-grpc-core</module>
 		<module>spring-grpc-test</module>
 		<module>spring-grpc-spring-boot-autoconfigure</module>
