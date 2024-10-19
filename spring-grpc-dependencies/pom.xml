@@ -10,11 +10,11 @@
 		<version>0.1.0-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>spring-grpc-bom</artifactId>
+	<artifactId>spring-grpc-dependencies</artifactId>
 	<packaging>pom</packaging>
 
-	<name>Spring gRPC BOM</name>
-	<description>Bill of Materials POM (BOM) for the Spring gRPC modules</description>
+	<name>Spring gRPC dependencies</name>
+	<description>Dependencies for the Spring gRPC modules</description>
 
 	<url>https://github.com/spring-projects-experimental/spring-grpc</url>
 

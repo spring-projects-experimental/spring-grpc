@@ -24,7 +24,7 @@ repositories {
 
 dependencyManagement {
 	imports {
-		mavenBom 'org.springframework.grpc:spring-grpc-bom:0.1.0-SNAPSHOT'
+		mavenBom 'org.springframework.grpc:spring-grpc-dependencies:0.1.0-SNAPSHOT'
 	}
 }
 
