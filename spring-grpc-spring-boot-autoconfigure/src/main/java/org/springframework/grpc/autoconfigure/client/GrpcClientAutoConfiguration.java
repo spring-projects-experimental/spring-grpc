@@ -17,6 +17,9 @@ package org.springframework.grpc.autoconfigure.client;
 
 import java.util.concurrent.TimeUnit;
 
+import io.grpc.CompressorRegistry;
+import io.grpc.DecompressorRegistry;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.ssl.SslBundle;
 import org.springframework.boot.ssl.SslBundles;
@@ -24,12 +27,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.grpc.autoconfigure.client.GrpcClientProperties.NamedChannel;
+import org.springframework.grpc.autoconfigure.common.codec.GrpcCodecConfiguration;
 import org.springframework.grpc.client.GrpcChannelConfigurer;
 
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(GrpcClientProperties.class)
 @Import({ GrpcChannelFactoryConfigurations.ShadedNettyChannelFactoryConfiguration.class,
-		GrpcChannelFactoryConfigurations.NettyChannelFactoryConfiguration.class })
+		GrpcChannelFactoryConfigurations.NettyChannelFactoryConfiguration.class, GrpcCodecConfiguration.class })
 public class GrpcClientAutoConfiguration {
 
 	@Bean
@@ -78,6 +82,18 @@ public class GrpcClientAutoConfiguration {
 				}
 			}
 		};
+	}
+
+	@ConditionalOnBean(CompressorRegistry.class)
+	@Bean
+	GrpcChannelConfigurer compressionClientConfigurer(CompressorRegistry registry) {
+		return (name, builder) -> builder.compressorRegistry(registry);
+	}
+
+	@ConditionalOnBean(DecompressorRegistry.class)
+	@Bean
+	GrpcChannelConfigurer decompressionClientConfigurer(DecompressorRegistry registry) {
+		return (name, builder) -> builder.decompressorRegistry(registry);
 	}
 
 }
