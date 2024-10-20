@@ -29,7 +29,7 @@ dependencyManagement {
 }
 
 dependencies {
-	implementation 'org.springframework.grpc:spring-grpc-spring-boot-autoconfigure:0.1.0-SNAPSHOT'
+	implementation 'org.springframework.grpc:spring-grpc-spring-boot-autoconfigure'
 	implementation 'io.grpc:grpc-services'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.grpc:spring-grpc-test'
