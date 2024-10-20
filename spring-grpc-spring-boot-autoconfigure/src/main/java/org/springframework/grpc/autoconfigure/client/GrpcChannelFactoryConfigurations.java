@@ -76,16 +76,11 @@ public class GrpcChannelFactoryConfigurations {
 		}
 
 		private static io.grpc.netty.shaded.io.grpc.netty.NegotiationType of(final NegotiationType negotiationType) {
-			switch (negotiationType) {
-				case PLAINTEXT:
-					return io.grpc.netty.shaded.io.grpc.netty.NegotiationType.PLAINTEXT;
-				case PLAINTEXT_UPGRADE:
-					return io.grpc.netty.shaded.io.grpc.netty.NegotiationType.PLAINTEXT_UPGRADE;
-				case TLS:
-					return io.grpc.netty.shaded.io.grpc.netty.NegotiationType.TLS;
-				default:
-					throw new IllegalArgumentException("Unsupported NegotiationType: " + negotiationType);
-			}
+			return switch (negotiationType) {
+				case PLAINTEXT -> io.grpc.netty.shaded.io.grpc.netty.NegotiationType.PLAINTEXT;
+				case PLAINTEXT_UPGRADE -> io.grpc.netty.shaded.io.grpc.netty.NegotiationType.PLAINTEXT_UPGRADE;
+				case TLS -> io.grpc.netty.shaded.io.grpc.netty.NegotiationType.TLS;
+			};
 		}
 
 	}
@@ -126,16 +121,11 @@ public class GrpcChannelFactoryConfigurations {
 		}
 
 		private static io.grpc.netty.NegotiationType of(final NegotiationType negotiationType) {
-			switch (negotiationType) {
-				case PLAINTEXT:
-					return io.grpc.netty.NegotiationType.PLAINTEXT;
-				case PLAINTEXT_UPGRADE:
-					return io.grpc.netty.NegotiationType.PLAINTEXT_UPGRADE;
-				case TLS:
-					return io.grpc.netty.NegotiationType.TLS;
-				default:
-					throw new IllegalArgumentException("Unsupported NegotiationType: " + negotiationType);
-			}
+			return switch (negotiationType) {
+				case PLAINTEXT -> io.grpc.netty.NegotiationType.PLAINTEXT;
+				case PLAINTEXT_UPGRADE -> io.grpc.netty.NegotiationType.PLAINTEXT_UPGRADE;
+				case TLS -> io.grpc.netty.NegotiationType.TLS;
+			};
 		}
 
 	}
@@ -151,8 +141,7 @@ public class GrpcChannelFactoryConfigurations {
 		@Override
 		public String getTarget(String authority) {
 			NamedChannel channel = this.channels.getChannel(authority);
-			String address = channels.getTarget(channel.getAddress());
-			return address;
+			return channels.getTarget(channel.getAddress());
 		}
 
 	}
