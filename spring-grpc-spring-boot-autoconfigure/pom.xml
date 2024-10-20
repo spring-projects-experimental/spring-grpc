@@ -54,11 +54,6 @@
 			<artifactId>grpc-netty-shaded</artifactId>
 			<optional>true</optional>
 		</dependency>
-		<dependency>
-			<groupId>com.google.protobuf</groupId>
-			<artifactId>protobuf-java</artifactId>
-			<optional>true</optional>
-		</dependency>
 
 		<!-- test dependencies -->
 		<dependency>
