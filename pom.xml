@@ -76,8 +76,9 @@
 		<!-- production dependencies -->
 		<spring-framework.version>6.1.14</spring-framework.version>
 		<netty.version>4.1.113.Final</netty.version>
-		<protobuf-java.version>3.25.5</protobuf-java.version>
 		<grpc.version>1.63.2</grpc.version>
+		<protobuf-java.version>3.25.5</protobuf-java.version>
+		<google-common-protos.version>2.46.0</google-common-protos.version>
 
 		<!-- internal dependencies -->
 		<spring-boot.version>3.3.4</spring-boot.version>
@@ -403,6 +404,11 @@
 				<version>${grpc.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>com.google.api.grpc</groupId>
+				<artifactId>proto-google-common-protos</artifactId>
+				<version>${google-common-protos.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
