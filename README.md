@@ -15,7 +15,7 @@ To create a simple gRPC server, you can use the Spring Boot starter. For Maven:
 ```xml
 <dependency>
 	<groupId>org.springframework.grpc</groupId>
-	<artifactId>spring-grpc-spring-boot-autoconfigure</artifactId>
+	<artifactId>spring-grpc-spring-boot-starter</artifactId>
 	<version>0.1.0-SNAPSHOT</version>
 </dependency>
 ```
@@ -23,7 +23,7 @@ To create a simple gRPC server, you can use the Spring Boot starter. For Maven:
 or for Gradle:
 
 ```groovy
-implementation 'org.springframework.grpc:spring-grpc-spring-boot-autoconfigure:0.1.0-SNAPSHOT'
+implementation 'org.springframework.grpc:spring-grpc-spring-boot-starter:0.1.0-SNAPSHOT'
 ```
 
 For convenience, you can use the Spring gRPC BOM to manage dependencies. With Maven:

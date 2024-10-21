@@ -39,27 +39,33 @@
 			<optional>true</optional>
 		</dependency>
 
-		<!-- production dependencies -->
 		<dependency>
 			<groupId>org.springframework.grpc</groupId>
 			<artifactId>spring-grpc-core</artifactId>
-			<version>${project.parent.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter</artifactId>
+			<version>${project.version}</version>
+			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>io.grpc</groupId>
 			<artifactId>grpc-netty-shaded</artifactId>
 			<optional>true</optional>
 		</dependency>
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-transport-native-epoll</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter</artifactId>
+			<scope>provided</scope>
+		</dependency>
 
 		<!-- test dependencies -->
 		<dependency>
 			<groupId>org.springframework.grpc</groupId>
 			<artifactId>spring-grpc-test</artifactId>
-			<version>${project.parent.version}</version>
+			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

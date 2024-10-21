@@ -21,7 +21,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.grpc</groupId>
-			<artifactId>spring-grpc-spring-boot-autoconfigure</artifactId>
+			<artifactId>spring-grpc-spring-boot-starter</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
