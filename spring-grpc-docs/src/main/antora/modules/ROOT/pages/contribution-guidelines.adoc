@@ -37,7 +37,7 @@ while following a common implementation and documentation pattern.
 If you have a question, check https://stackoverflow.com/tags/spring[StackOverflow] using the https://stackoverflow.com/tags/grpc-java[grpc-java] tag.
 Find an existing discussion or start a new one if necessary.
 
-If you suspect an issue, perform a search in the GitHub tracker of the R2DBC project, using a few different keywords.
+If you suspect an issue, perform a search in the GitHub tracker of the Spring gRPC project, using a few different keywords.
 When you find related issues and discussions, prior or current, it helps you to learn and it helps us to make a decision.
 
 === Create a Ticket

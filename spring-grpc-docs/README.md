@@ -1,5 +1,16 @@
 # Spring gRPC Docs
 
+## README
+
+The top level README is generated from sources in this module.
+
+```
+$ cd spring-grpc-docs
+$ asciidoctor-reducer src/main/antora/modules/ROOT/pages/README.adoc | downdoc - > ../README.md
+```
+
+where [`asciidoctor-reducer`](https://github.com/asciidoctor/asciidoctor-reducer) is a gem (so probably in `~/.gem/ruby/<version>/bin/asciidoctor-reducer`) and [`downdoc`](https://github.com/opendevise/downdoc) is an `npm` module, so `./node_modules/.bin/downdoc`.
+
 ## Configuration Properties
 The Spring gRPC configuration properties are automatically documented as follows:
 

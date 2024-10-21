@@ -1,7 +1,8 @@
 [[getting-started]]
 = Getting Started
 
-This section offers jumping off points for how to get started using Spring gRPC.
+This section offers jumping off points for how to get started using Spring gRPC. There is a simple sample project in the `samples` directory (e.g. [`grpc-server`](https://github.com/spring-projects-experimental/spring-grpc/tree/main/samples/grpc-server)). You can run it with `mvn spring-boot:run` or `gradle bootRun`. You will see the following code in that sample.
+
 
 You should follow the steps in each of the following section according to your needs.
 
@@ -14,7 +15,7 @@ If you prefer to add the dependency snippets by hand, follow the directions in t
 
 To use the Milestone and Snapshot version, you need to add references to the Spring Milestone and/or Snapshot repositories in your build file.
 
-For Maven, add the following repository definitions as needed:
+For Maven, add the following repository definitions as needed (if you are using snapshots or milestones):
 
 [source,xml]
 ----
@@ -53,12 +54,12 @@ repositories {
 [[dependency-management]]
 == Dependency Management
 
-The Spring gRPC Bill of Materials (BOM) declares the recommended versions of all the dependencies used by a given release of Spring gRPC.
-Using the BOM from your application’s build script avoids the need for you to specify and maintain the dependency versions yourself.
-Instead, the version of the BOM you’re using determines the utilized dependency versions.
+The Spring gRPC Dependencies declares the recommended versions of all the dependencies used by a given release of Spring gRPC.
+Using the dependencies from your application’s build script avoids the need for you to specify and maintain the dependency versions yourself.
+Instead, the version you’re using determines the utilized dependency versions.
 It also ensures that you’re using supported and tested versions of the dependencies by default, unless you choose to override them.
 
-If you’re a Maven user, you can use the BOM by adding the following to your pom.xml file -
+If you’re a Maven user, you can use the dependencies by adding the following to your pom.xml file -
 
 [source,xml]
 ----
@@ -75,7 +76,7 @@ If you’re a Maven user, you can use the BOM by adding the following to your po
 </dependencyManagement>
 ----
 
-Gradle users can also use the Spring gRPC BOM by leveraging Gradle (5.0+) native support for declaring dependency constraints using a Maven BOM.
+Gradle users can also use the Spring gRPC Dependencies by leveraging Gradle (5.0+) native support for declaring dependency constraints using a Maven BOM.
 This is implemented by adding a 'platform' dependency handler method to the dependencies section of your Gradle build script.
 As shown in the snippet below this can then be followed by version-less declarations of the Starter Dependencies for the one or more spring-grpc modules you wish to use, e.g. spring-grpc-openai.
 
@@ -87,3 +88,66 @@ dependencies {
   implementation 'org.springframework.ai:spring-grpc-openai'
 }
 ----
+
+You need a Protobuf file that defines your service and messages, and you will need to configure your build tools to compile it into Java sources. This is a standard part of gRPC development (i.e. nothing to do with Spring). We now come to the Spring gRPC features.
+
+== gPRC Server
+
+Create a `@Bean` of type `BindableService`. For example:
+
+[source,java]
+----
+@Service
+public class GrpcServerService extends SimpleGrpc.SimpleImplBase {
+...
+}
+----
+
+(`BindableService` is the interface that gRPC uses to bind services to the server and `SimpleImplBase` was created for you from your Protobuf file.)
+
+Then, you can just run your application and the gRPC server will be started on the default port (9090). Here's a simple example (standard Spring Boot application):
+
+[source,java]
+----
+@SpringBootApplication
+public class GrpcServerApplication {
+	public static void main(String[] args) {
+		SpringApplication.run(GrpcServerApplication.class, args);
+	}
+}
+----
+
+Run it from your IDE, or on the command line with `mvn spring-boot:run` or `gradle bootRun`.
+
+== gRPC Client
+
+To create a simple gRPC client, you can use the Spring Boot starter (see above - it's the same as for the server). Then you can inject a bean of type `GrpcChannelFactory` and use it to create a gRPC channel. The most common usage of a channel is to create a client that binds to a service, such as the one above. The Protobuf-generated sources in your project will contain the stub classes, and they just need to be bound to a channel. For example, to bind to the `SimpleGrpc` service on a local server:
+
+[source,java]
+----
+@Bean
+SimpleGrpc.SimpleBlockingStub stub(GrpcChannelFactory channels) {
+	return SimpleGrpc.newBlockingStub(channels.createChannel("0.0.0.0:9090").build());
+}
+----
+
+Then you can inject the stub and use it in your application.
+
+The default `GrpcChannelFactory` implementation can also create a "named" channel, which you can then use to extract the configuration to connect to the server. For example:
+
+[source,java]
+----
+@Bean
+SimpleGrpc.SimpleBlockingStub stub(GrpcChannelFactory channels) {
+	return SimpleGrpc.newBlockingStub(channels.createChannel("local").build());
+}
+----
+
+then in `application.properties`:
+
+[source,properties]
+----
+spring.grpc.client.channels.local.address=0.0.0.0:9090
+----
+
+There is a default named channel (named "default") that you can configure in the same way, and then it will be used by default if there is no channel with the name specified in the channel creation.
