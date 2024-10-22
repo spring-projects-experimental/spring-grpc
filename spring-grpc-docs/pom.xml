@@ -134,6 +134,21 @@
 							</arguments>
 						</configuration>
 					</execution>
+					<execution>
+						<id>generate-contributing</id>
+						<phase>package</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<configuration>
+							<executable>${basedir}/node_modules/.bin/downdoc</executable>
+							<arguments>
+								<argument>${project.build.directory}/CONTRIBUTING.adoc</argument>
+								<argument>-o</argument>
+								<argument>${project.parent.basedir}/CONTRIBUTING.md</argument>
+							</arguments>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 			<plugin>
@@ -158,6 +173,20 @@
 							<execArgs>${project.build.directory}/gems/bin/asciidoctor-reducer -o
 								${project.build.directory}/README.adoc
 								${basedir}/src/main/antora/modules/ROOT/pages/README.adoc</execArgs>
+						</configuration>
+					</execution>
+					<execution>
+						<?m2e ignore?>
+						<id>generate-contributing</id>
+						<goals>
+							<goal>initialize</goal>
+							<goal>exec</goal>
+						</goals>
+						<phase>compile</phase>
+						<configuration>
+							<execArgs>${project.build.directory}/gems/bin/asciidoctor-reducer -o
+								${project.build.directory}/CONTRIBUTING.adoc
+								${basedir}/src/main/antora/modules/ROOT/pages/contribution-guidelines.adoc</execArgs>
 						</configuration>
 					</execution>
 				</executions>
