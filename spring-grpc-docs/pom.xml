@@ -13,9 +13,11 @@
 	<description>Spring gRPC documentation</description>
 
 	<properties>
-		<exec-maven-plugin.version>3.4.1</exec-maven-plugin.version>
+		<maven-exec-plugin.version>3.4.1</maven-exec-plugin.version>
+		<maven-gem-plugin.version>3.0.3</maven-gem-plugin.version>
 		<configprops.path>${project.basedir}/src/main/antora/modules/ROOT/partials/_configprops.adoc</configprops.path>
 		<configprops.inclusionPattern>spring.grpc.*</configprops.inclusionPattern>
+		<jruby.version>9.4.6.0</jruby.version>
 	</properties>
 	<!-- Dependencies used to build the config props doc generator -->
 	<dependencies>
@@ -29,8 +31,21 @@
 			<artifactId>jackson-databind</artifactId>
 			<version>${jackson.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>rubygems</groupId>
+			<artifactId>asciidoctor-reducer</artifactId>
+			<version>1.0.6</version>
+			<type>gem</type>
+		</dependency>
 	</dependencies>
 	<build>
+		<extensions>
+			<extension>
+				<groupId>org.jruby.maven</groupId>
+				<artifactId>mavengem-wagon</artifactId>
+				<version>2.0.2</version>
+			</extension>
+		</extensions>
 		<plugins>
 			<plugin>
 				<groupId>io.spring.maven.antora</groupId>
@@ -55,6 +70,7 @@
 				<version>${io.spring.maven.antora-version}</version>
 				<executions>
 					<execution>
+						<?m2e ignore?>
 						<goals>
 							<goal>antora-component-version</goal>
 						</goals>
@@ -84,7 +100,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
-				<version>${exec-maven-plugin.version}</version>
+				<version>${maven-exec-plugin.version}</version>
 				<executions>
 					<execution>
 						<id>generate-configprops</id>
@@ -92,19 +108,68 @@
 						<goals>
 							<goal>java</goal>
 						</goals>
+						<configuration>
+							<includeProjectDependencies>true</includeProjectDependencies>
+							<includePluginDependencies>false</includePluginDependencies>
+							<mainClass>
+								org.springframework.grpc.internal.ConfigurationPropertiesAsciidocGenerator</mainClass>
+							<arguments>
+								<argument>${configprops.path}</argument>
+								<argument>${configprops.inclusionPattern}</argument>
+							</arguments>
+						</configuration>
+					</execution>
+					<execution>
+						<id>generate-readme</id>
+						<phase>package</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<configuration>
+							<executable>${basedir}/node_modules/.bin/downdoc</executable>
+							<arguments>
+								<argument>${project.build.directory}/README.adoc</argument>
+								<argument>-o</argument>
+								<argument>${project.parent.basedir}/README.md</argument>
+							</arguments>
+						</configuration>
 					</execution>
 				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.jruby.maven</groupId>
+				<artifactId>gem-maven-plugin</artifactId>
+				<version>${maven-gem-plugin.version}</version>
 				<configuration>
-					<includeProjectDependencies>true</includeProjectDependencies>
-					<includePluginDependencies>false</includePluginDependencies>
-					<mainClass>org.springframework.grpc.internal.ConfigurationPropertiesAsciidocGenerator</mainClass>
-					<arguments>
-						<argument>${configprops.path}</argument>
-						<argument>${configprops.inclusionPattern}</argument>
-					</arguments>
+					<jrubyVersion>${jruby.version}</jrubyVersion>
+					<gemHome>${project.build.directory}/gems</gemHome>
+					<gemPath>${project.build.directory}/gems</gemPath>
 				</configuration>
+				<executions>
+					<execution>
+						<?m2e ignore?>
+						<id>install-gems</id>
+						<goals>
+							<goal>initialize</goal>
+							<goal>exec</goal>
+						</goals>
+						<phase>compile</phase>
+						<configuration>
+							<execArgs>${project.build.directory}/gems/bin/asciidoctor-reducer -o
+								${project.build.directory}/README.adoc
+								${basedir}/src/main/antora/modules/ROOT/pages/README.adoc</execArgs>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
+
+	<repositories>
+		<repository>
+			<id>mavengems</id>
+			<url>mavengem:https://rubygems.org</url>
+		</repository>
+	</repositories>
 
 </project>
