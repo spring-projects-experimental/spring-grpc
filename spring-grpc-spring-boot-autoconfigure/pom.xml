@@ -46,6 +46,16 @@
 			<optional>true</optional>
 		</dependency>
 		<dependency>
+			<groupId>org.apache.tomcat.embed</groupId>
+			<artifactId>tomcat-embed-core</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>io.grpc</groupId>
+			<artifactId>grpc-servlet-jakarta</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
 			<groupId>io.grpc</groupId>
 			<artifactId>grpc-netty-shaded</artifactId>
 			<optional>true</optional>
