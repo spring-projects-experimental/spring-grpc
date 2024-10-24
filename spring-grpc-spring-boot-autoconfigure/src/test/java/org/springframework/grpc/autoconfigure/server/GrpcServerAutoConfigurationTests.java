@@ -66,7 +66,8 @@ class GrpcServerAutoConfigurationTests {
 		when(service.bindService()).thenReturn(serviceDefinition);
 		// NOTE: we use noop server lifecycle to avoid startup
 		return new ApplicationContextRunner()
-			.withConfiguration(AutoConfigurations.of(GrpcServerAutoConfiguration.class, SslAutoConfiguration.class))
+			.withConfiguration(AutoConfigurations.of(GrpcServerAutoConfiguration.class,
+					GrpcServerFactoryAutoConfiguration.class, SslAutoConfiguration.class))
 			.withBean("noopServerLifecycle", GrpcServerLifecycle.class, Mockito::mock)
 			.withBean(BindableService.class, () -> service);
 	}
@@ -77,7 +78,8 @@ class GrpcServerAutoConfigurationTests {
 		when(service.bindService()).thenReturn(serviceDefinition);
 		// NOTE: we use noop server lifecycle to avoid startup
 		return new ApplicationContextRunner()
-			.withConfiguration(AutoConfigurations.of(GrpcServerAutoConfiguration.class, SslAutoConfiguration.class))
+			.withConfiguration(AutoConfigurations.of(GrpcServerAutoConfiguration.class,
+					GrpcServerFactoryAutoConfiguration.class, SslAutoConfiguration.class))
 			.withBean(BindableService.class, () -> service);
 	}
 

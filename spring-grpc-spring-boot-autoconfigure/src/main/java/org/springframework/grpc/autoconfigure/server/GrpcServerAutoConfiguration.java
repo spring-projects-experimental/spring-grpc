@@ -15,14 +15,9 @@
  */
 package org.springframework.grpc.autoconfigure.server;
 
-import io.grpc.BindableService;
-
-import io.grpc.CompressorRegistry;
-import io.grpc.DecompressorRegistry;
-import io.grpc.netty.NettyServerBuilder;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.AutoConfigureOrder;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -30,13 +25,16 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Import;
-import org.springframework.core.Ordered;
 import org.springframework.grpc.autoconfigure.common.codec.GrpcCodecConfiguration;
 import org.springframework.grpc.server.GrpcServerFactory;
 import org.springframework.grpc.server.ServerBuilderCustomizer;
 import org.springframework.grpc.server.lifecycle.GrpcServerLifecycle;
+
+import io.grpc.BindableService;
+import io.grpc.CompressorRegistry;
+import io.grpc.DecompressorRegistry;
+import io.grpc.netty.NettyServerBuilder;
 
 /**
  * {@link EnableAutoConfiguration Auto-configuration} for gRPC server-side components.
@@ -48,12 +46,11 @@ import org.springframework.grpc.server.lifecycle.GrpcServerLifecycle;
  * @author Chris Bono
  */
 @AutoConfiguration
-@AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
+@AutoConfigureAfter(GrpcServerFactoryAutoConfiguration.class)
 @ConditionalOnClass(BindableService.class)
 @ConditionalOnBean(BindableService.class)
 @EnableConfigurationProperties(GrpcServerProperties.class)
-@Import({ GrpcServerFactoryConfigurations.ShadedNettyServerFactoryConfiguration.class,
-		GrpcServerFactoryConfigurations.NettyServerFactoryConfiguration.class, GrpcCodecConfiguration.class })
+@Import({ GrpcCodecConfiguration.class })
 public class GrpcServerAutoConfiguration {
 
 	private final GrpcServerProperties properties;
