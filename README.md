@@ -70,7 +70,7 @@ If you’re a Maven user, you can use the dependencies by adding the following t
         <dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-grpc-dependencies</artifactId>
-            <version>0.1.0</version>
+            <version>0.2.0-SNAPSHOT</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>
@@ -84,7 +84,7 @@ As shown in the snippet below this can then be followed by version-less declarat
 
 ```gradle
 dependencies {
-  implementation platform("org.springframework.ai:spring-grpc-dependencies:0.1.0")
+  implementation platform("org.springframework.ai:spring-grpc-dependencies:0.2.0-SNAPSHOT")
 }
 ```
 
