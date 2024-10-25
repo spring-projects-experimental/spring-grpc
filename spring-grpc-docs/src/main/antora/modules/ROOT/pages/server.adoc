@@ -1,0 +1,87 @@
+[[server]]
+= GRPC Server
+
+This section describes core concepts that Spring gRPC uses on the server side. We recommend reading it closely to understand the ideas behind how Spring gRPC is implemented.
+You only need to provide one or more beans of type `BindableService` to create a gRPC server, provided the classpath contains an implementation of a `Server`. The `BindableService` is a gRPC service that can be bound to a server.
+The `Server` is the gRPC server that listens for incoming requests and routes them to the appropriate service implementation.
+
+== Create a `BindableService`
+
+To create a gRPC server, you need to provide one or more beans of type `BindableService`.
+There are some `BindableServices` available off the shelf that you could include in your application (an example is the reflection service from the `grpc-services` artifact which allows clients to browse the metadata of your services and download the Portobuf files). 
+Very commonly, you will create your own `BindableService` by extending the generated service implementation from your Protobuf file.
+The easiest way to do it is to simply add a Spring `@Service` annotation to the implementation class and have it picked up by the `@ComponentScan` in your Spring Boot application.
+
+== Netty Server
+
+If you use the `spring-grpc-spring-boot-starter` dependency on its own, the `Server` is a Netty-based implementation.
+You can configure common features of the server by using the `grpc.server` prefix in `application.properties` or `application.yml`.
+For instance, to set the port to listen on, use `spring.grpc.server.port` (defaults to 9090).
+For more specialized configuration, you can provide a `ServerBuilderCustomizer` bean to customize the `ServerBuilder` before it is used to create the server.
+
+=== Shaded Netty
+
+You can switch to a shaded Netty provided by the gRPC team by adding the `grpc-netty-shaded` dependency and excluding the `grpc-netty` dependency.
+
+[source,xml]
+----
+<dependency>
+	<groupId>org.springframework.grpc</groupId>
+	<artifactId>spring-grpc-spring-boot-starter</artifactId>
+	<exclusions>
+		<exclusion>
+			<groupId>io.grpc</groupId>
+			<artifactId>grpc-netty</artifactId>
+		</exclusion>
+	</exclusions>
+</dependency>
+<dependency>
+	<groupId>io.grpc</groupId>
+	<artifactId>grpc-netty-shaded</artifactId>
+</dependency>
+----
+
+For Gradle users
+
+[source,gradle]
+----
+dependencies {
+	implementation "org.springframework.grpc:spring-grpc-spring-boot-starter"
+	modules {
+		module("io.grpc:grpc-netty") {
+			replacedBy("io.grpc:grpc-netty-shaded", "Use Netty shaded instead of regular Netty")
+		}
+	}
+}
+----
+
+== Servlet Server
+
+Any servlet container can be used to run a gRPC server.
+Spring gRPC includes autoconfiguration that configures the server to use the servlet container if it detects that it is in a web application, so all you have to do is include `spring-boot-starter-web` in your application.
+
+[source,xml]
+----
+<dependency>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+<dependency>
+	<groupId>org.springframework.grpc</groupId>
+	<artifactId>spring-grpc-spring-boot-starter</artifactId>
+</dependency>
+----
+
+For Gradle users
+
+[source,gradle]
+----
+dependencies {
+	implementation "org.springframework.boot:spring-boot-starter-web"
+	implementation "org.springframework.grpc:spring-grpc-spring-boot-starter"
+}
+----
+
+The `spring.grpc.server.*` properties will be ignored in facour of the regular `server.*` properties in this case.
+The servlet that is created is mapped to process HTTP POST requests to the paths defined by the registered services, as `/<service-name>/*`.
+Clients can connect to the server using that path, which is what any gRPC client library will do.

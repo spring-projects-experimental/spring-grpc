@@ -3,7 +3,9 @@
 
 The `Spring gRPC` project aims to streamline the development of gRPC applications.
 
-The xref:concepts.adoc[concepts section] provides a high-level overview of gRPC concepts and their representation in Spring gRPC.
-
 The xref:getting-started.adoc[Getting Started] section shows you how to create your first gRPC application.
 Subsequent sections delve into each component and common use cases with a code-focused approach.
+
+The xref:server.adoc[server section] provides a high-level overview of gRPC servers and their representation in Spring gRPC.
+
+The xref:server.adoc[client section] does the same for gRPC clients. A gRPC application can be a client and a server at the same time.
