@@ -85,8 +85,6 @@ As shown in the snippet below this can then be followed by version-less declarat
 ```gradle
 dependencies {
   implementation platform("org.springframework.ai:spring-grpc-dependencies:1.0.0-SNAPSHOT")
-  // Replace the following with the starter dependencies of specific modules you wish to use
-  implementation 'org.springframework.ai:spring-grpc-openai'
 }
 ```
 

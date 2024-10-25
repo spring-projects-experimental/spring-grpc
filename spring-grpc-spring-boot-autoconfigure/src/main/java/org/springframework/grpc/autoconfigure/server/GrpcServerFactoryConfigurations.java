@@ -21,6 +21,7 @@ import java.util.List;
 import javax.net.ssl.KeyManagerFactory;
 
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -34,6 +35,8 @@ import org.springframework.grpc.server.ServerBuilderCustomizer;
 import org.springframework.grpc.server.ShadedNettyGrpcServerFactory;
 
 import io.grpc.BindableService;
+import io.grpc.CompressorRegistry;
+import io.grpc.DecompressorRegistry;
 import io.grpc.netty.NettyServerBuilder;
 
 /**
@@ -67,6 +70,20 @@ class GrpcServerFactoryConfigurations {
 			return factory;
 		}
 
+		@ConditionalOnBean(CompressorRegistry.class)
+		@Bean
+		ServerBuilderCustomizer<io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder> compressionServerConfigurer(
+				CompressorRegistry registry) {
+			return builder -> builder.compressorRegistry(registry);
+		}
+
+		@ConditionalOnBean(DecompressorRegistry.class)
+		@Bean
+		ServerBuilderCustomizer<io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder> decompressionServerConfigurer(
+				DecompressorRegistry registry) {
+			return builder -> builder.decompressorRegistry(registry);
+		}
+
 	}
 
 	@Configuration(proxyBeanMethods = false)
@@ -91,6 +108,18 @@ class GrpcServerFactoryConfigurations {
 					builderCustomizers);
 			grpcServicesProvider.orderedStream().map(BindableService::bindService).forEach(factory::addService);
 			return factory;
+		}
+
+		@ConditionalOnBean(CompressorRegistry.class)
+		@Bean
+		ServerBuilderCustomizer<NettyServerBuilder> compressionServerConfigurer(CompressorRegistry registry) {
+			return builder -> builder.compressorRegistry(registry);
+		}
+
+		@ConditionalOnBean(DecompressorRegistry.class)
+		@Bean
+		ServerBuilderCustomizer<NettyServerBuilder> decompressionServerConfigurer(DecompressorRegistry registry) {
+			return builder -> builder.decompressorRegistry(registry);
 		}
 
 	}

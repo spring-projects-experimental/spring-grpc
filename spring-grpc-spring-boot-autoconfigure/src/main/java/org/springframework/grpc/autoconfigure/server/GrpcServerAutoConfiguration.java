@@ -72,16 +72,4 @@ public class GrpcServerAutoConfiguration {
 		return new ServerBuilderCustomizers(customizers.orderedStream().toList());
 	}
 
-	@ConditionalOnBean(CompressorRegistry.class)
-	@Bean
-	ServerBuilderCustomizer<NettyServerBuilder> compressionServerConfigurer(CompressorRegistry registry) {
-		return builder -> builder.compressorRegistry(registry);
-	}
-
-	@ConditionalOnBean(DecompressorRegistry.class)
-	@Bean
-	ServerBuilderCustomizer<NettyServerBuilder> decompressionServerConfigurer(DecompressorRegistry registry) {
-		return builder -> builder.decompressorRegistry(registry);
-	}
-
 }

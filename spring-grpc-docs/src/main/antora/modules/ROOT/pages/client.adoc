@@ -51,6 +51,7 @@ For Gradle users
 ----
 dependencies {
 	implementation "org.springframework.grpc:spring-grpc-spring-boot-starter"
+	implementation 'io.grpc:grpc-netty-shaded'
 	modules {
 		module("io.grpc:grpc-netty") {
 			replacedBy("io.grpc:grpc-netty-shaded", "Use Netty shaded instead of regular Netty")
