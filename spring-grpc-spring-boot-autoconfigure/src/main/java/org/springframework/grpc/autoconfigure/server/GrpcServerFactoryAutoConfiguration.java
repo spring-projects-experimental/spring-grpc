@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnNotWebApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -45,6 +46,7 @@ import io.grpc.servlet.jakarta.GrpcServlet;
 @AutoConfiguration
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
 @ConditionalOnClass(BindableService.class)
+@ConditionalOnBean(BindableService.class)
 public class GrpcServerFactoryAutoConfiguration {
 
 	@Configuration(proxyBeanMethods = false)

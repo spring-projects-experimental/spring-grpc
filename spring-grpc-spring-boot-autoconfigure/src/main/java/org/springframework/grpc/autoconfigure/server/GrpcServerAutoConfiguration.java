@@ -32,9 +32,6 @@ import org.springframework.grpc.server.ServerBuilderCustomizer;
 import org.springframework.grpc.server.lifecycle.GrpcServerLifecycle;
 
 import io.grpc.BindableService;
-import io.grpc.CompressorRegistry;
-import io.grpc.DecompressorRegistry;
-import io.grpc.netty.NettyServerBuilder;
 
 /**
  * {@link EnableAutoConfiguration Auto-configuration} for gRPC server-side components.
