@@ -15,6 +15,10 @@
  */
 package org.springframework.grpc.autoconfigure.server;
 
+import io.grpc.ServerInterceptor;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.binder.grpc.MetricCollectingServerInterceptor;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
@@ -67,6 +71,17 @@ public class GrpcServerAutoConfiguration {
 	@Bean
 	ServerBuilderCustomizers serverBuilderCustomizers(ObjectProvider<ServerBuilderCustomizer<?>> customizers) {
 		return new ServerBuilderCustomizers(customizers.orderedStream().toList());
+	}
+
+	@ConditionalOnMissingBean
+	@Bean
+	public MeterRegistry meterRegistry() {
+		return new SimpleMeterRegistry();
+	}
+
+	@Bean
+	public ServerInterceptor metricCollectingServerInterceptor(MeterRegistry meterRegistry) {
+		return new MetricCollectingServerInterceptor(meterRegistry);
 	}
 
 }

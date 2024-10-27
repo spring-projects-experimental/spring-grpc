@@ -1,7 +1,9 @@
 package org.springframework.grpc.sample;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.jupiter.api.Test;
@@ -30,6 +32,9 @@ public class GrpcServerApplicationTests {
 	@Autowired
 	private SimpleGrpc.SimpleBlockingStub stub;
 
+	@Autowired
+	private MeterRegistry meterRegistry;
+
 	@Test
 	@DirtiesContext
 	void contextLoads() {
@@ -41,6 +46,18 @@ public class GrpcServerApplicationTests {
 		log.info("Testing");
 		HelloReply response = stub.sayHello(HelloRequest.newBuilder().setName("Alien").build());
 		assertEquals("Hello ==> Alien", response.getMessage());
+	}
+
+	@Test
+	@DirtiesContext
+	void verifyMetrics() {
+		log.info("Verify stats are collected");
+		stub.sayHello(HelloRequest.newBuilder().setName("Alien").build());
+		assertThat(meterRegistry.get("grpc.server.requests.received").counter().count()).isEqualTo(1);
+		assertThat(meterRegistry.get("grpc.server.responses.sent").counter().count()).isEqualTo(1);
+		stub.sayHello(HelloRequest.newBuilder().setName("Jamie").build());
+		assertThat(meterRegistry.get("grpc.server.requests.received").counter().count()).isEqualTo(2);
+		assertThat(meterRegistry.get("grpc.server.responses.sent").counter().count()).isEqualTo(2);
 	}
 
 	@TestConfiguration
