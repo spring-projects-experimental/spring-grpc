@@ -27,6 +27,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
@@ -244,6 +245,20 @@ class GrpcServerAutoConfigurationTests {
 					.withClassLoader(
 							new FilteredClassLoader(io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder.class)),
 				NettyGrpcServerFactory.class);
+	}
+
+	@Test
+	void whenHasUserDefinedMeterRegistryDoesNotAutoConfigureBean() {
+		MeterRegistry customMeterRegistry = mock(MeterRegistry.class);
+		this.contextRunner()
+			.withBean("customMeterRegistry", MeterRegistry.class, () -> customMeterRegistry)
+			.run((context) -> assertThat(context).getBean(MeterRegistry.class).isSameAs(customMeterRegistry));
+	}
+
+	@Test
+	void serverMeterRegistryAutoConfiguredAsExpected() {
+		this.contextRunner()
+			.run((context) -> assertThat(context).getBean(MeterRegistry.class).hasFieldOrProperty("config"));
 	}
 
 	@Configuration(proxyBeanMethods = false)

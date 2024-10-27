@@ -23,16 +23,11 @@ import java.util.Set;
 
 import com.google.common.collect.Lists;
 
-import io.grpc.Grpc;
-import io.grpc.InsecureServerCredentials;
-import io.grpc.Server;
-import io.grpc.ServerBuilder;
-import io.grpc.ServerCredentials;
-import io.grpc.ServerProvider;
-import io.grpc.ServerServiceDefinition;
+import io.grpc.*;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.grpc.internal.GrpcUtils;
 
 /**
@@ -55,6 +50,9 @@ public class DefaultGrpcServerFactory<T extends ServerBuilder<T>> implements Grp
 	private final String address;
 
 	private final List<ServerBuilderCustomizer<T>> serverBuilderCustomizers;
+
+	@Autowired
+	private List<ServerInterceptor> serverInterceptors;
 
 	public DefaultGrpcServerFactory(String address, List<ServerBuilderCustomizer<T>> serverBuilderCustomizers) {
 		this.address = address;
@@ -83,7 +81,11 @@ public class DefaultGrpcServerFactory<T extends ServerBuilder<T>> implements Grp
 	 */
 	@SuppressWarnings("unchecked")
 	protected T newServerBuilder() {
-		return (T) Grpc.newServerBuilderForPort(port(), credentials());
+		var builder = Grpc.newServerBuilderForPort(port(), credentials());
+		for (ServerInterceptor interceptor : serverInterceptors) {
+			builder.intercept(interceptor);
+		}
+		return (T) builder;
 	}
 
 	/**
