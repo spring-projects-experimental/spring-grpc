@@ -25,14 +25,17 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnNotWebApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.boot.context.properties.PropertyMapper;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.Ordered;
+import org.springframework.util.unit.DataSize;
 
 import io.grpc.BindableService;
 import io.grpc.servlet.jakarta.GrpcServlet;
+import io.grpc.servlet.jakarta.ServletServerBuilder;
 
 /**
  * {@link EnableAutoConfiguration Auto-configuration} for gRPC server-side components.
@@ -42,6 +45,7 @@ import io.grpc.servlet.jakarta.GrpcServlet;
  *
  * @author David Syer
  * @author Chris Bono
+ * @author Toshiaki Maki
  */
 @AutoConfiguration
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
@@ -62,11 +66,21 @@ public class GrpcServerFactoryAutoConfiguration {
 	static class GrpcServletConfiguration {
 
 		@Bean
-		public ServletRegistrationBean<GrpcServlet> grpcServlet(List<BindableService> services) {
+		public ServletRegistrationBean<GrpcServlet> grpcServlet(GrpcServerProperties properties,
+				List<BindableService> services, ServerBuilderCustomizers serverBuilderCustomizers) {
 			List<String> paths = services.stream()
 				.map(service -> "/" + service.bindService().getServiceDescriptor().getName() + "/*")
 				.collect(Collectors.toList());
-			ServletRegistrationBean<GrpcServlet> servlet = new ServletRegistrationBean<>(new GrpcServlet(services));
+			ServletServerBuilder servletServerBuilder = new ServletServerBuilder();
+			services.forEach(servletServerBuilder::addService);
+			PropertyMapper mapper = PropertyMapper.get().alwaysApplyingWhenNonNull();
+			// Only maxInboundMessageSize is customizable
+			mapper.from(properties.getMaxInboundMessageSize())
+				.asInt(DataSize::toBytes)
+				.to(servletServerBuilder::maxInboundMessageSize);
+			serverBuilderCustomizers.customize(servletServerBuilder);
+			ServletRegistrationBean<GrpcServlet> servlet = new ServletRegistrationBean<>(
+					servletServerBuilder.buildServlet());
 			servlet.setUrlMappings(paths);
 			return servlet;
 		}

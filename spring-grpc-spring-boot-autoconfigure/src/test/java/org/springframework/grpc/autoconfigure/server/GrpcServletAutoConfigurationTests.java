@@ -16,49 +16,33 @@
 
 package org.springframework.grpc.autoconfigure.server;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import java.time.Duration;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
-import org.assertj.core.api.InstanceOfAssertFactories;
+import io.grpc.BindableService;
+import io.grpc.ServerServiceDefinition;
+import io.grpc.internal.GrpcUtil;
+import io.grpc.servlet.jakarta.GrpcServlet;
+import io.grpc.servlet.jakarta.ServletAdapter;
+import io.grpc.servlet.jakarta.ServletServerBuilder;
 import org.junit.jupiter.api.Test;
-import org.mockito.InOrder;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
-import org.mockito.stubbing.Answer;
+
 import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.autoconfigure.ssl.SslAutoConfiguration;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.core.annotation.Order;
-import org.springframework.grpc.server.GrpcServerFactory;
-import org.springframework.grpc.server.NettyGrpcServerFactory;
 import org.springframework.grpc.server.ServerBuilderCustomizer;
-import org.springframework.grpc.server.ShadedNettyGrpcServerFactory;
-import org.springframework.grpc.server.lifecycle.GrpcServerLifecycle;
+import org.springframework.util.unit.DataSize;
 
-import io.grpc.BindableService;
-import io.grpc.Grpc;
-import io.grpc.ServerBuilder;
-import io.grpc.ServerServiceDefinition;
-import io.grpc.ServiceDescriptor;
-import io.grpc.netty.NettyServerBuilder;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Tests for {@link GrpcServerAutoConfiguration}.
  *
  * @author Chris Bono
+ * @author Toshiaki Maki
  */
 class GrpcServletAutoConfigurationTests {
 
@@ -90,7 +74,40 @@ class GrpcServletAutoConfigurationTests {
 
 	@Test
 	void whenWebApplicationServletIsAutoConfigured() {
-		this.contextRunner().run((context) -> assertThat(context).getBean(ServletRegistrationBean.class).isNotNull());
+		this.contextRunner().run((context) -> {
+			assertThat(context).getBean(ServletRegistrationBean.class)
+				.isNotNull()
+				.extracting("servlet")
+				.isInstanceOf(GrpcServlet.class)
+				.extracting("servletAdapter")
+				.isInstanceOf(ServletAdapter.class)
+				.extracting("maxInboundMessageSize")
+				.isEqualTo(GrpcUtil.DEFAULT_MAX_MESSAGE_SIZE);
+		});
+	}
+
+	@Test
+	void whenCustomizerIsRegistered() {
+		AtomicBoolean invoked = new AtomicBoolean(false);
+		ServerBuilderCustomizer<ServletServerBuilder> customizer = serverBuilder -> invoked.set(true);
+		this.contextRunner().withBean(ServerBuilderCustomizer.class, () -> customizer).run(context -> {
+			assertThat(context).getBean(ServletRegistrationBean.class).isNotNull();
+			assertThat(invoked.get()).isTrue();
+		});
+	}
+
+	@Test
+	void whenMaxInboundMessageSizeIsConfigured() {
+		this.contextRunner().withPropertyValues("spring.grpc.server.max-inbound-message-size=10KB").run(context -> {
+			assertThat(context).getBean(ServletRegistrationBean.class)
+				.isNotNull()
+				.extracting("servlet")
+				.isInstanceOf(GrpcServlet.class)
+				.extracting("servletAdapter")
+				.isInstanceOf(ServletAdapter.class)
+				.extracting("maxInboundMessageSize")
+				.isEqualTo((int) DataSize.ofKilobytes(10).toBytes());
+		});
 	}
 
 }
