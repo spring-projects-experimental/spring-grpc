@@ -16,13 +16,9 @@
 
 package org.springframework.grpc.autoconfigure.server;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import io.grpc.BindableService;
 import io.grpc.ServerServiceDefinition;
 import io.grpc.internal.GrpcUtil;
-import io.grpc.servlet.jakarta.GrpcServlet;
-import io.grpc.servlet.jakarta.ServletAdapter;
 import io.grpc.servlet.jakarta.ServletServerBuilder;
 import org.junit.jupiter.api.Test;
 
@@ -35,7 +31,9 @@ import org.springframework.grpc.server.ServerBuilderCustomizer;
 import org.springframework.util.unit.DataSize;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -74,40 +72,32 @@ class GrpcServletAutoConfigurationTests {
 
 	@Test
 	void whenWebApplicationServletIsAutoConfigured() {
-		this.contextRunner().run((context) -> {
-			assertThat(context).getBean(ServletRegistrationBean.class)
-				.isNotNull()
-				.extracting("servlet")
-				.isInstanceOf(GrpcServlet.class)
-				.extracting("servletAdapter")
-				.isInstanceOf(ServletAdapter.class)
-				.extracting("maxInboundMessageSize")
-				.isEqualTo(GrpcUtil.DEFAULT_MAX_MESSAGE_SIZE);
-		});
+		this.contextRunner().run((context) -> assertThat(context).getBean(ServletRegistrationBean.class).isNotNull());
 	}
 
 	@Test
 	void whenCustomizerIsRegistered() {
-		AtomicBoolean invoked = new AtomicBoolean(false);
-		ServerBuilderCustomizer<ServletServerBuilder> customizer = serverBuilder -> invoked.set(true);
-		this.contextRunner().withBean(ServerBuilderCustomizer.class, () -> customizer).run(context -> {
-			assertThat(context).getBean(ServletRegistrationBean.class).isNotNull();
-			assertThat(invoked.get()).isTrue();
-		});
+		ServerBuilderCustomizer<ServletServerBuilder> customizer = mock();
+		this.contextRunner()
+			.withBean(ServerBuilderCustomizer.class, () -> customizer)
+			.run(context -> verify(customizer).customize(any(ServletServerBuilder.class)));
 	}
 
 	@Test
-	void whenMaxInboundMessageSizeIsConfigured() {
-		this.contextRunner().withPropertyValues("spring.grpc.server.max-inbound-message-size=10KB").run(context -> {
-			assertThat(context).getBean(ServletRegistrationBean.class)
-				.isNotNull()
-				.extracting("servlet")
-				.isInstanceOf(GrpcServlet.class)
-				.extracting("servletAdapter")
-				.isInstanceOf(ServletAdapter.class)
-				.extracting("maxInboundMessageSize")
-				.isEqualTo((int) DataSize.ofKilobytes(10).toBytes());
-		});
+	void whenMaxInboundMessageSizeIsSetThenItIsUsed() {
+		this.contextRunner()
+			.withPropertyValues("spring.grpc.server.max-inbound-message-size=10KB")
+			.run(context -> assertThat(context).getBean(ServletRegistrationBean.class)
+				.hasFieldOrPropertyWithValue("servlet.servletAdapter.maxInboundMessageSize",
+						Math.toIntExact(DataSize.ofKilobytes(10).toBytes())));
+	}
+
+	@Test
+	void whenMaxInboundMessageSizeIsNotSetThenDefaultIsUsed() {
+		this.contextRunner()
+			.run((context) -> assertThat(context).getBean(ServletRegistrationBean.class)
+				.hasFieldOrPropertyWithValue("servlet.servletAdapter.maxInboundMessageSize",
+						GrpcUtil.DEFAULT_MAX_MESSAGE_SIZE));
 	}
 
 }
