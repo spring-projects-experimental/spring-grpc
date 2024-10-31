@@ -28,6 +28,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.grpc.autoconfigure.common.codec.GrpcCodecConfiguration;
 import org.springframework.grpc.server.GrpcServerFactory;
+import org.springframework.grpc.server.GrpcServiceDiscoverer;
 import org.springframework.grpc.server.ServerBuilderCustomizer;
 import org.springframework.grpc.server.lifecycle.GrpcServerLifecycle;
 
@@ -67,6 +68,12 @@ public class GrpcServerAutoConfiguration {
 	@Bean
 	ServerBuilderCustomizers serverBuilderCustomizers(ObjectProvider<ServerBuilderCustomizer<?>> customizers) {
 		return new ServerBuilderCustomizers(customizers.orderedStream().toList());
+	}
+
+	@ConditionalOnMissingBean
+	@Bean
+	GrpcServiceDiscoverer grpcServiceDiscoverer(ObjectProvider<BindableService> bindableServicesProvider) {
+		return new DefaultGrpcServiceDiscoverer(bindableServicesProvider);
 	}
 
 }
