@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.assertj.core.api.InstanceOfAssertFactories;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.mockito.MockedStatic;
@@ -41,6 +42,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.grpc.server.GrpcServerFactory;
+import org.springframework.grpc.server.GrpcServiceDiscoverer;
 import org.springframework.grpc.server.NettyGrpcServerFactory;
 import org.springframework.grpc.server.ServerBuilderCustomizer;
 import org.springframework.grpc.server.ShadedNettyGrpcServerFactory;
@@ -60,10 +62,16 @@ import io.grpc.netty.NettyServerBuilder;
  */
 class GrpcServerAutoConfigurationTests {
 
-	private ApplicationContextRunner contextRunner() {
-		BindableService service = mock();
-		ServerServiceDefinition serviceDefinition = ServerServiceDefinition.builder("my-service").build();
+	private final BindableService service = mock();
+
+	private final ServerServiceDefinition serviceDefinition = ServerServiceDefinition.builder("my-service").build();
+
+	@BeforeEach
+	void prepareForTest() {
 		when(service.bindService()).thenReturn(serviceDefinition);
+	}
+
+	private ApplicationContextRunner contextRunner() {
 		// NOTE: we use noop server lifecycle to avoid startup
 		return new ApplicationContextRunner()
 			.withConfiguration(AutoConfigurations.of(GrpcServerAutoConfiguration.class,
@@ -73,9 +81,6 @@ class GrpcServerAutoConfigurationTests {
 	}
 
 	private ApplicationContextRunner contextRunnerWithLifecyle() {
-		BindableService service = mock();
-		ServerServiceDefinition serviceDefinition = ServerServiceDefinition.builder("my-service").build();
-		when(service.bindService()).thenReturn(serviceDefinition);
 		// NOTE: we use noop server lifecycle to avoid startup
 		return new ApplicationContextRunner()
 			.withConfiguration(AutoConfigurations.of(GrpcServerAutoConfiguration.class,
@@ -109,6 +114,24 @@ class GrpcServerAutoConfigurationTests {
 		this.contextRunnerWithLifecyle()
 			.run((context) -> assertThat(context).getBean(GrpcServerLifecycle.class)
 				.hasFieldOrPropertyWithValue("factory", context.getBean(GrpcServerFactory.class)));
+	}
+
+	@Test
+	void whenHasUserDefinedGrpcServiceDiscovererDoesNotAutoConfigureBean() {
+		GrpcServiceDiscoverer customGrpcServiceDiscoverer = mock(GrpcServiceDiscoverer.class);
+		this.contextRunnerWithLifecyle()
+			.withBean("customGrpcServiceDiscoverer", GrpcServiceDiscoverer.class, () -> customGrpcServiceDiscoverer)
+			.run((context) -> assertThat(context).getBean(GrpcServiceDiscoverer.class)
+				.isSameAs(customGrpcServiceDiscoverer));
+	}
+
+	@Test
+	void grpcServiceDiscovererAutoConfiguredAsExpected() {
+		this.contextRunnerWithLifecyle()
+			.run((context) -> assertThat(context).getBean(GrpcServiceDiscoverer.class)
+				.extracting(GrpcServiceDiscoverer::findServices,
+						InstanceOfAssertFactories.list(ServerServiceDefinition.class))
+				.containsExactly(this.serviceDefinition));
 	}
 
 	@Test

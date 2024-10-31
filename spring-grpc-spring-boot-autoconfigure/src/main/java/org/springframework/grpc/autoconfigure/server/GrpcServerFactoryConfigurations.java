@@ -20,7 +20,6 @@ import java.util.List;
 
 import javax.net.ssl.KeyManagerFactory;
 
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -30,11 +29,11 @@ import org.springframework.boot.ssl.SslBundles;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.grpc.server.GrpcServerFactory;
+import org.springframework.grpc.server.GrpcServiceDiscoverer;
 import org.springframework.grpc.server.NettyGrpcServerFactory;
 import org.springframework.grpc.server.ServerBuilderCustomizer;
 import org.springframework.grpc.server.ShadedNettyGrpcServerFactory;
 
-import io.grpc.BindableService;
 import io.grpc.CompressorRegistry;
 import io.grpc.DecompressorRegistry;
 import io.grpc.netty.NettyServerBuilder;
@@ -54,7 +53,7 @@ class GrpcServerFactoryConfigurations {
 
 		@Bean
 		ShadedNettyGrpcServerFactory shadedNettyGrpcServerFactory(GrpcServerProperties properties,
-				ObjectProvider<BindableService> grpcServicesProvider, ServerBuilderCustomizers serverBuilderCustomizers,
+				GrpcServiceDiscoverer grpcServicesDiscoverer, ServerBuilderCustomizers serverBuilderCustomizers,
 				SslBundles bundles) {
 			ShadedNettyServerFactoryPropertyMapper mapper = new ShadedNettyServerFactoryPropertyMapper(properties);
 			List<ServerBuilderCustomizer<io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder>> builderCustomizers = List
@@ -66,7 +65,7 @@ class GrpcServerFactoryConfigurations {
 			}
 			ShadedNettyGrpcServerFactory factory = new ShadedNettyGrpcServerFactory(properties.getAddress(), keyManager,
 					builderCustomizers);
-			grpcServicesProvider.orderedStream().map(BindableService::bindService).forEach(factory::addService);
+			grpcServicesDiscoverer.findServices().forEach(factory::addService);
 			return factory;
 		}
 
@@ -94,7 +93,7 @@ class GrpcServerFactoryConfigurations {
 
 		@Bean
 		NettyGrpcServerFactory nettyGrpcServerFactory(GrpcServerProperties properties,
-				ObjectProvider<BindableService> grpcServicesProvider, ServerBuilderCustomizers serverBuilderCustomizers,
+				GrpcServiceDiscoverer grpcServicesDiscoverer, ServerBuilderCustomizers serverBuilderCustomizers,
 				SslBundles bundles) {
 			NettyServerFactoryPropertyMapper mapper = new NettyServerFactoryPropertyMapper(properties);
 			List<ServerBuilderCustomizer<NettyServerBuilder>> builderCustomizers = List
@@ -106,7 +105,7 @@ class GrpcServerFactoryConfigurations {
 			}
 			NettyGrpcServerFactory factory = new NettyGrpcServerFactory(properties.getAddress(), keyManager,
 					builderCustomizers);
-			grpcServicesProvider.orderedStream().map(BindableService::bindService).forEach(factory::addService);
+			grpcServicesDiscoverer.findServices().forEach(factory::addService);
 			return factory;
 		}
 
