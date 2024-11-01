@@ -1,3 +1,4 @@
 # Application Context Initializers
 org.springframework.context.ApplicationContextInitializer=\
-org.springframework.grpc.test.ServerPortInfoApplicationContextInitializer
+org.springframework.grpc.test.ServerPortInfoApplicationContextInitializer,\
+org.springframework.grpc.test.InProcessApplicationContextInitializer

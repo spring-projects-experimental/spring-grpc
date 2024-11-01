@@ -35,5 +35,9 @@
 			<groupId>io.grpc</groupId>
 			<artifactId>grpc-testing</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>io.grpc</groupId>
+			<artifactId>grpc-inprocess</artifactId>
+		</dependency>
 	</dependencies>
 </project>
