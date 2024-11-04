@@ -21,6 +21,13 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.TrustManagerFactory;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.grpc.internal.GrpcUtils;
+
 import com.google.common.collect.Lists;
 
 import io.grpc.Grpc;
@@ -30,10 +37,9 @@ import io.grpc.ServerBuilder;
 import io.grpc.ServerCredentials;
 import io.grpc.ServerProvider;
 import io.grpc.ServerServiceDefinition;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.grpc.internal.GrpcUtils;
+import io.grpc.TlsServerCredentials;
+import io.grpc.TlsServerCredentials.Builder;
+import io.grpc.TlsServerCredentials.ClientAuth;
 
 /**
  * Default implementation for {@link GrpcServerFactory gRPC service factories}.
@@ -56,9 +62,23 @@ public class DefaultGrpcServerFactory<T extends ServerBuilder<T>> implements Grp
 
 	private final List<ServerBuilderCustomizer<T>> serverBuilderCustomizers;
 
+	private KeyManagerFactory keyManager;
+
+	private TrustManagerFactory trustManager;
+
+	private ClientAuth clientAuth;
+
 	public DefaultGrpcServerFactory(String address, List<ServerBuilderCustomizer<T>> serverBuilderCustomizers) {
 		this.address = address;
 		this.serverBuilderCustomizers = Objects.requireNonNull(serverBuilderCustomizers, "serverBuilderCustomizers");
+	}
+
+	public DefaultGrpcServerFactory(String address, List<ServerBuilderCustomizer<T>> serverBuilderCustomizers,
+			KeyManagerFactory keyManager, TrustManagerFactory trustManager, ClientAuth clientAuth) {
+		this(address, serverBuilderCustomizers);
+		this.keyManager = keyManager;
+		this.trustManager = trustManager;
+		this.clientAuth = clientAuth;
 	}
 
 	protected String address() {
@@ -99,7 +119,17 @@ public class DefaultGrpcServerFactory<T extends ServerBuilder<T>> implements Grp
 	 * @return some server credentials (default is insecure)
 	 */
 	protected ServerCredentials credentials() {
-		return InsecureServerCredentials.create();
+		if (this.keyManager == null || port() == -1) {
+			return InsecureServerCredentials.create();
+		}
+		Builder builder = TlsServerCredentials.newBuilder().keyManager(this.keyManager.getKeyManagers());
+		if (this.trustManager != null) {
+			builder.trustManager(this.trustManager.getTrustManagers());
+		}
+		if (this.clientAuth != null) {
+			builder.clientAuth(this.clientAuth);
+		}
+		return builder.build();
 	}
 
 	/**
