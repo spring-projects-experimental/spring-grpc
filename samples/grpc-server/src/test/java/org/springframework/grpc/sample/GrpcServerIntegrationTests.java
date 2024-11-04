@@ -18,7 +18,6 @@ package org.springframework.grpc.sample;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledOnOs;
@@ -122,12 +121,13 @@ class GrpcServerIntegrationTests {
 
 	@Nested
 	@SpringBootTest(properties = { "spring.grpc.server.port=0", "spring.grpc.server.ssl.client-auth=REQUIRE",
+			"spring.grpc.server.ssl.secure=false",
 			"spring.grpc.client.channels.test-channel.address=static://0.0.0.0:${local.grpc.port}",
+			"spring.grpc.client.channels.test-channel.ssl.bundle=ssltest",
 			"spring.grpc.client.channels.test-channel.negotiation-type=TLS",
 			"spring.grpc.client.channels.test-channel.secure=false" })
 	@ActiveProfiles("ssl")
 	@DirtiesContext
-	@Disabled("Requires client certificate")
 	class ServerWithClientAuth {
 
 		@Test

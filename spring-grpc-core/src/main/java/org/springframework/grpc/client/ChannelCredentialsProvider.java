@@ -15,12 +15,16 @@
  */
 package org.springframework.grpc.client;
 
-import java.util.List;
+import io.grpc.ChannelCredentials;
+import io.grpc.InsecureChannelCredentials;
 
-public class NettyGrpcChannelFactory extends DefaultGrpcChannelFactory {
+/**
+ * A provider for obtaining channel credentials for gRPC client.
+ */
+public interface ChannelCredentialsProvider {
 
-	public NettyGrpcChannelFactory(List<GrpcChannelConfigurer> configurers) {
-		super(configurers);
-	}
+	static final ChannelCredentialsProvider INSECURE = path -> InsecureChannelCredentials.create();
+
+	ChannelCredentials getChannelCredentials(String path);
 
 }

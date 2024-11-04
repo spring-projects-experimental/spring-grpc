@@ -15,133 +15,39 @@
  */
 package org.springframework.grpc.autoconfigure.client;
 
-import java.util.List;
-
-import javax.net.ssl.SSLException;
-
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.ssl.SslBundles;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.grpc.autoconfigure.client.GrpcClientProperties.NamedChannel;
-import org.springframework.grpc.client.DefaultGrpcChannelFactory;
-import org.springframework.grpc.client.GrpcChannelConfigurer;
-import org.springframework.grpc.client.GrpcChannelFactory;
-import org.springframework.grpc.client.NegotiationType;
-import org.springframework.grpc.client.NettyGrpcChannelFactory;
-import org.springframework.grpc.client.ShadedNettyGrpcChannelFactory;
-import org.springframework.grpc.client.VirtualTargets;
+import org.springframework.grpc.client.ChannelCredentialsProvider;
 
-import io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.NettyChannelBuilder;
-import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 
 public class GrpcChannelFactoryConfigurations {
 
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnClass(io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder.class)
-	@ConditionalOnMissingBean(GrpcChannelFactory.class)
+	@ConditionalOnMissingBean(ChannelCredentialsProvider.class)
 	public static class ShadedNettyChannelFactoryConfiguration {
 
 		@Bean
-		public DefaultGrpcChannelFactory defaultGrpcChannelFactory(final List<GrpcChannelConfigurer> configurers,
-				GrpcClientProperties channels) {
-			DefaultGrpcChannelFactory factory = new ShadedNettyGrpcChannelFactory(configurers);
-			factory.setVirtualTargets(new NamedChannelVirtualTargets(channels));
-			return factory;
-		}
-
-		@Bean
-		public GrpcChannelConfigurer secureChannelConfigurer(GrpcClientProperties channels) {
-
-			return (authority, input) -> {
-				NamedChannel channel = channels.getChannel(authority);
-				if (!authority.startsWith("unix:")
-						&& input instanceof io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder builder) {
-					builder.negotiationType(of(channel.getNegotiationType()));
-					try {
-						if (!channel.isSecure()) {
-							builder.sslContext(io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts.forClient()
-								.trustManager(
-										io.grpc.netty.shaded.io.netty.handler.ssl.util.InsecureTrustManagerFactory.INSTANCE)
-								.build());
-						}
-					}
-					catch (SSLException e) {
-						throw new IllegalStateException("Failed to create SSL context", e);
-					}
-				}
-			};
-
-		}
-
-		private static io.grpc.netty.shaded.io.grpc.netty.NegotiationType of(final NegotiationType negotiationType) {
-			return switch (negotiationType) {
-				case PLAINTEXT -> io.grpc.netty.shaded.io.grpc.netty.NegotiationType.PLAINTEXT;
-				case PLAINTEXT_UPGRADE -> io.grpc.netty.shaded.io.grpc.netty.NegotiationType.PLAINTEXT_UPGRADE;
-				case TLS -> io.grpc.netty.shaded.io.grpc.netty.NegotiationType.TLS;
-			};
+		public ChannelCredentialsProvider channelCredentialsProvider(GrpcClientProperties channels,
+				SslBundles bundles) {
+			return new ShadedNettyChannelCredentialsProvider(bundles, channels);
 		}
 
 	}
 
 	@Configuration(proxyBeanMethods = false)
 	@ConditionalOnClass(NettyChannelBuilder.class)
-	@ConditionalOnMissingBean(GrpcChannelFactory.class)
+	@ConditionalOnMissingBean(ChannelCredentialsProvider.class)
 	public static class NettyChannelFactoryConfiguration {
 
 		@Bean
-		public DefaultGrpcChannelFactory defaultGrpcChannelFactory(final List<GrpcChannelConfigurer> configurers,
-				GrpcClientProperties channels) {
-			DefaultGrpcChannelFactory factory = new NettyGrpcChannelFactory(configurers);
-			factory.setVirtualTargets(new NamedChannelVirtualTargets(channels));
-			return factory;
-		}
-
-		@Bean
-		public GrpcChannelConfigurer secureChannelConfigurer(GrpcClientProperties channels) {
-
-			return (authority, input) -> {
-				NamedChannel channel = channels.getChannel(authority);
-				if (!authority.startsWith("unix:") && input instanceof NettyChannelBuilder builder) {
-					builder.negotiationType(of(channel.getNegotiationType()));
-					try {
-						if (!channel.isSecure()) {
-							builder.sslContext(GrpcSslContexts.forClient()
-								.trustManager(InsecureTrustManagerFactory.INSTANCE)
-								.build());
-						}
-					}
-					catch (SSLException e) {
-						throw new IllegalStateException("Failed to create SSL context", e);
-					}
-				}
-			};
-
-		}
-
-		private static io.grpc.netty.NegotiationType of(final NegotiationType negotiationType) {
-			return switch (negotiationType) {
-				case PLAINTEXT -> io.grpc.netty.NegotiationType.PLAINTEXT;
-				case PLAINTEXT_UPGRADE -> io.grpc.netty.NegotiationType.PLAINTEXT_UPGRADE;
-				case TLS -> io.grpc.netty.NegotiationType.TLS;
-			};
-		}
-
-	}
-
-	static class NamedChannelVirtualTargets implements VirtualTargets {
-
-		private final GrpcClientProperties channels;
-
-		NamedChannelVirtualTargets(GrpcClientProperties channels) {
-			this.channels = channels;
-		}
-
-		@Override
-		public String getTarget(String authority) {
-			NamedChannel channel = this.channels.getChannel(authority);
-			return channels.getTarget(channel.getAddress());
+		public ChannelCredentialsProvider channelCredentialsProvider(GrpcClientProperties channels,
+				SslBundles bundles) {
+			return new NettyChannelCredentialsProvider(bundles, channels);
 		}
 
 	}

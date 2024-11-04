@@ -15,20 +15,26 @@
  */
 package org.springframework.grpc.autoconfigure.client;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import io.grpc.CompressorRegistry;
-import io.grpc.DecompressorRegistry;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.ssl.SslBundle;
 import org.springframework.boot.ssl.SslBundles;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.grpc.autoconfigure.client.GrpcClientProperties.NamedChannel;
 import org.springframework.grpc.autoconfigure.common.codec.GrpcCodecConfiguration;
+import org.springframework.grpc.client.ChannelCredentialsProvider;
+import org.springframework.grpc.client.DefaultGrpcChannelFactory;
 import org.springframework.grpc.client.GrpcChannelConfigurer;
+import org.springframework.grpc.client.GrpcChannelFactory;
+import org.springframework.grpc.client.VirtualTargets;
+
+import io.grpc.CompressorRegistry;
+import io.grpc.DecompressorRegistry;
 
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(GrpcClientProperties.class)
@@ -37,26 +43,21 @@ import org.springframework.grpc.client.GrpcChannelConfigurer;
 public class GrpcClientAutoConfiguration {
 
 	@Bean
-	public GrpcChannelConfigurer sslGrpcChannelConfigurer(GrpcClientProperties channels, SslBundles bundles) {
+	@ConditionalOnMissingBean(GrpcChannelFactory.class)
+	public DefaultGrpcChannelFactory defaultGrpcChannelFactory(final List<GrpcChannelConfigurer> configurers,
+			ChannelCredentialsProvider credentials, GrpcClientProperties channels, SslBundles bundles) {
+		DefaultGrpcChannelFactory factory = new DefaultGrpcChannelFactory(configurers);
+		factory.setCredentialsProvider(credentials);
+		factory.setVirtualTargets(new NamedChannelVirtualTargets(channels));
+		return factory;
+	}
+
+	@Bean
+	public GrpcChannelConfigurer sslGrpcChannelConfigurer(GrpcClientProperties channels) {
 		return (authority, builder) -> {
 			for (String name : channels.getChannels().keySet()) {
 				if (authority.equals(name)) {
 					NamedChannel channel = channels.getChannels().get(name);
-					if (channel.getSsl().isEnabled() && channel.getSsl().getBundle() != null) {
-						SslBundle bundle = bundles.getBundle(channel.getSsl().getBundle());
-						if (NettyChannelFactoryHelper.isAvailable()) {
-							NettyChannelFactoryHelper.sslContext(builder, bundle);
-						}
-						else if (ShadedNettyChannelFactoryHelper.isAvailable()) {
-							ShadedNettyChannelFactoryHelper.sslContext(builder, bundle);
-						}
-						else {
-							throw new IllegalStateException("Netty is not available");
-						}
-					}
-					else {
-						// builder.usePlaintext();
-					}
 					if (channel.getUserAgent() != null) {
 						builder.userAgent(channel.getUserAgent());
 					}
@@ -94,6 +95,22 @@ public class GrpcClientAutoConfiguration {
 	@Bean
 	GrpcChannelConfigurer decompressionClientConfigurer(DecompressorRegistry registry) {
 		return (name, builder) -> builder.decompressorRegistry(registry);
+	}
+
+	static class NamedChannelVirtualTargets implements VirtualTargets {
+
+		private final GrpcClientProperties channels;
+
+		NamedChannelVirtualTargets(GrpcClientProperties channels) {
+			this.channels = channels;
+		}
+
+		@Override
+		public String getTarget(String authority) {
+			NamedChannel channel = this.channels.getChannel(authority);
+			return channels.getTarget(channel.getAddress());
+		}
+
 	}
 
 }

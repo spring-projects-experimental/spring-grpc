@@ -17,20 +17,10 @@ package org.springframework.grpc.client;
 
 import java.util.List;
 
-import io.grpc.ManagedChannelBuilder;
-import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
-
 public class ShadedNettyGrpcChannelFactory extends DefaultGrpcChannelFactory {
 
 	public ShadedNettyGrpcChannelFactory(List<GrpcChannelConfigurer> configurers) {
 		super(configurers);
-	}
-
-	protected ManagedChannelBuilder<?> newChannel(String path) {
-		if (path.startsWith("unix:")) {
-			return super.newChannel(path);
-		}
-		return NettyChannelBuilder.forTarget(path);
 	}
 
 }

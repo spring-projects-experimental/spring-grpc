@@ -30,6 +30,8 @@
 |spring.grpc.server.port | `+++9090+++` | Server port to listen on. When the value is 0, a random available port is selected. The default is 9090.
 |spring.grpc.server.shutdown-grace-period | `+++30s+++` | Maximum time to wait for the server to gracefully shutdown. When the value is negative, the server waits forever. When the value is 0, the server will force shutdown immediately. The default is 30 seconds.
 |spring.grpc.server.ssl.bundle |  | SSL bundle name.
+|spring.grpc.server.ssl.client-auth |  | Client authentication mode.
 |spring.grpc.server.ssl.enabled |  | Whether to enable SSL support. Enabled automatically if "bundle" is provided unless specified otherwise.
+|spring.grpc.server.ssl.secure | `+++true+++` | Flag to indicate that client authentication is secure (i.e. certificates are checked). Do not set this to false in production.
 
 |===

@@ -35,6 +35,7 @@ import org.springframework.grpc.server.ServerBuilderCustomizer;
 import org.springframework.grpc.server.ShadedNettyGrpcServerFactory;
 
 import io.grpc.netty.NettyServerBuilder;
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 
 /**
  * Configurations for {@link GrpcServerFactory gRPC server factories}.
@@ -61,6 +62,8 @@ class GrpcServerFactoryConfigurations {
 			if (properties.getSsl().isEnabled()) {
 				SslBundle bundle = bundles.getBundle(properties.getSsl().getBundle());
 				keyManager = bundle.getManagers().getKeyManagerFactory();
+				trustManager = properties.getSsl().isSecure() ? bundle.getManagers().getTrustManagerFactory()
+						: io.grpc.netty.shaded.io.netty.handler.ssl.util.InsecureTrustManagerFactory.INSTANCE;
 				trustManager = bundle.getManagers().getTrustManagerFactory();
 			}
 			ShadedNettyGrpcServerFactory factory = new ShadedNettyGrpcServerFactory(properties.getAddress(),
@@ -89,7 +92,8 @@ class GrpcServerFactoryConfigurations {
 			if (properties.getSsl().isEnabled()) {
 				SslBundle bundle = bundles.getBundle(properties.getSsl().getBundle());
 				keyManager = bundle.getManagers().getKeyManagerFactory();
-				trustManager = bundle.getManagers().getTrustManagerFactory();
+				trustManager = properties.getSsl().isSecure() ? bundle.getManagers().getTrustManagerFactory()
+						: InsecureTrustManagerFactory.INSTANCE;
 			}
 			NettyGrpcServerFactory factory = new NettyGrpcServerFactory(properties.getAddress(), builderCustomizers,
 					keyManager, trustManager, properties.getSsl().getClientAuth());

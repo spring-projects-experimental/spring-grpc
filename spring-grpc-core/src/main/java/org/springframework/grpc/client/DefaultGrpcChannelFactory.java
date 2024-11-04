@@ -37,6 +37,8 @@ public class DefaultGrpcChannelFactory implements GrpcChannelFactory, Disposable
 
 	private final List<GrpcChannelConfigurer> configurers = new ArrayList<>();
 
+	private ChannelCredentialsProvider credentials = ChannelCredentialsProvider.INSECURE;
+
 	private VirtualTargets targets = VirtualTargets.DEFAULT;
 
 	public DefaultGrpcChannelFactory() {
@@ -51,10 +53,15 @@ public class DefaultGrpcChannelFactory implements GrpcChannelFactory, Disposable
 		this.targets = targets;
 	}
 
+	public void setCredentialsProvider(ChannelCredentialsProvider credentials) {
+		this.credentials = credentials;
+	}
+
 	@Override
 	public ManagedChannelBuilder<?> createChannel(String authority) {
 		ManagedChannelBuilder<?> target = builders.computeIfAbsent(authority, path -> {
-			ManagedChannelBuilder<?> builder = newChannel(targets.getTarget(path));
+			ManagedChannelBuilder<?> builder = newChannel(targets.getTarget(path),
+					credentials.getChannelCredentials(path));
 			for (GrpcChannelConfigurer configurer : configurers) {
 				configurer.configure(path, builder);
 			}
@@ -64,12 +71,8 @@ public class DefaultGrpcChannelFactory implements GrpcChannelFactory, Disposable
 
 	}
 
-	protected ChannelCredentials channelCredentials(String path) {
-		return InsecureChannelCredentials.create();
-	}
-
-	protected ManagedChannelBuilder<?> newChannel(String path) {
-		return Grpc.newChannelBuilder(path, channelCredentials(path));
+	protected ManagedChannelBuilder<?> newChannel(String path, ChannelCredentials creds) {
+		return Grpc.newChannelBuilder(path, creds);
 	}
 
 	@Override

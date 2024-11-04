@@ -265,6 +265,12 @@ public class GrpcServerProperties {
 		 */
 		private String bundle;
 
+		/**
+		 * Flag to indicate that client authentication is secure (i.e. certificates are
+		 * checked). Do not set this to false in production.
+		 */
+		private boolean secure = true;
+
 		public boolean isEnabled() {
 			return (this.enabled != null) ? this.enabled : this.bundle != null;
 		}
@@ -297,6 +303,14 @@ public class GrpcServerProperties {
 
 		public ClientAuth getClientAuth() {
 			return clientAuth;
+		}
+
+		public void setSecure(boolean secure) {
+			this.secure = secure;
+		}
+
+		public boolean isSecure() {
+			return this.secure;
 		}
 
 	}
