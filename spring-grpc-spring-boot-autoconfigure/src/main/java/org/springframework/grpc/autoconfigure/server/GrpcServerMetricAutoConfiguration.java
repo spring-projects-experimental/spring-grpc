@@ -15,13 +15,15 @@ import org.springframework.grpc.server.ServerBuilderCustomizer;
 @ConditionalOnBean(ObservationRegistry.class)
 public class GrpcServerMetricAutoConfiguration {
 
-    @Bean
-    public ServerInterceptor observationGrpcServerInterceptor(ObservationRegistry observationRegistry) {
-        return new ObservationGrpcServerInterceptor(observationRegistry);
-    }
+	@Bean
+	public ServerInterceptor observationGrpcServerInterceptor(ObservationRegistry observationRegistry) {
+		return new ObservationGrpcServerInterceptor(observationRegistry);
+	}
 
-    @Bean
-    <T extends ServerBuilder<T>> ServerBuilderCustomizer<T> metricsInterceptor(ServerInterceptor observationGrpcServerInterceptor) {
-        return (serverBuilder) -> serverBuilder.intercept(observationGrpcServerInterceptor);
-    }
+	@Bean
+	<T extends ServerBuilder<T>> ServerBuilderCustomizer<T> metricsInterceptor(
+			ServerInterceptor observationGrpcServerInterceptor) {
+		return (serverBuilder) -> serverBuilder.intercept(observationGrpcServerInterceptor);
+	}
+
 }

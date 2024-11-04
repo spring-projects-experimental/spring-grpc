@@ -66,10 +66,10 @@ class GrpcServerAutoConfigurationTests {
 		when(service.bindService()).thenReturn(serviceDefinition);
 		// NOTE: we use noop server lifecycle to avoid startup
 		return new ApplicationContextRunner()
-				.withConfiguration(AutoConfigurations.of(GrpcServerAutoConfiguration.class,
-						GrpcServerFactoryAutoConfiguration.class, SslAutoConfiguration.class))
-				.withBean("noopServerLifecycle", GrpcServerLifecycle.class, Mockito::mock)
-				.withBean(BindableService.class, () -> service);
+			.withConfiguration(AutoConfigurations.of(GrpcServerAutoConfiguration.class,
+					GrpcServerFactoryAutoConfiguration.class, SslAutoConfiguration.class))
+			.withBean("noopServerLifecycle", GrpcServerLifecycle.class, Mockito::mock)
+			.withBean(BindableService.class, () -> service);
 	}
 
 	private ApplicationContextRunner contextRunnerWithLifecyle() {
@@ -78,78 +78,78 @@ class GrpcServerAutoConfigurationTests {
 		when(service.bindService()).thenReturn(serviceDefinition);
 		// NOTE: we use noop server lifecycle to avoid startup
 		return new ApplicationContextRunner()
-				.withConfiguration(AutoConfigurations.of(GrpcServerAutoConfiguration.class,
-						GrpcServerFactoryAutoConfiguration.class, SslAutoConfiguration.class))
-				.withBean(BindableService.class, () -> service);
+			.withConfiguration(AutoConfigurations.of(GrpcServerAutoConfiguration.class,
+					GrpcServerFactoryAutoConfiguration.class, SslAutoConfiguration.class))
+			.withBean(BindableService.class, () -> service);
 	}
 
 	@Test
 	void whenGrpcNotOnClasspathAutoConfigurationIsSkipped() {
 		this.contextRunner()
-				.withClassLoader(new FilteredClassLoader(BindableService.class))
-				.run((context) -> assertThat(context).doesNotHaveBean(GrpcServerAutoConfiguration.class));
+			.withClassLoader(new FilteredClassLoader(BindableService.class))
+			.run((context) -> assertThat(context).doesNotHaveBean(GrpcServerAutoConfiguration.class));
 	}
 
 	@Test
 	void whenNoBindableServicesRegisteredAutoConfigurationIsSkipped() {
 		new ApplicationContextRunner().withConfiguration(AutoConfigurations.of(GrpcServerAutoConfiguration.class))
-				.run((context) -> assertThat(context).doesNotHaveBean(GrpcServerAutoConfiguration.class));
+			.run((context) -> assertThat(context).doesNotHaveBean(GrpcServerAutoConfiguration.class));
 	}
 
 	@Test
 	void whenHasUserDefinedServerLifecycleDoesNotAutoConfigureBean() {
 		GrpcServerLifecycle customServerLifecycle = mock(GrpcServerLifecycle.class);
 		this.contextRunnerWithLifecyle()
-				.withBean("customServerLifecycle", GrpcServerLifecycle.class, () -> customServerLifecycle)
-				.run((context) -> assertThat(context).getBean(GrpcServerLifecycle.class).isSameAs(customServerLifecycle));
+			.withBean("customServerLifecycle", GrpcServerLifecycle.class, () -> customServerLifecycle)
+			.run((context) -> assertThat(context).getBean(GrpcServerLifecycle.class).isSameAs(customServerLifecycle));
 	}
 
 	@Test
 	void serverLifecycleAutoConfiguredAsExpected() {
 		this.contextRunnerWithLifecyle()
-				.run((context) -> assertThat(context).getBean(GrpcServerLifecycle.class)
-						.hasFieldOrPropertyWithValue("factory", context.getBean(GrpcServerFactory.class)));
+			.run((context) -> assertThat(context).getBean(GrpcServerLifecycle.class)
+				.hasFieldOrPropertyWithValue("factory", context.getBean(GrpcServerFactory.class)));
 	}
 
 	@Test
 	void whenHasUserDefinedServerBuilderCustomizersDoesNotAutoConfigureBean() {
 		ServerBuilderCustomizers customCustomizers = mock(ServerBuilderCustomizers.class);
 		this.contextRunner()
-				.withBean("customCustomizers", ServerBuilderCustomizers.class, () -> customCustomizers)
-				.run((context) -> assertThat(context).getBean(ServerBuilderCustomizers.class).isSameAs(customCustomizers));
+			.withBean("customCustomizers", ServerBuilderCustomizers.class, () -> customCustomizers)
+			.run((context) -> assertThat(context).getBean(ServerBuilderCustomizers.class).isSameAs(customCustomizers));
 	}
 
 	@Test
 	void serverBuilderCustomizersAutoConfiguredAsExpected() {
 		this.contextRunner()
-				.withUserConfiguration(ServerBuilderCustomizersConfig.class)
-				.run((context) -> assertThat(context).getBean(ServerBuilderCustomizers.class)
-						.extracting("customizers", InstanceOfAssertFactories.list(ServerBuilderCustomizer.class))
-						.contains(ServerBuilderCustomizersConfig.CUSTOMIZER_BAR,
-								ServerBuilderCustomizersConfig.CUSTOMIZER_FOO));
+			.withUserConfiguration(ServerBuilderCustomizersConfig.class)
+			.run((context) -> assertThat(context).getBean(ServerBuilderCustomizers.class)
+				.extracting("customizers", InstanceOfAssertFactories.list(ServerBuilderCustomizer.class))
+				.contains(ServerBuilderCustomizersConfig.CUSTOMIZER_BAR,
+						ServerBuilderCustomizersConfig.CUSTOMIZER_FOO));
 	}
 
 	@Test
 	void whenHasUserDefinedServerFactoryDoesNotAutoConfigureBean() {
 		GrpcServerFactory customServerFactory = mock(GrpcServerFactory.class);
 		this.contextRunner()
-				.withBean("customServerFactory", GrpcServerFactory.class, () -> customServerFactory)
-				.run((context) -> assertThat(context).getBean(GrpcServerFactory.class).isSameAs(customServerFactory));
+			.withBean("customServerFactory", GrpcServerFactory.class, () -> customServerFactory)
+			.run((context) -> assertThat(context).getBean(GrpcServerFactory.class).isSameAs(customServerFactory));
 	}
 
 	@Test
 	void whenShadedAndNonShadedNettyOnClasspathShadedNettyFactoryIsAutoConfigured() {
 		this.contextRunner()
-				.run((context) -> assertThat(context).getBean(GrpcServerFactory.class)
-						.isInstanceOf(ShadedNettyGrpcServerFactory.class));
+			.run((context) -> assertThat(context).getBean(GrpcServerFactory.class)
+				.isInstanceOf(ShadedNettyGrpcServerFactory.class));
 	}
 
 	@Test
 	void whenOnlyNonShadedNettyOnClasspathNonShadedNettyFactoryIsAutoConfigured() {
 		this.contextRunner()
-				.withClassLoader(new FilteredClassLoader(io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder.class))
-				.run((context) -> assertThat(context).getBean(GrpcServerFactory.class)
-						.isInstanceOf(NettyGrpcServerFactory.class));
+			.withClassLoader(new FilteredClassLoader(io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder.class))
+			.run((context) -> assertThat(context).getBean(GrpcServerFactory.class)
+				.isInstanceOf(NettyGrpcServerFactory.class));
 	}
 
 	@Test
@@ -160,29 +160,29 @@ class GrpcServerAutoConfigurationTests {
 	@Test
 	void nettyServerFactoryAutoConfiguredAsExpected() {
 		serverFactoryAutoConfiguredAsExpected(this.contextRunner()
-						.withClassLoader(new FilteredClassLoader(io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder.class)),
+			.withClassLoader(new FilteredClassLoader(io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder.class)),
 				NettyGrpcServerFactory.class);
 	}
 
 	@Test
 	void noServerFactoryAutoConfiguredAsExpected() {
 		this.contextRunner()
-				.withClassLoader(new FilteredClassLoader(NettyServerBuilder.class,
-						io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder.class))
-				.run((context) -> assertThat(context).doesNotHaveBean(GrpcServerFactory.class));
+			.withClassLoader(new FilteredClassLoader(NettyServerBuilder.class,
+					io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder.class))
+			.run((context) -> assertThat(context).doesNotHaveBean(GrpcServerFactory.class));
 	}
 
 	private void serverFactoryAutoConfiguredAsExpected(ApplicationContextRunner contextRunner,
-													   Class<?> expectedServerFactoryType) {
+			Class<?> expectedServerFactoryType) {
 		contextRunner.withPropertyValues("spring.grpc.server.host=myhost", "spring.grpc.server.port=6160")
-				.run((context) -> assertThat(context).getBean(GrpcServerFactory.class)
-						.isInstanceOf(expectedServerFactoryType)
-						.hasFieldOrPropertyWithValue("address", "myhost:6160")
-						.extracting("serviceList", InstanceOfAssertFactories.list(ServerServiceDefinition.class))
-						.singleElement()
-						.extracting(ServerServiceDefinition::getServiceDescriptor)
-						.extracting(ServiceDescriptor::getName)
-						.isEqualTo("my-service"));
+			.run((context) -> assertThat(context).getBean(GrpcServerFactory.class)
+				.isInstanceOf(expectedServerFactoryType)
+				.hasFieldOrPropertyWithValue("address", "myhost:6160")
+				.extracting("serviceList", InstanceOfAssertFactories.list(ServerServiceDefinition.class))
+				.singleElement()
+				.extracting(ServerServiceDefinition::getServiceDescriptor)
+				.extracting(ServiceDescriptor::getName)
+				.isEqualTo("my-service"));
 	}
 
 	@Test
@@ -202,11 +202,11 @@ class GrpcServerAutoConfigurationTests {
 		// real world.
 		try (MockedStatic<Grpc> serverBuilderForPort = Mockito.mockStatic(Grpc.class)) {
 			serverBuilderForPort.when(() -> Grpc.newServerBuilderForPort(anyInt(), any()))
-					.thenAnswer((Answer<NettyServerBuilder>) invocation -> NettyServerBuilder
-							.forPort(invocation.getArgument(0)));
+				.thenAnswer((Answer<NettyServerBuilder>) invocation -> NettyServerBuilder
+					.forPort(invocation.getArgument(0)));
 			NettyServerBuilder builder = mock();
 			serverFactoryAutoConfiguredWithCustomizers(this.contextRunnerWithLifecyle()
-							.withClassLoader(new FilteredClassLoader(io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder.class)),
+				.withClassLoader(new FilteredClassLoader(io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder.class)),
 					builder, NettyGrpcServerFactory.class);
 		}
 	}
@@ -219,30 +219,30 @@ class GrpcServerAutoConfigurationTests {
 		ServerBuilderCustomizer<T> customizer2 = (serverBuilder) -> serverBuilder.keepAliveTime(50L, TimeUnit.SECONDS);
 		ServerBuilderCustomizers customizers = new ServerBuilderCustomizers(List.of(customizer1, customizer2));
 		contextRunner.withPropertyValues("spring.grpc.server.port=0", "spring.grpc.server.keep-alive.time=30s")
-				.withBean("serverBuilderCustomizers", ServerBuilderCustomizers.class, () -> customizers)
-				.run((context) -> assertThat(context).getBean(GrpcServerFactory.class)
-						.isInstanceOf(expectedServerFactoryType)
-						.extracting("serverBuilderCustomizers", InstanceOfAssertFactories.list(ServerBuilderCustomizer.class))
-						.satisfies((allCustomizers) -> {
-							allCustomizers.forEach((c) -> c.customize(mockServerBuilder));
-							InOrder ordered = inOrder(mockServerBuilder);
-							ordered.verify(mockServerBuilder)
-									.keepAliveTime(Duration.ofSeconds(30L).toNanos(), TimeUnit.NANOSECONDS);
-							ordered.verify(mockServerBuilder).keepAliveTime(40L, TimeUnit.SECONDS);
-							ordered.verify(mockServerBuilder).keepAliveTime(50L, TimeUnit.SECONDS);
-						}));
+			.withBean("serverBuilderCustomizers", ServerBuilderCustomizers.class, () -> customizers)
+			.run((context) -> assertThat(context).getBean(GrpcServerFactory.class)
+				.isInstanceOf(expectedServerFactoryType)
+				.extracting("serverBuilderCustomizers", InstanceOfAssertFactories.list(ServerBuilderCustomizer.class))
+				.satisfies((allCustomizers) -> {
+					allCustomizers.forEach((c) -> c.customize(mockServerBuilder));
+					InOrder ordered = inOrder(mockServerBuilder);
+					ordered.verify(mockServerBuilder)
+						.keepAliveTime(Duration.ofSeconds(30L).toNanos(), TimeUnit.NANOSECONDS);
+					ordered.verify(mockServerBuilder).keepAliveTime(40L, TimeUnit.SECONDS);
+					ordered.verify(mockServerBuilder).keepAliveTime(50L, TimeUnit.SECONDS);
+				}));
 	}
 
 	@Test
 	void nettyServerFactoryAutoConfiguredWithSsl() {
 		serverFactoryAutoConfiguredAsExpected(
 				this.contextRunner()
-						.withPropertyValues("spring.grpc.server.ssl.bundle=ssltest",
-								"spring.ssl.bundle.jks.ssltest.keystore.location=classpath:test.jks",
-								"spring.ssl.bundle.jks.ssltest.keystore.password=secret",
-								"spring.ssl.bundle.jks.ssltest.key.password=password")
-						.withClassLoader(
-								new FilteredClassLoader(io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder.class)),
+					.withPropertyValues("spring.grpc.server.ssl.bundle=ssltest",
+							"spring.ssl.bundle.jks.ssltest.keystore.location=classpath:test.jks",
+							"spring.ssl.bundle.jks.ssltest.keystore.password=secret",
+							"spring.ssl.bundle.jks.ssltest.key.password=password")
+					.withClassLoader(
+							new FilteredClassLoader(io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder.class)),
 				NettyGrpcServerFactory.class);
 	}
 
