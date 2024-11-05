@@ -38,8 +38,7 @@ import io.grpc.DecompressorRegistry;
 
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(GrpcClientProperties.class)
-@Import({ GrpcChannelFactoryConfigurations.ShadedNettyChannelFactoryConfiguration.class,
-		GrpcChannelFactoryConfigurations.NettyChannelFactoryConfiguration.class, GrpcCodecConfiguration.class })
+@Import(GrpcCodecConfiguration.class)
 public class GrpcClientAutoConfiguration {
 
 	@Bean
@@ -50,6 +49,12 @@ public class GrpcClientAutoConfiguration {
 		factory.setCredentialsProvider(credentials);
 		factory.setVirtualTargets(new NamedChannelVirtualTargets(channels));
 		return factory;
+	}
+
+	@Bean
+	@ConditionalOnMissingBean(ChannelCredentialsProvider.class)
+	public ChannelCredentialsProvider channelCredentialsProvider(GrpcClientProperties channels, SslBundles bundles) {
+		return new NamedChannelCredentialsProvider(bundles, channels);
 	}
 
 	@Bean

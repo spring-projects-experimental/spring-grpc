@@ -22,19 +22,19 @@ import org.springframework.boot.ssl.SslBundles;
 import org.springframework.grpc.autoconfigure.client.GrpcClientProperties.NamedChannel;
 import org.springframework.grpc.client.ChannelCredentialsProvider;
 import org.springframework.grpc.client.NegotiationType;
+import org.springframework.grpc.internal.InsecureTrustManagerFactory;
 
 import io.grpc.ChannelCredentials;
 import io.grpc.InsecureChannelCredentials;
 import io.grpc.TlsChannelCredentials;
-import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 
-public class NettyChannelCredentialsProvider implements ChannelCredentialsProvider {
+public class NamedChannelCredentialsProvider implements ChannelCredentialsProvider {
 
 	private final GrpcClientProperties channels;
 
 	private final SslBundles bundles;
 
-	public NettyChannelCredentialsProvider(SslBundles bundles, GrpcClientProperties channels) {
+	public NamedChannelCredentialsProvider(SslBundles bundles, GrpcClientProperties channels) {
 		this.bundles = bundles;
 		this.channels = channels;
 	}
@@ -47,11 +47,11 @@ public class NettyChannelCredentialsProvider implements ChannelCredentialsProvid
 			return InsecureChannelCredentials.create();
 		}
 		if (bundle != null) {
-			TrustManagerFactory trustManager = channel.isSecure() ? bundle.getManagers().getTrustManagerFactory()
+			TrustManagerFactory trustManagers = channel.isSecure() ? bundle.getManagers().getTrustManagerFactory()
 					: InsecureTrustManagerFactory.INSTANCE;
 			return TlsChannelCredentials.newBuilder()
 				.keyManager(bundle.getManagers().getKeyManagerFactory().getKeyManagers())
-				.trustManager(trustManager.getTrustManagers())
+				.trustManager(trustManagers.getTrustManagers())
 				.build();
 		}
 		else {
