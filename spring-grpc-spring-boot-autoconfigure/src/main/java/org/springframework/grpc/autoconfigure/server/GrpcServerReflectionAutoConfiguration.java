@@ -18,7 +18,7 @@ import io.grpc.protobuf.services.ProtoReflectionService;
  * @author Haris Zujo
  */
 @Configuration
-@ConditionalOnClass(BindableService.class)
+@ConditionalOnClass(ProtoReflectionService.class)
 public class GrpcServerReflectionAutoConfiguration {
 
 	@Bean
