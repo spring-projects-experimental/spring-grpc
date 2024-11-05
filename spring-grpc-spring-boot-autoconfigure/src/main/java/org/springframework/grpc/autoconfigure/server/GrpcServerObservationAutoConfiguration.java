@@ -7,13 +7,16 @@ import io.micrometer.observation.ObservationRegistry;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.grpc.server.ServerBuilderCustomizer;
 
-@AutoConfiguration
-@ConditionalOnClass(ObservationGrpcServerInterceptor.class)
+@AutoConfiguration(
+		afterName = "org.springframework.boot.actuate.autoconfigure.observation.ObservationAutoConfiguration")
+@ConditionalOnClass(value = { ObservationRegistry.class, ObservationGrpcServerInterceptor.class })
 @ConditionalOnBean(ObservationRegistry.class)
-public class GrpcServerMetricAutoConfiguration {
+@ConditionalOnProperty(value = "spring.grpc.server.observation.enabled", matchIfMissing = true)
+public class GrpcServerObservationAutoConfiguration {
 
 	@Bean
 	public ServerInterceptor observationGrpcServerInterceptor(ObservationRegistry observationRegistry) {
