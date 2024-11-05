@@ -25,7 +25,6 @@ import org.springframework.beans.factory.DisposableBean;
 import io.grpc.ChannelCredentials;
 import io.grpc.ForwardingChannelBuilder2;
 import io.grpc.Grpc;
-import io.grpc.InsecureChannelCredentials;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 
