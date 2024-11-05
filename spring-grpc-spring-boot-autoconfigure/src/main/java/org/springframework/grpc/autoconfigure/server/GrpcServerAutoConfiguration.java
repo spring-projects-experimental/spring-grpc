@@ -33,6 +33,9 @@ import org.springframework.grpc.server.ServerBuilderCustomizer;
 import org.springframework.grpc.server.lifecycle.GrpcServerLifecycle;
 
 import io.grpc.BindableService;
+import io.grpc.CompressorRegistry;
+import io.grpc.DecompressorRegistry;
+import io.grpc.ServerBuilder;
 
 /**
  * {@link EnableAutoConfiguration Auto-configuration} for gRPC server-side components.
@@ -74,6 +77,19 @@ public class GrpcServerAutoConfiguration {
 	@Bean
 	GrpcServiceDiscoverer grpcServiceDiscoverer(ObjectProvider<BindableService> bindableServicesProvider) {
 		return new DefaultGrpcServiceDiscoverer(bindableServicesProvider);
+	}
+
+	@ConditionalOnBean(CompressorRegistry.class)
+	@Bean
+	<T extends ServerBuilder<T>> ServerBuilderCustomizer<T> compressionServerConfigurer(CompressorRegistry registry) {
+		return builder -> builder.compressorRegistry(registry);
+	}
+
+	@ConditionalOnBean(DecompressorRegistry.class)
+	@Bean
+	<T extends ServerBuilder<T>> ServerBuilderCustomizer<T> decompressionServerConfigurer(
+			DecompressorRegistry registry) {
+		return builder -> builder.decompressorRegistry(registry);
 	}
 
 }

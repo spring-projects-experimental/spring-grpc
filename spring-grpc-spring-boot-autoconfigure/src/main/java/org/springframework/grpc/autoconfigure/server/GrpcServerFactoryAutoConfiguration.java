@@ -19,6 +19,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import io.grpc.BindableService;
+import io.grpc.CompressorRegistry;
+import io.grpc.DecompressorRegistry;
+import io.grpc.ServerBuilder;
 import io.grpc.servlet.jakarta.GrpcServlet;
 import io.grpc.servlet.jakarta.ServletServerBuilder;
 
@@ -35,6 +38,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.Ordered;
+import org.springframework.grpc.server.ServerBuilderCustomizer;
 import org.springframework.util.unit.DataSize;
 
 /**
