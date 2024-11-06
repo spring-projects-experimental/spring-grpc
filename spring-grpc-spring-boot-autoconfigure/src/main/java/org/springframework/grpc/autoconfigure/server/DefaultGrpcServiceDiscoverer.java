@@ -16,35 +16,58 @@
 
 package org.springframework.grpc.autoconfigure.server;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import io.grpc.BindableService;
+import io.grpc.ServerInterceptor;
+import io.grpc.ServerInterceptors;
 import io.grpc.ServerServiceDefinition;
 
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.context.ApplicationContext;
 import org.springframework.grpc.server.GrpcServiceDiscoverer;
 
 /**
  * The default {@link GrpcServiceDiscoverer} that finds all {@link BindableService} beans
  * and configures and binds them.
  *
- * @author Michael (yidongnan@gmail.com)
  * @author Chris Bono
  */
 class DefaultGrpcServiceDiscoverer implements GrpcServiceDiscoverer {
 
 	private final ObjectProvider<BindableService> grpcServicesProvider;
 
-	DefaultGrpcServiceDiscoverer(ObjectProvider<BindableService> grpcServicesProvider) {
+	private final ObjectProvider<ServerInterceptor> serverInterceptorsProvider;
+
+	private final ApplicationContext applicationContext;
+
+	public DefaultGrpcServiceDiscoverer(ObjectProvider<BindableService> grpcServicesProvider,
+			ObjectProvider<ServerInterceptor> serverInterceptorsProvider, ApplicationContext applicationContext) {
 		this.grpcServicesProvider = grpcServicesProvider;
+		this.serverInterceptorsProvider = serverInterceptorsProvider;
+		this.applicationContext = applicationContext;
 	}
 
 	@Override
 	public List<ServerServiceDefinition> findServices() {
-		List<ServerServiceDefinition> list = new ArrayList<>(
-				grpcServicesProvider.orderedStream().map(BindableService::bindService).toList());
-		return list;
+		List<ServerInterceptor> globalInterceptors = findGlobalInterceptors();
+		return grpcServicesProvider.orderedStream()
+			.map(BindableService::bindService)
+			.map((svc) -> ServerInterceptors.interceptForward(svc, globalInterceptors))
+			.toList();
+	}
+
+	// VisibleForTesting
+	List<ServerInterceptor> findGlobalInterceptors() {
+		// We find unordered map of beans (keyed by name) with the annotation and then
+		// reverse the map for easy lookup by bean.
+		// We then get an ordered stream of all server interceptors and filter
+		// out those that are not present in map of annotated interceptor beans.
+		var nameToBeanMap = applicationContext.getBeansWithAnnotation(GlobalServerInterceptor.class);
+		var beanToNameMap = new HashMap<Object, String>();
+		nameToBeanMap.forEach((name, bean) -> beanToNameMap.put(bean, name));
+		return this.serverInterceptorsProvider.orderedStream().filter(beanToNameMap::containsKey).toList();
 	}
 
 }

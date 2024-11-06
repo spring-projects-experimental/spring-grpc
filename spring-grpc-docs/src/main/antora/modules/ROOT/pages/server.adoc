@@ -86,3 +86,23 @@ dependencies {
 The `spring.grpc.server.*` properties will be ignored in facour of the regular `server.*` properties in this case.
 The servlet that is created is mapped to process HTTP POST requests to the paths defined by the registered services, as `/<service-name>/*`.
 Clients can connect to the server using that path, which is what any gRPC client library will do.
+
+[[server-interceptor]]
+== Server Interceptors
+
+=== Global
+To add a server interceptor to be applied to all services you can simply register a server interceptor bean and then annotate it with `@GlobalServerInterceptor`.
+The interceptors are ordered according to their bean natural ordering (i.e. `@Order`).
+
+[source,java]
+----
+@Bean
+@Order(100)
+@GlobalServerInterceptor
+ServerInterceptor myGlobalLoggingInterceptor() {
+    return new MyLoggingInterceptor();
+}
+----
+
+=== Per-Service
+This is a **WIP** and will be available soon.
