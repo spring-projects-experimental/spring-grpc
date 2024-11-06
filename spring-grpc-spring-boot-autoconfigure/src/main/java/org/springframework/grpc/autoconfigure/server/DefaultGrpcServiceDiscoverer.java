@@ -16,6 +16,7 @@
 
 package org.springframework.grpc.autoconfigure.server;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import io.grpc.BindableService;
@@ -35,13 +36,20 @@ class DefaultGrpcServiceDiscoverer implements GrpcServiceDiscoverer {
 
 	private final ObjectProvider<BindableService> grpcServicesProvider;
 
-	DefaultGrpcServiceDiscoverer(ObjectProvider<BindableService> grpcServicesProvider) {
+	private ObjectProvider<ServerServiceDefinition> grpcServiceDefinitionsProvider;
+
+	DefaultGrpcServiceDiscoverer(ObjectProvider<BindableService> grpcServicesProvider,
+			ObjectProvider<ServerServiceDefinition> grpcServiceDefinitionsProvider) {
 		this.grpcServicesProvider = grpcServicesProvider;
+		this.grpcServiceDefinitionsProvider = grpcServiceDefinitionsProvider;
 	}
 
 	@Override
 	public List<ServerServiceDefinition> findServices() {
-		return grpcServicesProvider.orderedStream().map(BindableService::bindService).toList();
+		List<ServerServiceDefinition> list = new ArrayList<>(
+				grpcServicesProvider.orderedStream().map(BindableService::bindService).toList());
+		list.addAll(grpcServiceDefinitionsProvider.orderedStream().toList());
+		return list;
 	}
 
 }

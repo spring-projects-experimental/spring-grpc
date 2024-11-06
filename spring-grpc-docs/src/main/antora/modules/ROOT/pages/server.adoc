@@ -5,12 +5,15 @@ This section describes core concepts that Spring gRPC uses on the server side. W
 You only need to provide one or more beans of type `BindableService` to create a gRPC server, provided the classpath contains an implementation of a `Server`. The `BindableService` is a gRPC service that can be bound to a server.
 The `Server` is the gRPC server that listens for incoming requests and routes them to the appropriate service implementation.
 
-== Create a `BindableService`
+== Create a gRPC Service
 
-To create a gRPC server, you need to provide one or more beans of type `BindableService`.
+To create a gRPC server, you need to provide one or more beans of type `BindableService` or `ServerServiceDefinition`.
 There are some `BindableServices` available off the shelf that you could include in your application (an example is the reflection service from the `grpc-services` artifact which allows clients to browse the metadata of your services and download the Portobuf files). 
 Very commonly, you will create your own `BindableService` by extending the generated service implementation from your Protobuf file.
-The easiest way to do it is to simply add a Spring `@Service` annotation to the implementation class and have it picked up by the `@ComponentScan` in your Spring Boot application.
+The easiest way to activate it is to simply add a Spring `@Service` annotation to the implementation class and have it picked up by the `@ComponentScan` in your Spring Boot application.
+Alternatively, you could create an instance of it in a `@Configuration` class and return it as a bean, or return it's `ServerServiceDefinition`.
+The last option is useful if you need to add specific behaviour, like an interceptor, to the service.
+It is an error to have more than one instance of the same service name, so don't create both a `BindableService` and a `ServerServiceDefinition` bean for the same service.
 
 == Netty Server
 
