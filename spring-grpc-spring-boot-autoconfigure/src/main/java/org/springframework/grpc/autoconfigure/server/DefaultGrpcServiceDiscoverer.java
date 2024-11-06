@@ -36,19 +36,14 @@ class DefaultGrpcServiceDiscoverer implements GrpcServiceDiscoverer {
 
 	private final ObjectProvider<BindableService> grpcServicesProvider;
 
-	private ObjectProvider<ServerServiceDefinition> grpcServiceDefinitionsProvider;
-
-	DefaultGrpcServiceDiscoverer(ObjectProvider<BindableService> grpcServicesProvider,
-			ObjectProvider<ServerServiceDefinition> grpcServiceDefinitionsProvider) {
+	DefaultGrpcServiceDiscoverer(ObjectProvider<BindableService> grpcServicesProvider) {
 		this.grpcServicesProvider = grpcServicesProvider;
-		this.grpcServiceDefinitionsProvider = grpcServiceDefinitionsProvider;
 	}
 
 	@Override
 	public List<ServerServiceDefinition> findServices() {
 		List<ServerServiceDefinition> list = new ArrayList<>(
 				grpcServicesProvider.orderedStream().map(BindableService::bindService).toList());
-		list.addAll(grpcServiceDefinitionsProvider.orderedStream().toList());
 		return list;
 	}
 

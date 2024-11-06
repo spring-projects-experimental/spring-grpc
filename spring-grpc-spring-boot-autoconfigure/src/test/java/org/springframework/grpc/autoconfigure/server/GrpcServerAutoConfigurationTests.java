@@ -135,17 +135,6 @@ class GrpcServerAutoConfigurationTests {
 	}
 
 	@Test
-	void grpcServiceDiscovererWithServiceDefinitionAsExpected() {
-		ServerServiceDefinition serviceDefinition = ServerServiceDefinition.builder("my-other-service").build();
-		this.contextRunnerWithLifecyle()
-			.withBean(ServerServiceDefinition.class, () -> serviceDefinition)
-			.run((context) -> assertThat(context).getBean(GrpcServiceDiscoverer.class)
-				.extracting(GrpcServiceDiscoverer::findServices,
-						InstanceOfAssertFactories.list(ServerServiceDefinition.class))
-				.containsExactly(this.serviceDefinition, serviceDefinition));
-	}
-
-	@Test
 	void whenHasUserDefinedServerBuilderCustomizersDoesNotAutoConfigureBean() {
 		ServerBuilderCustomizers customCustomizers = mock(ServerBuilderCustomizers.class);
 		this.contextRunner()
