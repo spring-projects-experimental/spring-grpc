@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<!DOCTYPE suppressions PUBLIC
+		"-//Checkstyle//DTD SuppressionFilter Configuration 1.2//EN"
+		"https://checkstyle.org/dtds/suppressions_1_2.dtd">
+<suppressions>
+	<suppress files="package-info\.java" checks=".*" />
+	<suppress files="[\\/]test[\\/]" checks="RequireThis|AvoidStaticImport|Javadoc*" />
+	<suppress files="Proto" checks=".*"/>
+	<suppress files=".*Tests" checks="HideUtilityClassConstructor" />
+	<suppress files=".*Tests" checks="RegexpSinglelineJava" id="toLowerCaseWithoutLocale"/>
+	<suppress files=".*Tests" checks="RegexpSinglelineJava" id="toUpperCaseWithoutLocale"/>
+	<suppress files="[\\/]spring-grpc-docs[\\/]" checks="JavadocPackage|JavadocType|JavadocVariable|SpringDeprecatedCheck" />
+	<suppress files="[\\/]spring-grpc-docs[\\/]" checks="SpringJavadoc" message="\@since" />
+	<suppress files="[\\/]spring-grpc-docs[\\/].*jooq" checks="AvoidStaticImport" />
+</suppressions>

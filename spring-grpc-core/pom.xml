@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.springframework.grpc</groupId>
@@ -16,8 +16,10 @@
 
 	<scm>
 		<url>https://github.com/spring-projects-experimental/spring-grpc</url>
-		<connection>git://github.com/spring-projects-experimental/spring-grpc.git</connection>
-		<developerConnection>git@github.com:spring-projects-experimental/spring-grpc.git</developerConnection>
+		<connection>git://github.com/spring-projects-experimental/spring-grpc.git
+		</connection>
+		<developerConnection>git@github.com:spring-projects-experimental/spring-grpc.git
+		</developerConnection>
 	</scm>
 
 	<dependencies>
@@ -70,7 +72,11 @@
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter</artifactId>
-			<version>${junit.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.assertj</groupId>
+			<artifactId>assertj-core</artifactId>
 			<scope>test</scope>
 		</dependency>
 

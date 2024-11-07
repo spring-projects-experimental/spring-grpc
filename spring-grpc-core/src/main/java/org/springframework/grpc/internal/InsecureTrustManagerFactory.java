@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.grpc.internal;
 
 import java.net.Socket;
@@ -36,9 +37,12 @@ import javax.net.ssl.X509TrustManager;
  * trust manager. This trust manager does not perform any certificate validation and
  * accepts all certificates. It is intended for testing or development purposes only and
  * should not be used in production environments.
+ *
+ * @author David Syer
  */
 public class InsecureTrustManagerFactory extends TrustManagerFactory {
 
+	/** Single instance of the factory. */
 	public static final TrustManagerFactory INSTANCE = new InsecureTrustManagerFactory();
 
 	private static final Provider provider = new Provider("", "0.0", "") {

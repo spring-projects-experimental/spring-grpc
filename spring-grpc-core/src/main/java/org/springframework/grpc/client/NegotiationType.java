@@ -13,11 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.grpc.client;
 
 /**
  * Identifies the negotiation used for starting up HTTP/2.
  *
+ * @author David Syer
  * @see io.grpc.netty.NegotiationType NegotiationType
  */
 public enum NegotiationType {

@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -26,10 +26,10 @@ import javax.net.ssl.TrustManagerFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.grpc.internal.GrpcUtils;
 
 import com.google.common.collect.Lists;
-
 import io.grpc.Grpc;
 import io.grpc.InsecureServerCredentials;
 import io.grpc.Server;
@@ -46,9 +46,9 @@ import io.grpc.TlsServerCredentials.ClientAuth;
  * <p>
  * The server builder implementation is discovered via Java's SPI mechanism.
  *
+ * @param <T> the type of server builder
  * @author David Syer
  * @author Chris Bono
- * @param <T> the type of server builder
  * @see ServerProvider#provider()
  */
 public class DefaultGrpcServerFactory<T extends ServerBuilder<T>> implements GrpcServerFactory {
@@ -116,6 +116,7 @@ public class DefaultGrpcServerFactory<T extends ServerBuilder<T>> implements Grp
 	}
 
 	/**
+	 * Get server credentials.
 	 * @return some server credentials (default is insecure)
 	 */
 	protected ServerCredentials credentials() {
@@ -159,7 +160,7 @@ public class DefaultGrpcServerFactory<T extends ServerBuilder<T>> implements Grp
 			if (!serviceNames.add(serviceName)) {
 				throw new IllegalStateException("Found duplicate service implementation: " + serviceName);
 			}
-			logger.info("Registered gRPC service: " + serviceName);
+			this.logger.info("Registered gRPC service: " + serviceName);
 			builder.addService(service);
 		});
 	}

@@ -12,7 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ * */
+
 package org.springframework.grpc.client;
 
 import java.util.ArrayList;
@@ -58,10 +59,10 @@ public class DefaultGrpcChannelFactory implements GrpcChannelFactory, Disposable
 
 	@Override
 	public ManagedChannelBuilder<?> createChannel(String authority) {
-		ManagedChannelBuilder<?> target = builders.computeIfAbsent(authority, path -> {
-			ManagedChannelBuilder<?> builder = newChannel(targets.getTarget(path),
-					credentials.getChannelCredentials(path));
-			for (GrpcChannelConfigurer configurer : configurers) {
+		ManagedChannelBuilder<?> target = this.builders.computeIfAbsent(authority, path -> {
+			ManagedChannelBuilder<?> builder = newChannel(this.targets.getTarget(path),
+					this.credentials.getChannelCredentials(path));
+			for (GrpcChannelConfigurer configurer : this.configurers) {
 				configurer.configure(path, builder);
 			}
 			return builder;
@@ -75,8 +76,8 @@ public class DefaultGrpcChannelFactory implements GrpcChannelFactory, Disposable
 	}
 
 	@Override
-	public void destroy() throws Exception {
-		for (ManagedChannel channel : channels.values()) {
+	public void destroy() {
+		for (ManagedChannel channel : this.channels.values()) {
 			channel.shutdown();
 		}
 	}
@@ -87,19 +88,20 @@ public class DefaultGrpcChannelFactory implements GrpcChannelFactory, Disposable
 
 		private final String authority;
 
-		public DisposableChannelBuilder(String authority, ManagedChannelBuilder<?> delegate) {
+		DisposableChannelBuilder(String authority, ManagedChannelBuilder<?> delegate) {
 			this.authority = authority;
 			this.delegate = delegate;
 		}
 
 		@Override
 		protected ManagedChannelBuilder<?> delegate() {
-			return delegate;
+			return this.delegate;
 		}
 
 		@Override
 		public ManagedChannel build() {
-			ManagedChannel channel = channels.computeIfAbsent(authority, name -> super.build());
+			ManagedChannel channel = DefaultGrpcChannelFactory.this.channels.computeIfAbsent(this.authority,
+					name -> super.build());
 			return channel;
 		}
 

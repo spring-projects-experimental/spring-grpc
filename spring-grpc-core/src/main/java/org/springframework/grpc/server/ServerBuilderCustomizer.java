@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.grpc.server;
 
 import io.grpc.ServerBuilder;
@@ -20,8 +21,8 @@ import io.grpc.ServerBuilder;
 /**
  * Callback interface that can be used to customize a {@link ServerBuilder}.
  *
- * @author Chris Bono
  * @param <T> the type of server builder
+ * @author Chris Bono
  */
 @FunctionalInterface
 public interface ServerBuilderCustomizer<T extends ServerBuilder<T>> {

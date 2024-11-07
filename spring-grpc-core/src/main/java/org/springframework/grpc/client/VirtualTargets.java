@@ -13,14 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.grpc.client;
 
 import java.util.regex.Pattern;
 
 public interface VirtualTargets {
 
-	static Pattern AUTHORITY_PATTERN = Pattern.compile("([^:]+)(?::(\\d+))?");
+	/** Regex to match the default authority pattern. */
+	Pattern AUTHORITY_PATTERN = Pattern.compile("([^:]+)(?::(\\d+))?");
 
+	/** Default VirtualTargets instance. */
 	VirtualTargets DEFAULT = path -> {
 		if (AUTHORITY_PATTERN.matcher(path).matches()) {
 			return "static://" + path;
