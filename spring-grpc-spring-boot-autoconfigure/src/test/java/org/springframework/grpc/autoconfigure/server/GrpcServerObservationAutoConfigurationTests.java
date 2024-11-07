@@ -16,20 +16,17 @@
 
 package org.springframework.grpc.autoconfigure.server;
 
-import io.grpc.ServerBuilder;
-import io.micrometer.core.instrument.binder.grpc.ObservationGrpcServerInterceptor;
-import io.micrometer.observation.ObservationRegistry;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.assertj.core.api.Condition;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
-import org.springframework.grpc.server.ServerBuilderCustomizer;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import io.micrometer.core.instrument.binder.grpc.ObservationGrpcServerInterceptor;
+import io.micrometer.observation.ObservationRegistry;
 
 /**
  * Tests for the {@link GrpcServerObservationAutoConfiguration}.
@@ -79,19 +76,12 @@ class GrpcServerObservationAutoConfigurationTests {
 			.run(context -> assertThat(context).doesNotHaveBean(GrpcServerObservationAutoConfiguration.class));
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Test
 	void whenAllConditionsAreMetThenInterceptorConfiguredAsExpected() {
 		this.validContextRunner().run((context) -> {
-			assertThat(context).hasSingleBean(ObservationGrpcServerInterceptor.class);
-			assertThat(context).hasSingleBean(ServerBuilderCustomizer.class);
-			// ensure the customizer in fact adds the interceptor to the builder
-			ObservationGrpcServerInterceptor serverInterceptor = context
-				.getBean(ObservationGrpcServerInterceptor.class);
-			ServerBuilder<?> serverBuilder = mock();
-			ServerBuilderCustomizer serverBuilderCustomizer = context.getBean(ServerBuilderCustomizer.class);
-			serverBuilderCustomizer.customize(serverBuilder);
-			verify(serverBuilder).intercept(serverInterceptor);
+			assertThat(context).hasSingleBean(ObservationGrpcServerInterceptor.class)
+				.has(new Condition<>(beans -> beans.getBeansWithAnnotation(GlobalServerInterceptor.class).size() == 1,
+						"One global interceptor expected"));
 		});
 	}
 
