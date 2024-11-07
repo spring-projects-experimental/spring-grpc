@@ -83,9 +83,12 @@ dependencies {
 }
 ----
 
-The `spring.grpc.server.*` properties will be ignored in facour of the regular `server.*` properties in this case.
+The `spring.grpc.server.*` properties will be ignored in facour of the regular `server.*` properties in this case (with the exception of `spring.grpc.server.max-inbound-message-size`).
 The servlet that is created is mapped to process HTTP POST requests to the paths defined by the registered services, as `/<service-name>/*`.
 Clients can connect to the server using that path, which is what any gRPC client library will do.
+
+The gRPC server has fewer configuration options when running in a servlet container, as the servlet container is responsible for the network layer.
+You can still add `ServerBuilderCustomizer` beans to customize the server as it is built, but some features common in the "native" builders are not available and may throw exceptions at runtime.
 
 [[server-interceptor]]
 == Server Interceptors
