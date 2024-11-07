@@ -10,6 +10,13 @@ Before submitting a PR, please run the following commands to ensure proper forma
 
 The `-Pjavadoc` is a profile that enables Javadoc processing so as to avoid a long build time when developing.
 
+<dl><dt><strong>📌 NOTE</strong></dt><dd>
+
+We use the [Spring JavaFormat](https://github.com/spring-io/spring-javaformat) project to apply code formatting conventions as well as checkstyle rules for many of our code conventions.
+
+The code can also be formatted from your IDE when the formatter plugin [has been installed](https://github.com/spring-projects-experimental/spring-grpc/wiki/Working-with-the-Code#install-the-spring-formatter-plugin).
+</dd></dl>
+
 ## Contributing a New GRPC Features
 
 To contribute a new feature, adhere to the following steps:

@@ -12,7 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ * */
+
 package org.springframework.grpc.client;
 
 import io.grpc.ChannelCredentials;
@@ -20,10 +21,13 @@ import io.grpc.InsecureChannelCredentials;
 
 /**
  * A provider for obtaining channel credentials for gRPC client.
+ *
+ * @author David Syer
  */
 public interface ChannelCredentialsProvider {
 
-	static final ChannelCredentialsProvider INSECURE = path -> InsecureChannelCredentials.create();
+	/** Insecure credentials provider instance. */
+	ChannelCredentialsProvider INSECURE = path -> InsecureChannelCredentials.create();
 
 	ChannelCredentials getChannelCredentials(String path);
 

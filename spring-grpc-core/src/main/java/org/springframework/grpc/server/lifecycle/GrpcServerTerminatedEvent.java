@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,6 +15,7 @@
  *
  * Partial copy from net.devh:grpc-spring-boot-starter.
  */
+
 package org.springframework.grpc.server.lifecycle;
 
 import java.time.Clock;
@@ -25,8 +26,8 @@ import io.grpc.Server;
  * This event will be fired after the server completed to shutdown. The server will no
  * longer process requests.
  *
- * @see Server#isTerminated()
  * @author Daniel Theuke (daniel.theuke@heuboe.de)
+ * @see Server#isTerminated()
  */
 public class GrpcServerTerminatedEvent extends GrpcServerLifecycleEvent {
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2024 the original author or authors.
+ * Copyright 2023-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,12 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.grpc.internal;
 
-public class GrpcUtils {
+/**
+ * Provides convenience methods for various gRPC functions.
+ *
+ * @author David Syer
+ */
+public final class GrpcUtils {
 
+	private GrpcUtils() {
+	}
+
+	/** Default port to use. */
 	public static int DEFAULT_PORT = 9090;
 
+	/**
+	 * Gets port given an address.
+	 * @param address the address to extract port from
+	 * @return the port
+	 */
 	public static int getPort(String address) {
 		String value = address;
 		if (value.contains(":")) {
