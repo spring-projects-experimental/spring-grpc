@@ -27,4 +27,5 @@ public class GrpcServerReflectionAutoConfiguration {
 	public BindableService serverReflection() {
 		return ProtoReflectionService.newInstance();
 	}
+
 }
