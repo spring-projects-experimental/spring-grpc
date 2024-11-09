@@ -12,7 +12,8 @@ import io.grpc.protobuf.services.ProtoReflectionService;
 /**
  * {@link EnableAutoConfiguration Auto-configuration} for gRPC Reflection service
  * <p>
- * spring.grpc.reflection.enabled=true must be present in configuration in order for the
+ * This auto-configuration is enabled by default. To disable it, set the configuration
+ * flag {spring.grpc.server.reflection.enabled=false} in your application properties.
  * auto-configuration to execute
  *
  * @author Haris Zujo
