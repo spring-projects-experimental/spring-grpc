@@ -11,6 +11,13 @@ Before submitting a PR, please run the following commands to ensure proper forma
 
 The `-Pjavadoc` is a profile that enables Javadoc processing so as to avoid a long build time when developing.
 
+[NOTE]
+====
+We use the https://github.com/spring-io/spring-javaformat[Spring JavaFormat] project to apply code formatting conventions as well as checkstyle rules for many of our code conventions.
+
+The code can also be formatted from your IDE when the formatter plugin https://github.com/spring-projects-experimental/spring-grpc/wiki/Working-with-the-Code#install-the-spring-formatter-plugin[has been installed].
+====
+
 == Contributing a New GRPC Features
 
 To contribute a new feature, adhere to the following steps:
@@ -103,4 +110,3 @@ You may also be asked to rework the submission.
 
 If asked to make corrections, simply push the changes against the same branch, and your pull request will be updated.
 In other words, you do not need to create a new pull request when asked to make changes.
-

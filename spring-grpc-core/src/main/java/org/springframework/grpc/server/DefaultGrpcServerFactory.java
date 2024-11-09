@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,8 +21,15 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import com.google.common.collect.Lists;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.TrustManagerFactory;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import org.springframework.grpc.internal.GrpcUtils;
+
+import com.google.common.collect.Lists;
 import io.grpc.Grpc;
 import io.grpc.InsecureServerCredentials;
 import io.grpc.Server;
@@ -30,19 +37,18 @@ import io.grpc.ServerBuilder;
 import io.grpc.ServerCredentials;
 import io.grpc.ServerProvider;
 import io.grpc.ServerServiceDefinition;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.grpc.internal.GrpcUtils;
+import io.grpc.TlsServerCredentials;
+import io.grpc.TlsServerCredentials.Builder;
+import io.grpc.TlsServerCredentials.ClientAuth;
 
 /**
  * Default implementation for {@link GrpcServerFactory gRPC service factories}.
  * <p>
  * The server builder implementation is discovered via Java's SPI mechanism.
  *
+ * @param <T> the type of server builder
  * @author David Syer
  * @author Chris Bono
- * @param <T> the type of server builder
  * @see ServerProvider#provider()
  */
 public class DefaultGrpcServerFactory<T extends ServerBuilder<T>> implements GrpcServerFactory {
@@ -56,9 +62,23 @@ public class DefaultGrpcServerFactory<T extends ServerBuilder<T>> implements Grp
 
 	private final List<ServerBuilderCustomizer<T>> serverBuilderCustomizers;
 
+	private KeyManagerFactory keyManager;
+
+	private TrustManagerFactory trustManager;
+
+	private ClientAuth clientAuth;
+
 	public DefaultGrpcServerFactory(String address, List<ServerBuilderCustomizer<T>> serverBuilderCustomizers) {
 		this.address = address;
 		this.serverBuilderCustomizers = Objects.requireNonNull(serverBuilderCustomizers, "serverBuilderCustomizers");
+	}
+
+	public DefaultGrpcServerFactory(String address, List<ServerBuilderCustomizer<T>> serverBuilderCustomizers,
+			KeyManagerFactory keyManager, TrustManagerFactory trustManager, ClientAuth clientAuth) {
+		this(address, serverBuilderCustomizers);
+		this.keyManager = keyManager;
+		this.trustManager = trustManager;
+		this.clientAuth = clientAuth;
 	}
 
 	protected String address() {
@@ -96,10 +116,21 @@ public class DefaultGrpcServerFactory<T extends ServerBuilder<T>> implements Grp
 	}
 
 	/**
+	 * Get server credentials.
 	 * @return some server credentials (default is insecure)
 	 */
 	protected ServerCredentials credentials() {
-		return InsecureServerCredentials.create();
+		if (this.keyManager == null || port() == -1) {
+			return InsecureServerCredentials.create();
+		}
+		Builder builder = TlsServerCredentials.newBuilder().keyManager(this.keyManager.getKeyManagers());
+		if (this.trustManager != null) {
+			builder.trustManager(this.trustManager.getTrustManagers());
+		}
+		if (this.clientAuth != null) {
+			builder.clientAuth(this.clientAuth);
+		}
+		return builder.build();
 	}
 
 	/**
@@ -129,7 +160,7 @@ public class DefaultGrpcServerFactory<T extends ServerBuilder<T>> implements Grp
 			if (!serviceNames.add(serviceName)) {
 				throw new IllegalStateException("Found duplicate service implementation: " + serviceName);
 			}
-			logger.info("Registered gRPC service: " + serviceName);
+			this.logger.info("Registered gRPC service: " + serviceName);
 			builder.addService(service);
 		});
 	}

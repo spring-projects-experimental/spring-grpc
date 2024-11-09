@@ -25,6 +25,8 @@ import org.springframework.grpc.internal.GrpcUtils;
 import org.springframework.util.unit.DataSize;
 import org.springframework.util.unit.DataUnit;
 
+import io.grpc.TlsServerCredentials.ClientAuth;
+
 @ConfigurationProperties(prefix = "spring.grpc.server")
 public class GrpcServerProperties {
 
@@ -254,9 +256,20 @@ public class GrpcServerProperties {
 		private Boolean enabled;
 
 		/**
+		 * Client authentication mode.
+		 */
+		private ClientAuth clientAuth = ClientAuth.NONE;
+
+		/**
 		 * SSL bundle name.
 		 */
 		private String bundle;
+
+		/**
+		 * Flag to indicate that client authentication is secure (i.e. certificates are
+		 * checked). Do not set this to false in production.
+		 */
+		private boolean secure = true;
 
 		public boolean isEnabled() {
 			return (this.enabled != null) ? this.enabled : this.bundle != null;
@@ -282,6 +295,22 @@ public class GrpcServerProperties {
 
 		public void setBundle(String bundle) {
 			this.bundle = bundle;
+		}
+
+		public void setClientAuth(ClientAuth clientAuth) {
+			this.clientAuth = clientAuth;
+		}
+
+		public ClientAuth getClientAuth() {
+			return clientAuth;
+		}
+
+		public void setSecure(boolean secure) {
+			this.secure = secure;
+		}
+
+		public boolean isSecure() {
+			return this.secure;
 		}
 
 	}

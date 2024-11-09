@@ -78,7 +78,7 @@
 		<spring-boot.version>3.3.4</spring-boot.version>
 		<jackson.version>2.17.2</jackson.version>
 		<junit.version>5.10.5</junit.version>
-
+		<assertj.version>3.26.3</assertj.version>
 		<!-- documentation dependencies -->
 		<io.spring.maven.antora-version>0.0.4</io.spring.maven.antora-version>
 		<asciidoctorj-pdf.version>1.6.2</asciidoctorj-pdf.version>		<!-- FIXME build failure with
@@ -103,8 +103,17 @@
 		<maven-site-plugin.version>4.0.0-M13</maven-site-plugin.version>
 		<maven-project-info-reports-plugin.version>3.4.5</maven-project-info-reports-plugin.version>
 		<maven-jar-plugin.version>3.3.0</maven-jar-plugin.version>
-		<spring-javaformat-maven-plugin.version>0.0.39</spring-javaformat-maven-plugin.version>
-
+		<!-- BEGIN format + checkstyle properties -->
+		<spring-javaformat-maven-plugin.version>0.0.43</spring-javaformat-maven-plugin.version>
+		<maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
+		<puppycrawl-tools-checkstyle.version>9.3</puppycrawl-tools-checkstyle.version>
+		<spring-javaformat-checkstyle.version>0.0.43</spring-javaformat-checkstyle.version>
+		<disable.format.checks>false</disable.format.checks>
+		<disable.checkstyle.checks>false</disable.checkstyle.checks>
+		<maven-checkstyle-plugin.failsOnError>true</maven-checkstyle-plugin.failsOnError>
+		<maven-checkstyle-plugin.failOnViolation>true</maven-checkstyle-plugin.failOnViolation>
+		<maven-checkstyle-plugin.includeTestSourceDirectory>true</maven-checkstyle-plugin.includeTestSourceDirectory>
+		<!-- END format + checkstyle properties -->
 	</properties>
 
 	<build>
@@ -117,8 +126,49 @@
 					<execution>
 						<phase>validate</phase>
 						<inherited>true</inherited>
+						<configuration>
+							<skip>${disable.format.checks}</skip>
+						</configuration>
 						<goals>
 							<goal>validate</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-checkstyle-plugin</artifactId>
+				<version>${maven-checkstyle-plugin.version}</version>
+				<dependencies>
+					<dependency>
+						<groupId>com.puppycrawl.tools</groupId>
+						<artifactId>checkstyle</artifactId>
+						<version>${puppycrawl-tools-checkstyle.version}</version>
+					</dependency>
+					<dependency>
+						<groupId>io.spring.javaformat</groupId>
+						<artifactId>spring-javaformat-checkstyle</artifactId>
+						<version>${spring-javaformat-checkstyle.version}</version>
+					</dependency>
+				</dependencies>
+				<executions>
+					<execution>
+						<id>checkstyle-validation</id>
+						<phase>validate</phase>
+						<inherited>true</inherited>
+						<configuration>
+							<configLocation>src/checkstyle/checkstyle.xml</configLocation>
+							<propertyExpansion>
+								config_loc=src/checkstyle
+							</propertyExpansion>
+							<skip>${disable.checkstyle.checks}</skip>
+							<includeTestSourceDirectory>${maven-checkstyle-plugin.includeTestSourceDirectory}</includeTestSourceDirectory>
+							<failsOnError>${maven-checkstyle-plugin.failsOnError}</failsOnError>
+							<failOnViolation>${maven-checkstyle-plugin.failOnViolation}</failOnViolation>
+							<consoleOutput>true</consoleOutput>
+						</configuration>
+						<goals>
+							<goal>check</goal>
 						</goals>
 					</execution>
 				</executions>
@@ -435,6 +485,20 @@
 				<groupId>org.springframework.grpc</groupId>
 				<artifactId>spring-grpc-dependencies</artifactId>
 				<version>${project.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.junit</groupId>
+				<artifactId>junit-bom</artifactId>
+				<version>${junit.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.assertj</groupId>
+				<artifactId>assertj-bom</artifactId>
+				<version>${assertj.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>

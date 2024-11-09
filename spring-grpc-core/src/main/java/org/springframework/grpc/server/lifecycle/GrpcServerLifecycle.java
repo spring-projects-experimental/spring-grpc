@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,14 +19,15 @@
 package org.springframework.grpc.server.lifecycle;
 
 import static java.util.Objects.requireNonNull;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.grpc.server.GrpcServerFactory;
@@ -43,7 +44,7 @@ public class GrpcServerLifecycle implements SmartLifecycle {
 
 	private static final Log logger = LogFactory.getLog(GrpcServerLifecycle.class);
 
-	private static AtomicInteger serverCounter = new AtomicInteger(-1);
+	private static final AtomicInteger serverCounter = new AtomicInteger(-1);
 
 	private final GrpcServerFactory factory;
 
@@ -54,7 +55,7 @@ public class GrpcServerLifecycle implements SmartLifecycle {
 	private Server server;
 
 	/**
-	 * Creates a new GrpcServerLifecycle
+	 * Creates a new GrpcServerLifecycle.
 	 * @param factory The server factory to use.
 	 * @param shutdownGracePeriod The time to wait for the server to gracefully shut down.
 	 * @param eventPublisher The event publisher to use.
@@ -150,7 +151,7 @@ public class GrpcServerLifecycle implements SmartLifecycle {
 			// the spring context
 			try {
 				if (millis > 0) {
-					localServer.awaitTermination(millis, MILLISECONDS);
+					localServer.awaitTermination(millis, TimeUnit.MILLISECONDS);
 				}
 				else if (millis == 0) {
 					// Do not wait

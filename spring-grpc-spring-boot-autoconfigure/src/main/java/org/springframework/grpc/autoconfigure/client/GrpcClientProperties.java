@@ -24,6 +24,8 @@ import java.util.concurrent.TimeUnit;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.convert.DataSizeUnit;
 import org.springframework.boot.convert.DurationUnit;
+import org.springframework.boot.ssl.SslBundle;
+import org.springframework.boot.ssl.SslBundles;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.StandardEnvironment;
@@ -521,6 +523,14 @@ public class GrpcClientProperties implements EnvironmentAware {
 
 		}
 
+	}
+
+	public SslBundle sslBundle(SslBundles bundles, String path) {
+		NamedChannel channel = this.getChannel(path);
+		if (!channel.getSsl().isEnabled()) {
+			return null;
+		}
+		return bundles.getBundle(this.getChannel(path).getSsl().getBundle());
 	}
 
 }

@@ -23,15 +23,21 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.grpc.autoconfigure.common.codec.GrpcCodecConfiguration;
 import org.springframework.grpc.server.GrpcServerFactory;
+import org.springframework.grpc.server.GrpcServiceDiscoverer;
 import org.springframework.grpc.server.ServerBuilderCustomizer;
 import org.springframework.grpc.server.lifecycle.GrpcServerLifecycle;
 
 import io.grpc.BindableService;
+import io.grpc.CompressorRegistry;
+import io.grpc.DecompressorRegistry;
+import io.grpc.ServerBuilder;
+import io.grpc.ServerInterceptor;
 
 /**
  * {@link EnableAutoConfiguration Auto-configuration} for gRPC server-side components.
@@ -67,6 +73,27 @@ public class GrpcServerAutoConfiguration {
 	@Bean
 	ServerBuilderCustomizers serverBuilderCustomizers(ObjectProvider<ServerBuilderCustomizer<?>> customizers) {
 		return new ServerBuilderCustomizers(customizers.orderedStream().toList());
+	}
+
+	@ConditionalOnMissingBean
+	@Bean
+	GrpcServiceDiscoverer grpcServiceDiscoverer(ObjectProvider<BindableService> bindableServicesProvider,
+			ObjectProvider<ServerInterceptor> serverInterceptorsProvider, ApplicationContext applicationContext) {
+		return new DefaultGrpcServiceDiscoverer(bindableServicesProvider, serverInterceptorsProvider,
+				applicationContext);
+	}
+
+	@ConditionalOnBean(CompressorRegistry.class)
+	@Bean
+	<T extends ServerBuilder<T>> ServerBuilderCustomizer<T> compressionServerConfigurer(CompressorRegistry registry) {
+		return builder -> builder.compressorRegistry(registry);
+	}
+
+	@ConditionalOnBean(DecompressorRegistry.class)
+	@Bean
+	<T extends ServerBuilder<T>> ServerBuilderCustomizer<T> decompressionServerConfigurer(
+			DecompressorRegistry registry) {
+		return builder -> builder.decompressorRegistry(registry);
 	}
 
 }

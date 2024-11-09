@@ -19,6 +19,7 @@
 		<configprops.path>${project.basedir}/src/main/antora/modules/ROOT/partials/_configprops.adoc</configprops.path>
 		<configprops.inclusionPattern>spring.grpc.*</configprops.inclusionPattern>
 		<jruby.version>9.4.6.0</jruby.version>
+		<disable.checkstyle.checks>true</disable.checkstyle.checks>
 	</properties>
 	<!-- Dependencies used to build the config props doc generator -->
 	<dependencies>

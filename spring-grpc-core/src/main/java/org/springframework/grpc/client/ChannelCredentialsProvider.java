@@ -12,25 +12,23 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ * */
+
 package org.springframework.grpc.client;
 
-import java.util.List;
+import io.grpc.ChannelCredentials;
+import io.grpc.InsecureChannelCredentials;
 
-import io.grpc.ManagedChannelBuilder;
-import io.grpc.netty.NettyChannelBuilder;
+/**
+ * A provider for obtaining channel credentials for gRPC client.
+ *
+ * @author David Syer
+ */
+public interface ChannelCredentialsProvider {
 
-public class NettyGrpcChannelFactory extends DefaultGrpcChannelFactory {
+	/** Insecure credentials provider instance. */
+	ChannelCredentialsProvider INSECURE = path -> InsecureChannelCredentials.create();
 
-	public NettyGrpcChannelFactory(List<GrpcChannelConfigurer> configurers) {
-		super(configurers);
-	}
-
-	protected ManagedChannelBuilder<?> newChannel(String path) {
-		if (path.startsWith("unix:")) {
-			return super.newChannel(path);
-		}
-		return NettyChannelBuilder.forTarget(path);
-	}
+	ChannelCredentials getChannelCredentials(String path);
 
 }

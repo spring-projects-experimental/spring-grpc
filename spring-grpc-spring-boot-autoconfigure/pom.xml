@@ -20,6 +20,10 @@
 		<developerConnection>git@github.com:spring-projects-experimental/spring-grpc.git</developerConnection>
 	</scm>
 
+	<properties>
+		<disable.checkstyle.checks>true</disable.checkstyle.checks>
+	</properties>
+
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
@@ -74,6 +78,16 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter</artifactId>
 			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-observation</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-core</artifactId>
+			<optional>true</optional>
 		</dependency>
 
 		<!-- test dependencies -->

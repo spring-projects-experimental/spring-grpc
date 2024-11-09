@@ -19,9 +19,8 @@ package org.springframework.grpc.autoconfigure.server;
 import java.util.List;
 
 import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.TrustManagerFactory;
 
-import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -30,14 +29,13 @@ import org.springframework.boot.ssl.SslBundles;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.grpc.server.GrpcServerFactory;
+import org.springframework.grpc.server.GrpcServiceDiscoverer;
 import org.springframework.grpc.server.NettyGrpcServerFactory;
 import org.springframework.grpc.server.ServerBuilderCustomizer;
 import org.springframework.grpc.server.ShadedNettyGrpcServerFactory;
 
-import io.grpc.BindableService;
-import io.grpc.CompressorRegistry;
-import io.grpc.DecompressorRegistry;
 import io.grpc.netty.NettyServerBuilder;
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 
 /**
  * Configurations for {@link GrpcServerFactory gRPC server factories}.
@@ -54,34 +52,24 @@ class GrpcServerFactoryConfigurations {
 
 		@Bean
 		ShadedNettyGrpcServerFactory shadedNettyGrpcServerFactory(GrpcServerProperties properties,
-				ObjectProvider<BindableService> grpcServicesProvider, ServerBuilderCustomizers serverBuilderCustomizers,
+				GrpcServiceDiscoverer grpcServicesDiscoverer, ServerBuilderCustomizers serverBuilderCustomizers,
 				SslBundles bundles) {
 			ShadedNettyServerFactoryPropertyMapper mapper = new ShadedNettyServerFactoryPropertyMapper(properties);
 			List<ServerBuilderCustomizer<io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder>> builderCustomizers = List
 				.of(mapper::customizeServerBuilder, serverBuilderCustomizers::customize);
 			KeyManagerFactory keyManager = null;
+			TrustManagerFactory trustManager = null;
 			if (properties.getSsl().isEnabled()) {
 				SslBundle bundle = bundles.getBundle(properties.getSsl().getBundle());
 				keyManager = bundle.getManagers().getKeyManagerFactory();
+				trustManager = properties.getSsl().isSecure() ? bundle.getManagers().getTrustManagerFactory()
+						: io.grpc.netty.shaded.io.netty.handler.ssl.util.InsecureTrustManagerFactory.INSTANCE;
+				trustManager = bundle.getManagers().getTrustManagerFactory();
 			}
-			ShadedNettyGrpcServerFactory factory = new ShadedNettyGrpcServerFactory(properties.getAddress(), keyManager,
-					builderCustomizers);
-			grpcServicesProvider.orderedStream().map(BindableService::bindService).forEach(factory::addService);
+			ShadedNettyGrpcServerFactory factory = new ShadedNettyGrpcServerFactory(properties.getAddress(),
+					builderCustomizers, keyManager, trustManager, properties.getSsl().getClientAuth());
+			grpcServicesDiscoverer.findServices().forEach(factory::addService);
 			return factory;
-		}
-
-		@ConditionalOnBean(CompressorRegistry.class)
-		@Bean
-		ServerBuilderCustomizer<io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder> compressionServerConfigurer(
-				CompressorRegistry registry) {
-			return builder -> builder.compressorRegistry(registry);
-		}
-
-		@ConditionalOnBean(DecompressorRegistry.class)
-		@Bean
-		ServerBuilderCustomizer<io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder> decompressionServerConfigurer(
-				DecompressorRegistry registry) {
-			return builder -> builder.decompressorRegistry(registry);
 		}
 
 	}
@@ -94,32 +82,23 @@ class GrpcServerFactoryConfigurations {
 
 		@Bean
 		NettyGrpcServerFactory nettyGrpcServerFactory(GrpcServerProperties properties,
-				ObjectProvider<BindableService> grpcServicesProvider, ServerBuilderCustomizers serverBuilderCustomizers,
+				GrpcServiceDiscoverer grpcServicesDiscoverer, ServerBuilderCustomizers serverBuilderCustomizers,
 				SslBundles bundles) {
 			NettyServerFactoryPropertyMapper mapper = new NettyServerFactoryPropertyMapper(properties);
 			List<ServerBuilderCustomizer<NettyServerBuilder>> builderCustomizers = List
 				.of(mapper::customizeServerBuilder, serverBuilderCustomizers::customize);
 			KeyManagerFactory keyManager = null;
+			TrustManagerFactory trustManager = null;
 			if (properties.getSsl().isEnabled()) {
 				SslBundle bundle = bundles.getBundle(properties.getSsl().getBundle());
 				keyManager = bundle.getManagers().getKeyManagerFactory();
+				trustManager = properties.getSsl().isSecure() ? bundle.getManagers().getTrustManagerFactory()
+						: InsecureTrustManagerFactory.INSTANCE;
 			}
-			NettyGrpcServerFactory factory = new NettyGrpcServerFactory(properties.getAddress(), keyManager,
-					builderCustomizers);
-			grpcServicesProvider.orderedStream().map(BindableService::bindService).forEach(factory::addService);
+			NettyGrpcServerFactory factory = new NettyGrpcServerFactory(properties.getAddress(), builderCustomizers,
+					keyManager, trustManager, properties.getSsl().getClientAuth());
+			grpcServicesDiscoverer.findServices().forEach(factory::addService);
 			return factory;
-		}
-
-		@ConditionalOnBean(CompressorRegistry.class)
-		@Bean
-		ServerBuilderCustomizer<NettyServerBuilder> compressionServerConfigurer(CompressorRegistry registry) {
-			return builder -> builder.compressorRegistry(registry);
-		}
-
-		@ConditionalOnBean(DecompressorRegistry.class)
-		@Bean
-		ServerBuilderCustomizer<NettyServerBuilder> decompressionServerConfigurer(DecompressorRegistry registry) {
-			return builder -> builder.decompressorRegistry(registry);
 		}
 
 	}

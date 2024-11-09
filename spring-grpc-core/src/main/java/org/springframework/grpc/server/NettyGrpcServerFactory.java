@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,9 +19,9 @@ package org.springframework.grpc.server;
 import java.util.List;
 
 import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.TrustManagerFactory;
 
-import io.grpc.ServerCredentials;
-import io.grpc.TlsServerCredentials;
+import io.grpc.TlsServerCredentials.ClientAuth;
 import io.grpc.netty.NettyServerBuilder;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerDomainSocketChannel;
@@ -35,12 +35,10 @@ import io.netty.channel.unix.DomainSocketAddress;
  */
 public class NettyGrpcServerFactory extends DefaultGrpcServerFactory<NettyServerBuilder> {
 
-	private KeyManagerFactory keyManager;
-
-	public NettyGrpcServerFactory(String address, KeyManagerFactory keyManager,
-			List<ServerBuilderCustomizer<NettyServerBuilder>> serverBuilderCustomizers) {
-		super(address, serverBuilderCustomizers);
-		this.keyManager = keyManager;
+	public NettyGrpcServerFactory(String address,
+			List<ServerBuilderCustomizer<NettyServerBuilder>> serverBuilderCustomizers, KeyManagerFactory keyManager,
+			TrustManagerFactory trustManager, ClientAuth clientAuth) {
+		super(address, serverBuilderCustomizers, keyManager, trustManager, clientAuth);
 	}
 
 	@Override
@@ -54,14 +52,6 @@ public class NettyGrpcServerFactory extends DefaultGrpcServerFactory<NettyServer
 				.workerEventLoopGroup(new EpollEventLoopGroup());
 		}
 		return super.newServerBuilder();
-	}
-
-	@Override
-	protected ServerCredentials credentials() {
-		if (this.keyManager == null || port() == -1) {
-			return super.credentials();
-		}
-		return TlsServerCredentials.newBuilder().keyManager(this.keyManager.getKeyManagers()).build();
 	}
 
 }

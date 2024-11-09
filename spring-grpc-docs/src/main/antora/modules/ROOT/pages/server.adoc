@@ -5,12 +5,12 @@ This section describes core concepts that Spring gRPC uses on the server side. W
 You only need to provide one or more beans of type `BindableService` to create a gRPC server, provided the classpath contains an implementation of a `Server`. The `BindableService` is a gRPC service that can be bound to a server.
 The `Server` is the gRPC server that listens for incoming requests and routes them to the appropriate service implementation.
 
-== Create a `BindableService`
+== Create a gRPC Service
 
 To create a gRPC server, you need to provide one or more beans of type `BindableService`.
 There are some `BindableServices` available off the shelf that you could include in your application (an example is the reflection service from the `grpc-services` artifact which allows clients to browse the metadata of your services and download the Portobuf files). 
 Very commonly, you will create your own `BindableService` by extending the generated service implementation from your Protobuf file.
-The easiest way to do it is to simply add a Spring `@Service` annotation to the implementation class and have it picked up by the `@ComponentScan` in your Spring Boot application.
+The easiest way to activate it is to simply add a Spring `@Service` annotation to the implementation class and have it picked up by the `@ComponentScan` in your Spring Boot application.
 
 == Netty Server
 
@@ -83,6 +83,29 @@ dependencies {
 }
 ----
 
-The `spring.grpc.server.*` properties will be ignored in facour of the regular `server.*` properties in this case.
+The `spring.grpc.server.*` properties will be ignored in facour of the regular `server.*` properties in this case (with the exception of `spring.grpc.server.max-inbound-message-size`).
 The servlet that is created is mapped to process HTTP POST requests to the paths defined by the registered services, as `/<service-name>/*`.
 Clients can connect to the server using that path, which is what any gRPC client library will do.
+
+The gRPC server has fewer configuration options when running in a servlet container, as the servlet container is responsible for the network layer.
+You can still add `ServerBuilderCustomizer` beans to customize the server as it is built, but some features common in the "native" builders are not available and may throw exceptions at runtime.
+
+[[server-interceptor]]
+== Server Interceptors
+
+=== Global
+To add a server interceptor to be applied to all services you can simply register a server interceptor bean and then annotate it with `@GlobalServerInterceptor`.
+The interceptors are ordered according to their bean natural ordering (i.e. `@Order`).
+
+[source,java]
+----
+@Bean
+@Order(100)
+@GlobalServerInterceptor
+ServerInterceptor myGlobalLoggingInterceptor() {
+    return new MyLoggingInterceptor();
+}
+----
+
+=== Per-Service
+This is a **WIP** and will be available soon.

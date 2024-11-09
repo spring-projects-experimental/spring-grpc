@@ -1,7 +1,7 @@
 [[getting-started]]
 = Getting Started
 
-This section offers jumping off points for how to get started using Spring gRPC. There is a simple sample project in the `samples` directory (e.g. [`grpc-server`](https://github.com/spring-projects-experimental/spring-grpc/tree/main/samples/grpc-server)). You can run it with `mvn spring-boot:run` or `gradle bootRun`. You will see the following code in that sample.
+This section offers jumping off points for how to get started using Spring gRPC. There is a simple sample project in the `samples` directory (e.g. https://github.com/spring-projects-experimental/spring-grpc/tree/main/samples/grpc-server[`grpc-server`]). You can run it with `mvn spring-boot:run` or `gradle bootRun`. You will see the following code in that sample.
 
 
 You should follow the steps in each of the following section according to your needs.

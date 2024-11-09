@@ -12,7 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ * */
+
 package org.springframework.grpc.client;
 
 import java.util.ArrayList;
@@ -25,7 +26,6 @@ import org.springframework.beans.factory.DisposableBean;
 import io.grpc.ChannelCredentials;
 import io.grpc.ForwardingChannelBuilder2;
 import io.grpc.Grpc;
-import io.grpc.InsecureChannelCredentials;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 
@@ -36,6 +36,8 @@ public class DefaultGrpcChannelFactory implements GrpcChannelFactory, Disposable
 	private final Map<String, ManagedChannel> channels = new ConcurrentHashMap<>();
 
 	private final List<GrpcChannelConfigurer> configurers = new ArrayList<>();
+
+	private ChannelCredentialsProvider credentials = ChannelCredentialsProvider.INSECURE;
 
 	private VirtualTargets targets = VirtualTargets.DEFAULT;
 
@@ -51,11 +53,16 @@ public class DefaultGrpcChannelFactory implements GrpcChannelFactory, Disposable
 		this.targets = targets;
 	}
 
+	public void setCredentialsProvider(ChannelCredentialsProvider credentials) {
+		this.credentials = credentials;
+	}
+
 	@Override
 	public ManagedChannelBuilder<?> createChannel(String authority) {
-		ManagedChannelBuilder<?> target = builders.computeIfAbsent(authority, path -> {
-			ManagedChannelBuilder<?> builder = newChannel(targets.getTarget(path));
-			for (GrpcChannelConfigurer configurer : configurers) {
+		ManagedChannelBuilder<?> target = this.builders.computeIfAbsent(authority, path -> {
+			ManagedChannelBuilder<?> builder = newChannel(this.targets.getTarget(path),
+					this.credentials.getChannelCredentials(path));
+			for (GrpcChannelConfigurer configurer : this.configurers) {
 				configurer.configure(path, builder);
 			}
 			return builder;
@@ -64,17 +71,13 @@ public class DefaultGrpcChannelFactory implements GrpcChannelFactory, Disposable
 
 	}
 
-	protected ChannelCredentials channelCredentials(String path) {
-		return InsecureChannelCredentials.create();
-	}
-
-	protected ManagedChannelBuilder<?> newChannel(String path) {
-		return Grpc.newChannelBuilder(path, channelCredentials(path));
+	protected ManagedChannelBuilder<?> newChannel(String path, ChannelCredentials creds) {
+		return Grpc.newChannelBuilder(path, creds);
 	}
 
 	@Override
-	public void destroy() throws Exception {
-		for (ManagedChannel channel : channels.values()) {
+	public void destroy() {
+		for (ManagedChannel channel : this.channels.values()) {
 			channel.shutdown();
 		}
 	}
@@ -85,19 +88,20 @@ public class DefaultGrpcChannelFactory implements GrpcChannelFactory, Disposable
 
 		private final String authority;
 
-		public DisposableChannelBuilder(String authority, ManagedChannelBuilder<?> delegate) {
+		DisposableChannelBuilder(String authority, ManagedChannelBuilder<?> delegate) {
 			this.authority = authority;
 			this.delegate = delegate;
 		}
 
 		@Override
 		protected ManagedChannelBuilder<?> delegate() {
-			return delegate;
+			return this.delegate;
 		}
 
 		@Override
 		public ManagedChannel build() {
-			ManagedChannel channel = channels.computeIfAbsent(authority, name -> super.build());
+			ManagedChannel channel = DefaultGrpcChannelFactory.this.channels.computeIfAbsent(this.authority,
+					name -> super.build());
 			return channel;
 		}
 
