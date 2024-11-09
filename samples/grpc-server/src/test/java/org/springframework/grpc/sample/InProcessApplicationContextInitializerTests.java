@@ -24,19 +24,16 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.grpc.test.InProcessApplicationContextInitializer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
-/*
- * @author Andrei Lisa
- */
-
 @SpringBootTest
 class InProcessApplicationContextInitializerTests {
 
-	private AnnotationConfigApplicationContext context;
+	private GenericApplicationContext context;
 
 	@BeforeEach
 	public void setUp() {
@@ -46,7 +43,6 @@ class InProcessApplicationContextInitializerTests {
 
 	@AfterEach
 	public void cleanUp() {
-		InProcessApplicationContextInitializer.shutdown();
 		context.close();
 	}
 
@@ -55,6 +51,7 @@ class InProcessApplicationContextInitializerTests {
 
 		@Test
 		void shouldInitializeInProcessServer() {
+			System.setProperty("spring.grpc.inprocess", "true");
 			new InProcessApplicationContextInitializer().initialize(context);
 			context.refresh();
 
@@ -72,9 +69,9 @@ class InProcessApplicationContextInitializerTests {
 			System.setProperty("spring.grpc.inprocess", "false");
 			new InProcessApplicationContextInitializer().initialize(context);
 			context.refresh();
-			assertThatThrownBy(() -> {
-				context.getBean("grpcInProcessChannel", ManagedChannel.class);
-			}).isInstanceOf(NoSuchBeanDefinitionException.class);
+
+			assertThatThrownBy(() -> context.getBean("grpcInProcessChannel", ManagedChannel.class))
+				.isInstanceOf(NoSuchBeanDefinitionException.class);
 		}
 
 	}
@@ -84,15 +81,16 @@ class InProcessApplicationContextInitializerTests {
 
 		@Test
 		void shouldShutdownInProcessServer() {
+			System.setProperty("spring.grpc.inprocess", "true");
 			new InProcessApplicationContextInitializer().initialize(context);
+			context.registerShutdownHook();
 			context.refresh();
 
 			ManagedChannel channel = context.getBean("grpcInProcessChannel", ManagedChannel.class);
 			assertThat(channel).isNotNull();
 
-			InProcessApplicationContextInitializer.shutdown();
+			context.close();
 
-			assertThat(channel).isNotNull();
 			assertThat(channel.isShutdown()).isTrue();
 		}
 

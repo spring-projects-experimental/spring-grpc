@@ -16,14 +16,21 @@
 
 package org.springframework.grpc.test;
 
+import org.springframework.context.ApplicationContextInitializer;
+import org.springframework.context.ConfigurableApplicationContext;
+
 import io.grpc.ManagedChannel;
 import io.grpc.Server;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
-import org.springframework.context.ApplicationContextInitializer;
-import org.springframework.context.ConfigurableApplicationContext;
 
-/*
+/**
+ * An {@link ApplicationContextInitializer} that configures and registers an in-process
+ * gRPC {@link Server} and {@link ManagedChannel} within a Spring
+ * {@link ConfigurableApplicationContext}. This initializer is intended for testing
+ * environments, allowing gRPC communication within the same process without network
+ * overhead.
+ *
  * @author Andrei Lisa
  */
 public class InProcessApplicationContextInitializer
@@ -33,22 +40,20 @@ public class InProcessApplicationContextInitializer
 
 	private static final String CHANNEL_NAME = "grpcInProcessChannel";
 
-	private static Server grpcServer;
-
-	private static ManagedChannel grpcChannel;
-
 	@Override
 	public void initialize(ConfigurableApplicationContext applicationContext) {
-		String inProcessEnabled = System.getProperty(PROPERTY_SOURCE_NAME, "true");
+		String inProcessEnabled = applicationContext.getEnvironment().getProperty(PROPERTY_SOURCE_NAME);
 
 		if ("true".equalsIgnoreCase(inProcessEnabled) && isJarOnClasspath()) {
 			try {
 				String serverName = InProcessServerBuilder.generateName();
 
-				grpcServer = InProcessServerBuilder.forName(serverName).directExecutor().build().start();
+				Server grpcServer = InProcessServerBuilder.forName(serverName).directExecutor().build().start();
 
-				grpcChannel = InProcessChannelBuilder.forName(serverName).directExecutor().build();
+				ManagedChannel grpcChannel = InProcessChannelBuilder.forName(serverName).directExecutor().build();
 				applicationContext.getBeanFactory().registerSingleton(CHANNEL_NAME, grpcChannel);
+
+				applicationContext.addApplicationListener(new InProcessServerShutdownListener(grpcServer, grpcChannel));
 
 			}
 			catch (Exception e) {
@@ -65,13 +70,6 @@ public class InProcessApplicationContextInitializer
 		catch (ClassNotFoundException e) {
 			return false;
 		}
-	}
-
-	public static void shutdown() {
-		if (grpcChannel != null)
-			grpcChannel.shutdownNow();
-		if (grpcServer != null)
-			grpcServer.shutdownNow();
 	}
 
 }

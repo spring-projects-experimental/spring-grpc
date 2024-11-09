@@ -1,0 +1,9 @@
+{
+  "groups": [],
+  "properties": [
+    {
+      "name": "spring.grpc.inprocess",
+      "defaultValue": "true"
+    }
+  ]
+}
