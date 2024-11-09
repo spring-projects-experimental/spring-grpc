@@ -62,6 +62,11 @@
 		</dependency>
 		<dependency>
 			<groupId>io.grpc</groupId>
+			<artifactId>grpc-services</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>io.grpc</groupId>
 			<artifactId>grpc-netty-shaded</artifactId>
 			<optional>true</optional>
 		</dependency>
@@ -88,10 +93,6 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-        <dependency>
-            <groupId>io.grpc</groupId>
-            <artifactId>grpc-services</artifactId>
-        </dependency>
 
     </dependencies>
 

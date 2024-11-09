@@ -4,6 +4,10 @@
     {
       "name": "spring.grpc.server.port",
       "defaultValue": "9090"
+    },
+    {
+      "name": "spring.grpc.server.reflection.enabled",
+      "defaultValue": "true"
     }
   ]
 }

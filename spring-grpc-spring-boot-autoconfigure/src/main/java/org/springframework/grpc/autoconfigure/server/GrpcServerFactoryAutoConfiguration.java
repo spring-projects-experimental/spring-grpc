@@ -23,6 +23,7 @@ import io.grpc.servlet.jakarta.GrpcServlet;
 import io.grpc.servlet.jakarta.ServletServerBuilder;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -48,6 +49,7 @@ import org.springframework.util.unit.DataSize;
  * @author Toshiaki Maki
  */
 @AutoConfiguration
+@AutoConfigureAfter(GrpcServerReflectionAutoConfiguration.class)
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
 @ConditionalOnClass(BindableService.class)
 @ConditionalOnBean(BindableService.class)
