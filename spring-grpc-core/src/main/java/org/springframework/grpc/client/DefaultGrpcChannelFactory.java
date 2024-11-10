@@ -29,6 +29,15 @@ import io.grpc.Grpc;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 
+/**
+ * Default implementation of {@link GrpcChannelFactory} for creating and managing gRPC
+ * channels.
+ * <p>
+ * Implements {@link DisposableBean} to shut down channels when no longer needed
+ *
+ * @author David Syer
+ * @author Chris Bono
+ */
 public class DefaultGrpcChannelFactory implements GrpcChannelFactory, DisposableBean {
 
 	private final Map<String, ManagedChannelBuilder<?>> builders = new ConcurrentHashMap<>();
@@ -71,6 +80,13 @@ public class DefaultGrpcChannelFactory implements GrpcChannelFactory, Disposable
 
 	}
 
+	/**
+	 * Creates a new {@link ManagedChannelBuilder} instance for the given target path and
+	 * credentials.
+	 * @param path the target path for the channel
+	 * @param creds the credentials for the channel
+	 * @return a new {@link ManagedChannelBuilder} for the given path and credentials
+	 */
 	protected ManagedChannelBuilder<?> newChannel(String path, ChannelCredentials creds) {
 		return Grpc.newChannelBuilder(path, creds);
 	}
@@ -82,6 +98,10 @@ public class DefaultGrpcChannelFactory implements GrpcChannelFactory, Disposable
 		}
 	}
 
+	/**
+	 * A {@link ManagedChannelBuilder} wrapper that ensures the created channel is
+	 * disposed of when no longer needed.
+	 */
 	class DisposableChannelBuilder extends ForwardingChannelBuilder2<DisposableChannelBuilder> {
 
 		private final ManagedChannelBuilder<?> delegate;

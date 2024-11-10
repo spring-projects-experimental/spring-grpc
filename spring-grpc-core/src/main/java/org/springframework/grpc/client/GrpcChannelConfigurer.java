@@ -18,9 +18,22 @@ package org.springframework.grpc.client;
 
 import io.grpc.ManagedChannelBuilder;
 
+/**
+ * A functional interface for configuring a {@link ManagedChannelBuilder} for a specific
+ * authority.
+ *
+ * @author Dave Syer
+ * @author Chris Bono
+ * @see ManagedChannelBuilder
+ */
 @FunctionalInterface
 public interface GrpcChannelConfigurer {
 
+	/**
+	 * Configures the given {@link ManagedChannelBuilder} for the specified authority.
+	 * @param authority the target authority for the channel
+	 * @param builder the builder to configure
+	 */
 	void configure(String authority, ManagedChannelBuilder<?> builder);
 
 }
