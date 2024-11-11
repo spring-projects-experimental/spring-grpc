@@ -8,6 +8,10 @@
     {
       "name": "spring.grpc.server.reflection.enabled",
       "defaultValue": "true"
+    },
+    {
+      "name": "spring.grpc.server.observation.enabled",
+      "defaultValue": "true"
     }
   ]
 }
