@@ -109,3 +109,9 @@ ServerInterceptor myGlobalLoggingInterceptor() {
 
 === Per-Service
 This is a **WIP** and will be available soon.
+
+== Observability
+
+Spring gRPC provides an autoconfigured interceptor that can be used to provide observability to your gRPC services.
+All you need to do is add Spring Boot actuators to your project, and optionally a bridge to your observability platform of choice (just like https://docs.spring.io/spring-boot/reference/actuator/observability.html[any other Spring Boot application]).
+The `grpc-tomcat` sample in the Spring gRPC repository shows how to do it, and you should see trace logging and metrics when you connect to the server.
