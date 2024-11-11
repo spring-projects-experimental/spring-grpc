@@ -31,9 +31,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.Ordered;
+import org.springframework.grpc.server.GrpcServiceDiscoverer;
 import org.springframework.util.unit.DataSize;
 
 import io.grpc.BindableService;
+import io.grpc.ServerServiceDefinition;
 import io.grpc.servlet.jakarta.GrpcServlet;
 import io.grpc.servlet.jakarta.ServletServerBuilder;
 
@@ -67,9 +69,10 @@ public class GrpcServerFactoryAutoConfiguration {
 
 		@Bean
 		public ServletRegistrationBean<GrpcServlet> grpcServlet(GrpcServerProperties properties,
-				List<BindableService> services, ServerBuilderCustomizers serverBuilderCustomizers) {
+				GrpcServiceDiscoverer discoverer, ServerBuilderCustomizers serverBuilderCustomizers) {
+			List<ServerServiceDefinition> services = discoverer.findServices();
 			List<String> paths = services.stream()
-				.map(service -> "/" + service.bindService().getServiceDescriptor().getName() + "/*")
+				.map(service -> "/" + service.getServiceDescriptor().getName() + "/*")
 				.collect(Collectors.toList());
 			ServletServerBuilder servletServerBuilder = new ServletServerBuilder();
 			services.forEach(servletServerBuilder::addService);
