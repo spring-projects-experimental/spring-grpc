@@ -2,3 +2,5 @@ org.springframework.grpc.autoconfigure.server.GrpcServerFactoryAutoConfiguration
 org.springframework.grpc.autoconfigure.server.GrpcServerAutoConfiguration
 org.springframework.grpc.autoconfigure.server.GrpcServerObservationAutoConfiguration
 org.springframework.grpc.autoconfigure.client.GrpcClientAutoConfiguration
+org.springframework.grpc.autoconfigure.server.GrpcServerReflectionAutoConfiguration
+
