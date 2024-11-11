@@ -36,13 +36,13 @@ import io.grpc.inprocess.InProcessServerBuilder;
 public class InProcessApplicationContextInitializer
 		implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
-	private static final String PROPERTY_SOURCE_NAME = "spring.grpc.inprocess";
+	private static final String PROPERTY_SOURCE_NAME = "spring.grpc.inprocess.enabled";
 
 	private static final String CHANNEL_NAME = "grpcInProcessChannel";
 
 	@Override
 	public void initialize(ConfigurableApplicationContext applicationContext) {
-		String inProcessEnabled = applicationContext.getEnvironment().getProperty(PROPERTY_SOURCE_NAME);
+		String inProcessEnabled = applicationContext.getEnvironment().getProperty(PROPERTY_SOURCE_NAME, "true");
 
 		if ("true".equalsIgnoreCase(inProcessEnabled) && isJarOnClasspath()) {
 			try {

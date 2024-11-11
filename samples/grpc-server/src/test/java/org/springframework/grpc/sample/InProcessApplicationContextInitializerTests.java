@@ -16,82 +16,62 @@
 
 package org.springframework.grpc.sample;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import io.grpc.ManagedChannel;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.support.GenericApplicationContext;
-import org.springframework.grpc.test.InProcessApplicationContextInitializer;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import org.springframework.context.ConfigurableApplicationContext;
 
 @SpringBootTest
 class InProcessApplicationContextInitializerTests {
 
-	private GenericApplicationContext context;
-
-	@BeforeEach
-	public void setUp() {
-		System.clearProperty("spring.grpc.inprocess");
-		context = new AnnotationConfigApplicationContext();
-	}
-
-	@AfterEach
-	public void cleanUp() {
-		context.close();
-	}
-
 	@Nested
-	class WhenDefaultEnabled {
+	@SpringBootTest(properties = { "spring.grpc.server.host=0.0.0.0", "spring.grpc.server.port=0",
+			"spring.grpc.inprocess.enabled=true" })
+	class WithInProcessEnabled {
+
+		@Autowired
+		private ConfigurableApplicationContext context;
 
 		@Test
-		void shouldInitializeInProcessServer() {
-			System.setProperty("spring.grpc.inprocess", "true");
-			new InProcessApplicationContextInitializer().initialize(context);
-			context.refresh();
-
-			ManagedChannel channel = context.getBean("grpcInProcessChannel", ManagedChannel.class);
-			assertThat(channel).isNotNull().isInstanceOf(ManagedChannel.class);
-		}
-
-	}
-
-	@Nested
-	class WhenDisabledByProperty {
-
-		@Test
-		void shouldNotInitializeInProcessServer() {
-			System.setProperty("spring.grpc.inprocess", "false");
-			new InProcessApplicationContextInitializer().initialize(context);
-			context.refresh();
-
-			assertThatThrownBy(() -> context.getBean("grpcInProcessChannel", ManagedChannel.class))
-				.isInstanceOf(NoSuchBeanDefinitionException.class);
-		}
-
-	}
-
-	@Nested
-	class WhenShutdownIsCalled {
-
-		@Test
-		void shouldShutdownInProcessServer() {
-			System.setProperty("spring.grpc.inprocess", "true");
-			new InProcessApplicationContextInitializer().initialize(context);
-			context.registerShutdownHook();
-			context.refresh();
-
+		void testInitialize_WithEnabledProperty_ShouldRegisterServerAndChannel() {
 			ManagedChannel channel = context.getBean("grpcInProcessChannel", ManagedChannel.class);
 			assertThat(channel).isNotNull();
+			assertThat(channel.isShutdown()).isFalse();
+		}
 
-			context.close();
+	}
 
-			assertThat(channel.isShutdown()).isTrue();
+	@Nested
+	@SpringBootTest(properties = { "spring.grpc.server.host=0.0.0.0", "spring.grpc.server.port=0",
+			"spring.grpc.inprocess.enabled=false" })
+	class WithInProcessDisabled {
+
+		@Autowired
+		private ConfigurableApplicationContext context;
+
+		@Test
+		void testInitialize_WithDisabledProperty_ShouldNotRegisterServerAndChannel() {
+			assertThat(context.containsBean("grpcInProcessChannel")).isFalse();
+		}
+
+	}
+
+	@Nested
+	@SpringBootTest(properties = { "spring.grpc.server.host=0.0.0.0", "spring.grpc.server.port=0",
+			"spring.grpc.inprocess.enabled=true" })
+	class WithDefaultInProcessEnabled {
+
+		@Autowired
+		private ConfigurableApplicationContext context;
+
+		@Test
+		void testDefaultEnabledProperty_ShouldRegisterServerAndChannel() {
+			ManagedChannel channel = context.getBean("grpcInProcessChannel", ManagedChannel.class);
+			assertThat(channel).isNotNull();
 		}
 
 	}

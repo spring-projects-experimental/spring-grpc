@@ -2,7 +2,7 @@
   "groups": [],
   "properties": [
     {
-      "name": "spring.grpc.inprocess",
+      "name": "spring.grpc.inprocess.enabled",
       "defaultValue": "true"
     }
   ]
