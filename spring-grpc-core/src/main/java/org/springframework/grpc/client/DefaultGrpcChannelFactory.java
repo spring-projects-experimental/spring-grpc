@@ -16,10 +16,12 @@
 
 package org.springframework.grpc.client;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.DisposableBean;
 
@@ -50,6 +52,8 @@ public class DefaultGrpcChannelFactory implements GrpcChannelFactory, Disposable
 
 	private VirtualTargets targets = VirtualTargets.DEFAULT;
 
+	private Duration shutdownGracePeriod;
+
 	public DefaultGrpcChannelFactory() {
 		this(List.of());
 	}
@@ -64,6 +68,10 @@ public class DefaultGrpcChannelFactory implements GrpcChannelFactory, Disposable
 
 	public void setCredentialsProvider(ChannelCredentialsProvider credentials) {
 		this.credentials = credentials;
+	}
+
+	public void setShutdownGracePeriod(Duration shutdownGracePeriod) {
+		this.shutdownGracePeriod = shutdownGracePeriod;
 	}
 
 	@Override
@@ -93,8 +101,20 @@ public class DefaultGrpcChannelFactory implements GrpcChannelFactory, Disposable
 
 	@Override
 	public void destroy() {
+		long millis = this.shutdownGracePeriod.toMillis();
+
 		for (ManagedChannel channel : this.channels.values()) {
-			channel.shutdown();
+			try {
+				channel.shutdown();
+
+				if (!channel.awaitTermination(millis, TimeUnit.MILLISECONDS)) {
+					channel.shutdownNow();
+				}
+			}
+			catch (InterruptedException e) {
+				channel.shutdownNow();
+				Thread.currentThread().interrupt();
+			}
 		}
 	}
 

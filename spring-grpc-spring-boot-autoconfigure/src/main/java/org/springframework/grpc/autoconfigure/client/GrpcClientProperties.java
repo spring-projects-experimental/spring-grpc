@@ -221,6 +221,35 @@ public class GrpcClientProperties implements EnvironmentAware {
 
 		// --------------------------------------------------
 
+		/**
+		 * Maximum time to wait for the client channels to gracefully shutdown. The
+		 * default is 30 seconds.
+		 */
+		@DurationUnit(ChronoUnit.SECONDS)
+		private Duration shutdownGracePeriod = Duration.ofSeconds(30);
+
+		/**
+		 * Gets the shutdown grace period.
+		 * @return The shutdown grace period.
+		 *
+		 * @see #setShutdownGracePeriod(Duration)
+		 */
+		public Duration getShutdownGracePeriod() {
+			return this.shutdownGracePeriod;
+		}
+
+		/**
+		 * The shutdown grace period.
+		 * @param shutdownGracePeriod shutdown grace period will client force shutdown
+		 * channels immediately
+		 *
+		 */
+		public void setShutdownGracePeriod(final Duration shutdownGracePeriod) {
+			this.shutdownGracePeriod = shutdownGracePeriod;
+		}
+
+		// --------------------------------------------------
+
 		@DurationUnit(ChronoUnit.SECONDS)
 		private Duration keepAliveTime;
 
@@ -430,6 +459,9 @@ public class GrpcClientProperties implements EnvironmentAware {
 			}
 			if (this.address == null) {
 				this.address = config.address;
+			}
+			if (this.shutdownGracePeriod == null) {
+				this.shutdownGracePeriod = config.shutdownGracePeriod;
 			}
 			if (this.defaultLoadBalancingPolicy == null) {
 				this.defaultLoadBalancingPolicy = config.defaultLoadBalancingPolicy;

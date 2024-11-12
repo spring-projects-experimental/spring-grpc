@@ -48,6 +48,9 @@ public class GrpcClientAutoConfiguration {
 		DefaultGrpcChannelFactory factory = new DefaultGrpcChannelFactory(configurers);
 		factory.setCredentialsProvider(credentials);
 		factory.setVirtualTargets(new NamedChannelVirtualTargets(channels));
+		// Take shutdownGracePeriod from the default channel since it is the same for all
+		// channels
+		factory.setShutdownGracePeriod(channels.getDefaultChannel().getShutdownGracePeriod());
 		return factory;
 	}
 
