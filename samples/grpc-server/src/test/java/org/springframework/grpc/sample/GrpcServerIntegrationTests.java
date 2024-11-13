@@ -24,12 +24,15 @@ import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Import;
 import org.springframework.grpc.autoconfigure.server.GrpcServerProperties;
 import org.springframework.grpc.client.GrpcChannelFactory;
 import org.springframework.grpc.sample.proto.HelloReply;
 import org.springframework.grpc.sample.proto.HelloRequest;
 import org.springframework.grpc.sample.proto.SimpleGrpc;
 import org.springframework.grpc.server.GrpcServerFactory;
+import org.springframework.grpc.test.InProcessGrpcServerFactoryConfiguration;
 import org.springframework.grpc.test.LocalGrpcPort;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
@@ -141,6 +144,55 @@ class GrpcServerIntegrationTests {
 		SimpleGrpc.SimpleBlockingStub client = SimpleGrpc.newBlockingStub(clientChannel);
 		HelloReply response = client.sayHello(HelloRequest.newBuilder().setName("Alien").build());
 		assertThat(response.getMessage()).isEqualTo("Hello ==> Alien");
+	}
+
+	@Nested
+	@SpringBootTest(properties = { "spring.grpc.server.host=0.0.0.0", "spring.grpc.server.port=0" })
+	@Import(InProcessGrpcServerFactoryConfiguration.class)
+	class WithInProcessEnabled {
+
+		@Autowired
+		private ConfigurableApplicationContext context;
+
+		@Test
+		void testInitialize_WithEnabledProperty_ShouldRegisterServerAndChannel() {
+			ManagedChannel channel = context.getBean("grpcInProcessChannel", ManagedChannel.class);
+			assertThat(channel).isNotNull();
+			assertThat(channel.isShutdown()).isFalse();
+		}
+
+	}
+
+	@Nested
+	@SpringBootTest(properties = { "spring.grpc.server.host=0.0.0.0", "spring.grpc.server.port=0",
+			"spring.grpc.inprocess.enabled=false" })
+	@Import(InProcessGrpcServerFactoryConfiguration.class)
+	class WithInProcessDisabled {
+
+		@Autowired
+		private ConfigurableApplicationContext context;
+
+		@Test
+		void testInitialize_WithDisabledProperty_ShouldNotRegisterServerAndChannel() {
+			assertThat(context.containsBean("grpcInProcessChannel")).isFalse();
+		}
+
+	}
+
+	@Nested
+	@SpringBootTest(properties = { "spring.grpc.server.host=0.0.0.0", "spring.grpc.server.port=0" })
+	@Import(InProcessGrpcServerFactoryConfiguration.class)
+	class WithInProcessChannel {
+
+		@Autowired
+		private ManagedChannel grpcInProcessChannel;
+
+		@Test
+		void sayHelloReturnsExpectedMessage() {
+
+			assertThatResponseIsServedToChannel(grpcInProcessChannel);
+		}
+
 	}
 
 }
