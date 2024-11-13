@@ -37,7 +37,6 @@ import io.grpc.BindableService;
 import io.grpc.CompressorRegistry;
 import io.grpc.DecompressorRegistry;
 import io.grpc.ServerBuilder;
-import io.grpc.ServerInterceptor;
 
 /**
  * {@link EnableAutoConfiguration Auto-configuration} for gRPC server-side components.
@@ -77,10 +76,15 @@ public class GrpcServerAutoConfiguration {
 
 	@ConditionalOnMissingBean
 	@Bean
-	GrpcServiceDiscoverer grpcServiceDiscoverer(ObjectProvider<BindableService> bindableServicesProvider,
-			ObjectProvider<ServerInterceptor> serverInterceptorsProvider, ApplicationContext applicationContext) {
-		return new DefaultGrpcServiceDiscoverer(bindableServicesProvider, serverInterceptorsProvider,
-				applicationContext);
+	GrpcServiceConfigurer grpcServiceConfigurer(ApplicationContext applicationContext) {
+		return new DefaultGrpcServiceConfigurer(applicationContext);
+	}
+
+	@ConditionalOnMissingBean
+	@Bean
+	GrpcServiceDiscoverer grpcServiceDiscoverer(GrpcServiceConfigurer grpcServiceConfigurer,
+			ApplicationContext applicationContext) {
+		return new DefaultGrpcServiceDiscoverer(grpcServiceConfigurer, applicationContext);
 	}
 
 	@ConditionalOnBean(CompressorRegistry.class)
