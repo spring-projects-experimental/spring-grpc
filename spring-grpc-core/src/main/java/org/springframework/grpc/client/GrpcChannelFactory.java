@@ -18,8 +18,20 @@ package org.springframework.grpc.client;
 
 import io.grpc.ManagedChannelBuilder;
 
+/**
+ * Factory interface for creating {@link ManagedChannelBuilder} instances for a given
+ * authority.
+ *
+ * @author Dave Syer
+ * @see ManagedChannelBuilder
+ */
 public interface GrpcChannelFactory {
 
+	/**
+	 * Creates a {@link ManagedChannelBuilder} for the given authority.
+	 * @param authority the target authority for the channel
+	 * @return a {@link ManagedChannelBuilder} configured for the given authority
+	 */
 	ManagedChannelBuilder<?> createChannel(String authority);
 
 }
