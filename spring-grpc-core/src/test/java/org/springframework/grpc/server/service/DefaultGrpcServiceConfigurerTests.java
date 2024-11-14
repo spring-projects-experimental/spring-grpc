@@ -14,18 +14,16 @@
  * limitations under the License.
  */
 
-package org.springframework.grpc.autoconfigure.server;
+package org.springframework.grpc.server.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.function.Function;
 
+import org.assertj.core.api.Assertions;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
@@ -38,9 +36,11 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.grpc.server.GlobalServerInterceptor;
 import org.springframework.grpc.server.lifecycle.GrpcServerLifecycle;
 import org.springframework.lang.Nullable;
 
@@ -58,8 +58,7 @@ class DefaultGrpcServiceConfigurerTests {
 
 	private ApplicationContextRunner contextRunner() {
 		// NOTE: we use noop server lifecycle to avoid startup
-		return new ApplicationContextRunner()
-			.withConfiguration(AutoConfigurations.of(GrpcServerAutoConfiguration.class))
+		return new ApplicationContextRunner().withConfiguration(AutoConfigurations.of(ServiceConfigurerConfig.class))
 			.withBean("noopServerLifecycle", GrpcServerLifecycle.class, Mockito::mock);
 	}
 
@@ -67,10 +66,60 @@ class DefaultGrpcServiceConfigurerTests {
 	void globalServerInterceptorsAreFoundInProperOrder() {
 		this.contextRunner()
 			.withUserConfiguration(GlobalServerInterceptorsConfig.class)
-			.run((context) -> assertThat(context).getBean(DefaultGrpcServiceConfigurer.class)
+			.run((context) -> Assertions.assertThat(context)
+				.getBean(DefaultGrpcServiceConfigurer.class)
 				.extracting("globalInterceptors", InstanceOfAssertFactories.LIST)
 				.containsExactly(GlobalServerInterceptorsConfig.GLOBAL_INTERCEPTOR_BAR,
 						GlobalServerInterceptorsConfig.GLOBAL_INTERCEPTOR_FOO));
+	}
+
+	private void customizeContextAndRunServiceConfigurerWithServiceInfo(
+			Function<ApplicationContextRunner, ApplicationContextRunner> contextCustomizer, GrpcServiceInfo serviceInfo,
+			List<ServerInterceptor> expectedInterceptors) {
+		this.customizeContextAndRunServiceConfigurerWithServiceInfo(contextCustomizer, serviceInfo,
+				expectedInterceptors, null);
+	}
+
+	private void customizeContextAndRunServiceConfigurerWithServiceInfo(
+			Function<ApplicationContextRunner, ApplicationContextRunner> contextCustomizer, GrpcServiceInfo serviceInfo,
+			Class<? extends Throwable> expectedExceptionType) {
+		this.customizeContextAndRunServiceConfigurerWithServiceInfo(contextCustomizer, serviceInfo, null,
+				expectedExceptionType);
+	}
+
+	private void customizeContextAndRunServiceConfigurerWithServiceInfo(
+			Function<ApplicationContextRunner, ApplicationContextRunner> contextCustomizer, GrpcServiceInfo serviceInfo,
+			@Nullable List<ServerInterceptor> expectedInterceptors,
+			@Nullable Class<? extends Throwable> expectedExceptionType) {
+		// It gets difficult to verify interceptors are added properly to mocked services.
+		// To make it easier, we just static mock ServerInterceptors.interceptForward to
+		// echo back the service def. This way we can verify the interceptors were passed
+		// in the proper order as we rely on ServerInterceptors.interceptForward being
+		// well tested in grpc-java.
+		try (MockedStatic<ServerInterceptors> serverInterceptorsMocked = Mockito.mockStatic(ServerInterceptors.class)) {
+			serverInterceptorsMocked
+				.when(() -> ServerInterceptors.interceptForward(any(ServerServiceDefinition.class), anyList()))
+				.thenAnswer((Answer<ServerServiceDefinition>) invocation -> invocation.getArgument(0));
+			BindableService service = Mockito.mock();
+			ServerServiceDefinition serviceDef = Mockito.mock();
+			Mockito.when(service.bindService()).thenReturn(serviceDef);
+			this.contextRunner()
+				.withBean("service", BindableService.class, () -> service)
+				.with(contextCustomizer)
+				.run((context) -> {
+					DefaultGrpcServiceConfigurer configurer = context.getBean(DefaultGrpcServiceConfigurer.class);
+					if (expectedExceptionType != null) {
+						assertThatThrownBy(() -> configurer.configure(service, serviceInfo))
+							.isInstanceOf(expectedExceptionType);
+						serverInterceptorsMocked.verifyNoInteractions();
+					}
+					else {
+						configurer.configure(service, serviceInfo);
+						serverInterceptorsMocked
+							.verify(() -> ServerInterceptors.interceptForward(serviceDef, expectedInterceptors));
+					}
+				});
+		}
 	}
 
 	@Nested
@@ -224,55 +273,6 @@ class DefaultGrpcServiceConfigurerTests {
 
 	}
 
-	private void customizeContextAndRunServiceConfigurerWithServiceInfo(
-			Function<ApplicationContextRunner, ApplicationContextRunner> contextCustomizer, GrpcServiceInfo serviceInfo,
-			List<ServerInterceptor> expectedInterceptors) {
-		this.customizeContextAndRunServiceConfigurerWithServiceInfo(contextCustomizer, serviceInfo,
-				expectedInterceptors, null);
-	}
-
-	private void customizeContextAndRunServiceConfigurerWithServiceInfo(
-			Function<ApplicationContextRunner, ApplicationContextRunner> contextCustomizer, GrpcServiceInfo serviceInfo,
-			Class<? extends Throwable> expectedExceptionType) {
-		this.customizeContextAndRunServiceConfigurerWithServiceInfo(contextCustomizer, serviceInfo, null,
-				expectedExceptionType);
-	}
-
-	private void customizeContextAndRunServiceConfigurerWithServiceInfo(
-			Function<ApplicationContextRunner, ApplicationContextRunner> contextCustomizer, GrpcServiceInfo serviceInfo,
-			@Nullable List<ServerInterceptor> expectedInterceptors,
-			@Nullable Class<? extends Throwable> expectedExceptionType) {
-		// It gets difficult to verify interceptors are added properly to mocked services.
-		// To make it easier, we just static mock ServerInterceptors.interceptForward to
-		// echo back the service def. This way we can verify the interceptors were passed
-		// in the proper order as we rely on ServerInterceptors.interceptForward being
-		// well tested in grpc-java.
-		try (MockedStatic<ServerInterceptors> serverInterceptorsMocked = Mockito.mockStatic(ServerInterceptors.class)) {
-			serverInterceptorsMocked
-				.when(() -> ServerInterceptors.interceptForward(any(ServerServiceDefinition.class), anyList()))
-				.thenAnswer((Answer<ServerServiceDefinition>) invocation -> invocation.getArgument(0));
-			BindableService service = mock();
-			ServerServiceDefinition serviceDef = mock();
-			when(service.bindService()).thenReturn(serviceDef);
-			this.contextRunner()
-				.withBean("service", BindableService.class, () -> service)
-				.with(contextCustomizer)
-				.run((context) -> {
-					DefaultGrpcServiceConfigurer configurer = context.getBean(DefaultGrpcServiceConfigurer.class);
-					if (expectedExceptionType != null) {
-						assertThatThrownBy(() -> configurer.configure(service, serviceInfo))
-							.isInstanceOf(expectedExceptionType);
-						serverInterceptorsMocked.verifyNoInteractions();
-					}
-					else {
-						configurer.configure(service, serviceInfo);
-						serverInterceptorsMocked
-							.verify(() -> ServerInterceptors.interceptForward(serviceDef, expectedInterceptors));
-					}
-				});
-		}
-	}
-
 	interface TestServerInterceptorA extends ServerInterceptor {
 
 	}
@@ -282,23 +282,23 @@ class DefaultGrpcServiceConfigurerTests {
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	static class GlobalServerInterceptorsConfig {
-
-		static BindableService SERVICE_A = mock();
-
-		static ServerServiceDefinition SERVICE_DEF_A = mock();
-
-		static ServerInterceptor GLOBAL_INTERCEPTOR_FOO = mock();
-
-		static ServerInterceptor GLOBAL_INTERCEPTOR_IGNORED = mock();
-
-		static ServerInterceptor GLOBAL_INTERCEPTOR_BAR = mock();
+	static class ServiceConfigurerConfig {
 
 		@Bean
-		BindableService serviceA() {
-			when(SERVICE_A.bindService()).thenReturn(SERVICE_DEF_A);
-			return SERVICE_A;
+		GrpcServiceConfigurer grpcServiceConfigurer(ApplicationContext applicationContext) {
+			return new DefaultGrpcServiceConfigurer(applicationContext);
 		}
+
+	}
+
+	@Configuration(proxyBeanMethods = false)
+	static class GlobalServerInterceptorsConfig {
+
+		static ServerInterceptor GLOBAL_INTERCEPTOR_FOO = Mockito.mock();
+
+		static ServerInterceptor GLOBAL_INTERCEPTOR_IGNORED = Mockito.mock();
+
+		static ServerInterceptor GLOBAL_INTERCEPTOR_BAR = Mockito.mock();
 
 		@Bean
 		@Order(200)
@@ -325,9 +325,9 @@ class DefaultGrpcServiceConfigurerTests {
 	@Configuration(proxyBeanMethods = false)
 	static class ServiceSpecificInterceptorsConfig {
 
-		static TestServerInterceptorB SVC_INTERCEPTOR_B = mock();
+		static TestServerInterceptorB SVC_INTERCEPTOR_B = Mockito.mock();
 
-		static TestServerInterceptorA SVC_INTERCEPTOR_A = mock();
+		static TestServerInterceptorA SVC_INTERCEPTOR_A = Mockito.mock();
 
 		@Bean
 		@Order(150)

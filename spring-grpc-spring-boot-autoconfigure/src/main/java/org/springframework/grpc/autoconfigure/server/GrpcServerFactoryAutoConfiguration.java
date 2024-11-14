@@ -31,7 +31,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.Ordered;
-import org.springframework.grpc.server.GrpcServiceDiscoverer;
+import org.springframework.grpc.server.service.GrpcServiceDiscoverer;
 import org.springframework.util.unit.DataSize;
 
 import io.grpc.BindableService;

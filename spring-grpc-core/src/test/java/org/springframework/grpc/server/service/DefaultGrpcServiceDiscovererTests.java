@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-package org.springframework.grpc.autoconfigure.server;
+package org.springframework.grpc.server.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.springframework.grpc.autoconfigure.server.DefaultGrpcServiceDiscovererTests.DefaultGrpcServiceDiscovererTestsConfig.SERVICE_A;
-import static org.springframework.grpc.autoconfigure.server.DefaultGrpcServiceDiscovererTests.DefaultGrpcServiceDiscovererTestsConfig.SERVICE_B;
+import static org.springframework.grpc.server.service.DefaultGrpcServiceDiscovererTests.DefaultGrpcServiceDiscovererTestsConfig.SERVICE_A;
+import static org.springframework.grpc.server.service.DefaultGrpcServiceDiscovererTests.DefaultGrpcServiceDiscovererTestsConfig.SERVICE_B;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -29,12 +27,11 @@ import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
-import org.springframework.grpc.server.lifecycle.GrpcServerLifecycle;
 
 import io.grpc.BindableService;
 import io.grpc.ServerServiceDefinition;
@@ -46,24 +43,15 @@ import io.grpc.ServerServiceDefinition;
  */
 class DefaultGrpcServiceDiscovererTests {
 
-	private ApplicationContextRunner contextRunner() {
-		// NOTE: we use noop server lifecycle to avoid startup
-		return new ApplicationContextRunner()
-			.withConfiguration(AutoConfigurations.of(GrpcServerAutoConfiguration.class))
-			.withBean("noopServerLifecycle", GrpcServerLifecycle.class, Mockito::mock);
-	}
-
 	@Test
 	void servicesAreFoundInProperOrderWithExpectedGrpcServiceAnnotations() {
-		TestServiceConfigurer configurer = new TestServiceConfigurer();
-		this.contextRunner()
-			.withUserConfiguration(DefaultGrpcServiceDiscovererTestsConfig.class)
-			.withBean("customServiceConfigurer", GrpcServiceConfigurer.class, () -> configurer)
+		new ApplicationContextRunner().withUserConfiguration(DefaultGrpcServiceDiscovererTestsConfig.class)
 			.run((context) -> {
 				assertThat(context).getBean(DefaultGrpcServiceDiscoverer.class)
 					.extracting(DefaultGrpcServiceDiscoverer::findServices, InstanceOfAssertFactories.LIST)
 					.containsExactly(DefaultGrpcServiceDiscovererTestsConfig.SERVICE_DEF_B,
 							DefaultGrpcServiceDiscovererTestsConfig.SERVICE_DEF_A);
+				TestServiceConfigurer configurer = context.getBean(TestServiceConfigurer.class);
 				assertThat(configurer.invocations).hasSize(2);
 				assertThat(configurer.invocations.keySet()).containsExactly(SERVICE_B, SERVICE_A);
 				assertThat(configurer.invocations).containsEntry(SERVICE_B, null);
@@ -78,26 +66,37 @@ class DefaultGrpcServiceDiscovererTests {
 	@Configuration(proxyBeanMethods = false)
 	static class DefaultGrpcServiceDiscovererTestsConfig {
 
-		static BindableService SERVICE_A = mock();
+		static BindableService SERVICE_A = Mockito.mock();
 
-		static ServerServiceDefinition SERVICE_DEF_A = mock();
+		static ServerServiceDefinition SERVICE_DEF_A = Mockito.mock();
 
-		static BindableService SERVICE_B = mock();
+		static BindableService SERVICE_B = Mockito.mock();
 
-		static ServerServiceDefinition SERVICE_DEF_B = mock();
+		static ServerServiceDefinition SERVICE_DEF_B = Mockito.mock();
+
+		@Bean
+		TestServiceConfigurer testServiceConfigurer() {
+			return new TestServiceConfigurer();
+		}
+
+		@Bean
+		GrpcServiceDiscoverer grpcServiceDiscoverer(GrpcServiceConfigurer grpcServiceConfigurer,
+				ApplicationContext applicationContext) {
+			return new DefaultGrpcServiceDiscoverer(grpcServiceConfigurer, applicationContext);
+		}
 
 		@GrpcService
 		@Bean
 		@Order(200)
 		BindableService serviceA() {
-			when(SERVICE_A.bindService()).thenReturn(SERVICE_DEF_A);
+			Mockito.when(SERVICE_A.bindService()).thenReturn(SERVICE_DEF_A);
 			return SERVICE_A;
 		}
 
 		@Bean
 		@Order(100)
 		BindableService serviceB() {
-			when(SERVICE_B.bindService()).thenReturn(SERVICE_DEF_B);
+			Mockito.when(SERVICE_B.bindService()).thenReturn(SERVICE_DEF_B);
 			return SERVICE_B;
 		}
 

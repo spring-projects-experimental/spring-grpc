@@ -13,20 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.grpc.autoconfigure.server;
+package org.springframework.grpc.server.service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
+import org.springframework.grpc.server.GlobalServerInterceptor;
 import org.springframework.lang.Nullable;
 
 import io.grpc.BindableService;
 import io.grpc.ServerInterceptor;
 import io.grpc.ServerInterceptors;
 import io.grpc.ServerServiceDefinition;
-import jakarta.annotation.PostConstruct;
 
 /**
  * Default {@link GrpcServiceConfigurer} that binds and configures services with
@@ -34,7 +35,7 @@ import jakarta.annotation.PostConstruct;
  *
  * @author Chris Bono
  */
-public class DefaultGrpcServiceConfigurer implements GrpcServiceConfigurer {
+public class DefaultGrpcServiceConfigurer implements GrpcServiceConfigurer, InitializingBean {
 
 	private final ApplicationContext applicationContext;
 
@@ -44,8 +45,8 @@ public class DefaultGrpcServiceConfigurer implements GrpcServiceConfigurer {
 		this.applicationContext = applicationContext;
 	}
 
-	@PostConstruct
-	private void initializeGlobalInterceptors() {
+	@Override
+	public void afterPropertiesSet() {
 		this.globalInterceptors = findGlobalInterceptors();
 	}
 
