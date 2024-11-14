@@ -7,11 +7,16 @@
     },
     {
       "name": "spring.grpc.server.reflection.enabled",
-      "defaultValue": "true"
+      "type": "java.lang.Boolean",
+      "description": "Whether to enable Reflection on the gRPC server.",
+      "defaultValue": true
     },
     {
-      "name": "spring.grpc.server.observation.enabled",
-      "defaultValue": "true"
+      "name": "spring.grpc.server.observations.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether to enable Observations on the server.",
+      "defaultValue": true
+
     }
   ]
 }
