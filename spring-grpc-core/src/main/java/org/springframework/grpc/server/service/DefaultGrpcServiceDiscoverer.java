@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package org.springframework.grpc.autoconfigure.server;
+package org.springframework.grpc.server.service;
 
 import java.util.List;
 
 import org.springframework.context.ApplicationContext;
-import org.springframework.grpc.server.GrpcServiceDiscoverer;
 import org.springframework.lang.Nullable;
 
 import io.grpc.BindableService;

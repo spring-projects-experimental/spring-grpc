@@ -29,9 +29,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.grpc.autoconfigure.common.codec.GrpcCodecConfiguration;
 import org.springframework.grpc.server.GrpcServerFactory;
-import org.springframework.grpc.server.GrpcServiceDiscoverer;
 import org.springframework.grpc.server.ServerBuilderCustomizer;
 import org.springframework.grpc.server.lifecycle.GrpcServerLifecycle;
+import org.springframework.grpc.server.service.DefaultGrpcServiceConfigurer;
+import org.springframework.grpc.server.service.DefaultGrpcServiceDiscoverer;
+import org.springframework.grpc.server.service.GrpcServiceConfigurer;
+import org.springframework.grpc.server.service.GrpcServiceDiscoverer;
 
 import io.grpc.BindableService;
 import io.grpc.CompressorRegistry;

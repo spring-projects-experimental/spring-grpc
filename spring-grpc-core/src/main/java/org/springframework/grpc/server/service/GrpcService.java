@@ -16,7 +16,7 @@
  * Copy from net.devh:grpc-spring-boot-starter.
  */
 
-package org.springframework.grpc.autoconfigure.server;
+package org.springframework.grpc.server.service;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

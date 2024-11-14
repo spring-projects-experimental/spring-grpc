@@ -13,10 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.grpc.autoconfigure.server;
+package org.springframework.grpc.server.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+
+import java.util.List;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -24,8 +26,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.core.annotation.AnnotationUtils;
 
 import io.grpc.ServerInterceptor;
-
-import java.util.List;
 
 /**
  * Tests for {@link GrpcServiceInfo}.

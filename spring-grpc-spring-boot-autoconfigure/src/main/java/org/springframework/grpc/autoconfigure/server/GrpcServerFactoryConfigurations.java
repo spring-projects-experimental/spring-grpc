@@ -29,10 +29,10 @@ import org.springframework.boot.ssl.SslBundles;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.grpc.server.GrpcServerFactory;
-import org.springframework.grpc.server.GrpcServiceDiscoverer;
 import org.springframework.grpc.server.NettyGrpcServerFactory;
 import org.springframework.grpc.server.ServerBuilderCustomizer;
 import org.springframework.grpc.server.ShadedNettyGrpcServerFactory;
+import org.springframework.grpc.server.service.GrpcServiceDiscoverer;
 
 import io.grpc.netty.NettyServerBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;

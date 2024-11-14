@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.grpc.autoconfigure.server;
+package org.springframework.grpc.server;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -22,9 +22,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import io.grpc.ServerInterceptor;
-
 import org.springframework.core.annotation.Order;
+
+import io.grpc.ServerInterceptor;
 
 /**
  * Annotation that can be specified on a gRPC {@link ServerInterceptor} bean which will

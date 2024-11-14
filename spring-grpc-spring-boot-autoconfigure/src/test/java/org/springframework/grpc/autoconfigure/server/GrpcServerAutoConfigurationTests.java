@@ -34,6 +34,7 @@ import org.mockito.InOrder;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
+
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.ssl.SslAutoConfiguration;
 import org.springframework.boot.test.context.FilteredClassLoader;
@@ -42,11 +43,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.grpc.server.GrpcServerFactory;
-import org.springframework.grpc.server.GrpcServiceDiscoverer;
 import org.springframework.grpc.server.NettyGrpcServerFactory;
 import org.springframework.grpc.server.ServerBuilderCustomizer;
 import org.springframework.grpc.server.ShadedNettyGrpcServerFactory;
 import org.springframework.grpc.server.lifecycle.GrpcServerLifecycle;
+import org.springframework.grpc.server.service.DefaultGrpcServiceConfigurer;
+import org.springframework.grpc.server.service.GrpcServiceConfigurer;
+import org.springframework.grpc.server.service.GrpcServiceDiscoverer;
 
 import io.grpc.BindableService;
 import io.grpc.Grpc;

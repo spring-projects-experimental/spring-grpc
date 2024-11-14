@@ -14,25 +14,27 @@
  * limitations under the License.
  */
 
-package org.springframework.grpc.server;
+package org.springframework.grpc.server.service;
 
-import java.util.List;
+import org.springframework.lang.Nullable;
 
+import io.grpc.BindableService;
 import io.grpc.ServerServiceDefinition;
 
 /**
- * Discovers {@link ServerServiceDefinition gRPC services} to be provided by the server.
+ * Configures and binds a {@link BindableService gRPC Service}.
  *
- * @author Michael (yidongnan@gmail.com)
  * @author Chris Bono
  */
 @FunctionalInterface
-public interface GrpcServiceDiscoverer {
+public interface GrpcServiceConfigurer {
 
 	/**
-	 * Find gRPC services for the server to provide.
-	 * @return list of services to add to the server - empty when no services available
+	 * Configure and bind a gRPC service.
+	 * @param bindableService service to bind and configure
+	 * @param serviceInfo optional additional service information
+	 * @return configured service definition
 	 */
-	List<ServerServiceDefinition> findServices();
+	ServerServiceDefinition configure(BindableService bindableService, @Nullable GrpcServiceInfo serviceInfo);
 
 }
