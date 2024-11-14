@@ -135,6 +135,22 @@ class GrpcServerAutoConfigurationTests {
 	}
 
 	@Test
+	void whenHasUserDefinedGrpcServiceConfigurerDoesNotAutoConfigureBean() {
+		GrpcServiceConfigurer customGrpcServiceConfigurer = mock(GrpcServiceConfigurer.class);
+		this.contextRunner()
+			.withBean("customGrpcServiceConfigurer", GrpcServiceConfigurer.class, () -> customGrpcServiceConfigurer)
+			.run((context) -> assertThat(context).getBean(GrpcServiceConfigurer.class)
+				.isSameAs(customGrpcServiceConfigurer));
+	}
+
+	@Test
+	void grpcServiceConfigurerAutoConfiguredAsExpected() {
+		this.contextRunnerWithLifecyle()
+			.run((context) -> assertThat(context).getBean(GrpcServiceConfigurer.class)
+				.isInstanceOf(DefaultGrpcServiceConfigurer.class));
+	}
+
+	@Test
 	void whenHasUserDefinedServerBuilderCustomizersDoesNotAutoConfigureBean() {
 		ServerBuilderCustomizers customCustomizers = mock(ServerBuilderCustomizers.class);
 		this.contextRunner()
