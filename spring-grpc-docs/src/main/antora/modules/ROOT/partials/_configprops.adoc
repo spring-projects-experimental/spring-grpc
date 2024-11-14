@@ -27,8 +27,9 @@
 |spring.grpc.server.keep-alive.timeout | `+++20s+++` | Maximum time to wait for read activity after sending a keep alive ping. If sender does not receive an acknowledgment within this time, it will close the connection (default 20s).
 |spring.grpc.server.max-inbound-message-size | `+++4194304B+++` | Maximum message size allowed to be received by the server (default 4MiB).
 |spring.grpc.server.max-inbound-metadata-size | `+++8192B+++` | Maximum metadata size allowed to be received by the server (default 8KiB).
+|spring.grpc.server.observations.enabled | `+++true+++` | Whether to enable Observations on the server.
 |spring.grpc.server.port | `+++9090+++` | Server port to listen on. When the value is 0, a random available port is selected. The default is 9090.
-|spring.grpc.server.reflection.enabled | `+++true+++` | 
+|spring.grpc.server.reflection.enabled | `+++true+++` | Whether to enable Reflection on the gRPC server.
 |spring.grpc.server.shutdown-grace-period | `+++30s+++` | Maximum time to wait for the server to gracefully shutdown. When the value is negative, the server waits forever. When the value is 0, the server will force shutdown immediately. The default is 30 seconds.
 |spring.grpc.server.ssl.bundle |  | SSL bundle name.
 |spring.grpc.server.ssl.client-auth |  | Client authentication mode.
