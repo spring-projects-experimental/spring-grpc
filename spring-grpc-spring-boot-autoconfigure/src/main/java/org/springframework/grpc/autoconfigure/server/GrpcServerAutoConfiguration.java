@@ -74,15 +74,15 @@ public class GrpcServerAutoConfiguration {
 		return new ServerBuilderCustomizers(customizers.orderedStream().toList());
 	}
 
-	@ConditionalOnMissingBean
+	@ConditionalOnMissingBean(GrpcServiceConfigurer.class)
 	@Bean
-	GrpcServiceConfigurer grpcServiceConfigurer(ApplicationContext applicationContext) {
+	DefaultGrpcServiceConfigurer grpcServiceConfigurer(ApplicationContext applicationContext) {
 		return new DefaultGrpcServiceConfigurer(applicationContext);
 	}
 
-	@ConditionalOnMissingBean
+	@ConditionalOnMissingBean(GrpcServiceDiscoverer.class)
 	@Bean
-	GrpcServiceDiscoverer grpcServiceDiscoverer(GrpcServiceConfigurer grpcServiceConfigurer,
+	DefaultGrpcServiceDiscoverer grpcServiceDiscoverer(GrpcServiceConfigurer grpcServiceConfigurer,
 			ApplicationContext applicationContext) {
 		return new DefaultGrpcServiceDiscoverer(grpcServiceConfigurer, applicationContext);
 	}

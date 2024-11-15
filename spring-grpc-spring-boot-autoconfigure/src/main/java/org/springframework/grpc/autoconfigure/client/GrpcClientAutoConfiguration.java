@@ -44,7 +44,7 @@ public class GrpcClientAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean(GrpcChannelFactory.class)
 	public DefaultGrpcChannelFactory defaultGrpcChannelFactory(final List<GrpcChannelConfigurer> configurers,
-			ChannelCredentialsProvider credentials, GrpcClientProperties channels, SslBundles bundles) {
+			ChannelCredentialsProvider credentials, GrpcClientProperties channels, SslBundles ignored) {
 		DefaultGrpcChannelFactory factory = new DefaultGrpcChannelFactory(configurers);
 		factory.setCredentialsProvider(credentials);
 		factory.setVirtualTargets(new NamedChannelVirtualTargets(channels));
@@ -53,7 +53,8 @@ public class GrpcClientAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(ChannelCredentialsProvider.class)
-	public ChannelCredentialsProvider channelCredentialsProvider(GrpcClientProperties channels, SslBundles bundles) {
+	public NamedChannelCredentialsProvider channelCredentialsProvider(GrpcClientProperties channels,
+			SslBundles bundles) {
 		return new NamedChannelCredentialsProvider(bundles, channels);
 	}
 
@@ -113,7 +114,7 @@ public class GrpcClientAutoConfiguration {
 		@Override
 		public String getTarget(String authority) {
 			NamedChannel channel = this.channels.getChannel(authority);
-			return channels.getTarget(channel.getAddress());
+			return this.channels.getTarget(channel.getAddress());
 		}
 
 	}

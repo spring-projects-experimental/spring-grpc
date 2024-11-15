@@ -21,21 +21,19 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 
-import io.grpc.ServerInterceptor;
 import io.micrometer.core.instrument.binder.grpc.ObservationGrpcServerInterceptor;
 import io.micrometer.observation.ObservationRegistry;
 
 @AutoConfiguration(
 		afterName = "org.springframework.boot.actuate.autoconfigure.observation.ObservationAutoConfiguration")
-@ConditionalOnClass(value = { ObservationRegistry.class, ObservationGrpcServerInterceptor.class })
+@ConditionalOnClass({ ObservationRegistry.class, ObservationGrpcServerInterceptor.class })
 @ConditionalOnBean(ObservationRegistry.class)
 @ConditionalOnProperty(name = "spring.grpc.server.observation.enabled", havingValue = "true", matchIfMissing = true)
 public class GrpcServerObservationAutoConfiguration {
 
-	@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
 	@Bean
 	@GlobalServerInterceptor
-	ServerInterceptor observationGrpcServerInterceptor(ObservationRegistry observationRegistry) {
+	ObservationGrpcServerInterceptor observationGrpcServerInterceptor(ObservationRegistry observationRegistry) {
 		return new ObservationGrpcServerInterceptor(observationRegistry);
 	}
 
