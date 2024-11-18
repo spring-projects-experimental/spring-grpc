@@ -25,7 +25,6 @@ import java.util.function.Function;
 
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.InstanceOfAssertFactories;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
@@ -256,7 +255,6 @@ class DefaultGrpcServiceConfigurerTests {
 		}
 
 		@SuppressWarnings("unchecked")
-		@Disabled("Needs 'blend interceptors' to be implemented")
 		@Test
 		void whenBlendInterceptorsTrueThenGlobalInterceptorsBlended() {
 			GrpcServiceInfo serviceInfo = new GrpcServiceInfo(
