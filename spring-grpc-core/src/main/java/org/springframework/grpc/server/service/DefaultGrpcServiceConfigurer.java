@@ -76,7 +76,10 @@ public class DefaultGrpcServiceConfigurer implements GrpcServiceConfigurer, Init
 		Arrays.stream(serviceInfo.interceptorNames())
 			.forEachOrdered((interceptorBeanName) -> allInterceptors
 				.add(this.applicationContext.getBean(interceptorBeanName, ServerInterceptor.class)));
-		// TODO handle blend
+		if (serviceInfo.blendWithGlobalInterceptors()) {
+			ApplicationContextBeanLookupUtils.sortBeansIncludingOrderAnnotation(this.applicationContext,
+					ServerInterceptor.class, allInterceptors);
+		}
 		return ServerInterceptors.interceptForward(serviceDef, allInterceptors);
 	}
 

@@ -20,6 +20,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.OrderComparator;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.core.annotation.Order;
 import org.springframework.util.Assert;
 
@@ -91,6 +94,35 @@ final class ApplicationContextBeanLookupUtils {
 		var beanToNameMap = new LinkedHashMap<Object, String>();
 		nameToBeanMap.forEach((name, bean) -> beanToNameMap.put(bean, name));
 		return applicationContext.getBeanProvider(beanType).orderedStream().filter(beanToNameMap::containsKey).toList();
+	}
+
+	/**
+	 * Sorts the supplied list in place using an {@link OrderComparator} that takes the
+	 * {@link Order @Order} annotation on bean factory methods in configuration classes
+	 * into account.
+	 * @param applicationContext the application context
+	 * @param beanType the type of beans in the list
+	 * @param beans the list of beans to sort
+	 */
+	static void sortBeansIncludingOrderAnnotation(ApplicationContext applicationContext, Class<?> beanType,
+			List<?> beans) {
+		var beanToNameMap = new LinkedHashMap<Object, String>();
+		applicationContext.getBeansOfType(beanType).forEach((name, bean) -> beanToNameMap.put(bean, name));
+		beans.sort(OrderComparator.INSTANCE.withSourceProvider(bean -> {
+			Integer priority = AnnotationAwareOrderComparator.INSTANCE.getPriority(bean);
+			if (priority != null) {
+				return (Ordered) () -> priority;
+			}
+			// Consult the bean factory method for annotations
+			String beanName = beanToNameMap.get(bean);
+			if (beanName != null) {
+				Order order = applicationContext.findAnnotationOnBean(beanName, Order.class);
+				if (order != null) {
+					return (Ordered) order::value;
+				}
+			}
+			return null;
+		}));
 	}
 
 }

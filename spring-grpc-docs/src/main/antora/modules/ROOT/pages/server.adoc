@@ -128,6 +128,16 @@ BindableService myService() {
 }
 ----
 
+[[server-interceptor-blending]]
+[TIP]
+====
+When a service is configured with both global and per-service interceptors, the global interceptors are first applied in their sorted order followed by the per-service interceptors in their sorted order.
+
+However, by setting the `blendWithGlobalInterceptors` attribute on the `@GrpcService` annotation to `"true"` you can change this behavior so that the interceptors are all combined and then sorted according to their bean natural ordering (i.e. `@Order`).
+
+You can use this option if you want to add a per-service interceptor between global interceptors.
+====
+
 == Observability
 
 Spring gRPC provides an autoconfigured interceptor that can be used to provide observability to your gRPC services.
