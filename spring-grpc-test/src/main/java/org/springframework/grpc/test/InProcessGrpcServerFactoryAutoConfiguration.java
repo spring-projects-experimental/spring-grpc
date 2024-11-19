@@ -41,7 +41,7 @@ public class InProcessGrpcServerFactoryAutoConfiguration {
 	@ConditionalOnBean(BindableService.class)
 	InProcessGrpcServerFactory grpcServerFactory(GrpcServiceDiscoverer grpcServicesDiscoverer,
 			List<ServerBuilderCustomizer<InProcessServerBuilder>> customizers) {
-		InProcessGrpcServerFactory factory = new InProcessGrpcServerFactory("0.0.0.0:0", customizers);
+		InProcessGrpcServerFactory factory = new InProcessGrpcServerFactory("test", customizers);
 		grpcServicesDiscoverer.findServices().forEach(factory::addService);
 		return factory;
 	}
@@ -49,7 +49,7 @@ public class InProcessGrpcServerFactoryAutoConfiguration {
 	@Bean
 	InProcessGrpcChannelFactory grpcChannelFactory() {
 		InProcessGrpcChannelFactory factory = new InProcessGrpcChannelFactory();
-		factory.setVirtualTargets(path -> path);
+		factory.setVirtualTargets(path -> "test");
 		return factory;
 	}
 
