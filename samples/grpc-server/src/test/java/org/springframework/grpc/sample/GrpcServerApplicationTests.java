@@ -18,7 +18,7 @@ import org.springframework.grpc.sample.proto.SimpleGrpc;
 import org.springframework.grpc.test.LocalGrpcPort;
 import org.springframework.test.annotation.DirtiesContext;
 
-@SpringBootTest(properties = "spring.grpc.server.port=0")
+@SpringBootTest(properties = { "spring.grpc.server.port=0", "spring.grpc.inprocess.enabled=false" })
 public class GrpcServerApplicationTests {
 
 	private static Log log = LogFactory.getLog(GrpcServerApplicationTests.class);

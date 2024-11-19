@@ -18,32 +18,23 @@ package org.springframework.grpc.sample;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.List;
-
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
 import org.springframework.grpc.autoconfigure.server.GrpcServerProperties;
 import org.springframework.grpc.client.GrpcChannelFactory;
 import org.springframework.grpc.sample.proto.HelloReply;
 import org.springframework.grpc.sample.proto.HelloRequest;
 import org.springframework.grpc.sample.proto.SimpleGrpc;
 import org.springframework.grpc.server.GrpcServerFactory;
-import org.springframework.grpc.server.ServerBuilderCustomizer;
-import org.springframework.grpc.server.service.GrpcServiceDiscoverer;
-import org.springframework.grpc.test.InProcessGrpcChannelFactory;
-import org.springframework.grpc.test.InProcessGrpcServerFactory;
 import org.springframework.grpc.test.LocalGrpcPort;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
 import io.grpc.ManagedChannel;
-import io.grpc.inprocess.InProcessServerBuilder;
 
 /**
  * More detailed integration tests for {@link GrpcServerFactory gRPC server factories} and
@@ -60,30 +51,11 @@ class GrpcServerIntegrationTests {
 			assertThatResponseIsServedToChannel(channels.createChannel("0.0.0.0:0").build());
 		}
 
-		@TestConfiguration
-		static class InProcessConfiguration {
-
-			@Bean
-			InProcessGrpcServerFactory grpcServerFactory(GrpcServiceDiscoverer grpcServicesDiscoverer,
-					List<ServerBuilderCustomizer<InProcessServerBuilder>> customizers) {
-				InProcessGrpcServerFactory factory = new InProcessGrpcServerFactory("0.0.0.0:0", customizers);
-				grpcServicesDiscoverer.findServices().forEach(factory::addService);
-				return factory;
-			}
-
-			@Bean
-			InProcessGrpcChannelFactory grpcChannelFactory() {
-				InProcessGrpcChannelFactory factory = new InProcessGrpcChannelFactory();
-				factory.setVirtualTargets(path -> path);
-				return factory;
-			}
-
-		}
-
 	}
 
 	@Nested
-	@SpringBootTest(properties = { "spring.grpc.server.host=0.0.0.0", "spring.grpc.server.port=0" })
+	@SpringBootTest(properties = { "spring.grpc.server.host=0.0.0.0", "spring.grpc.server.port=0",
+			"spring.grpc.inprocess.enabled=false" })
 	class ServerWithAnyIPv4AddressAndRandomPort {
 
 		@Test
@@ -95,7 +67,8 @@ class GrpcServerIntegrationTests {
 	}
 
 	@Nested
-	@SpringBootTest(properties = { "spring.grpc.server.host=::", "spring.grpc.server.port=0" })
+	@SpringBootTest(properties = { "spring.grpc.server.host=::", "spring.grpc.server.port=0",
+			"spring.grpc.inprocess.enabled=false" })
 	class ServerWithAnyIPv6AddressAndRandomPort {
 
 		@Test
@@ -107,7 +80,8 @@ class GrpcServerIntegrationTests {
 	}
 
 	@Nested
-	@SpringBootTest(properties = { "spring.grpc.server.host=127.0.0.1", "spring.grpc.server.port=0" })
+	@SpringBootTest(properties = { "spring.grpc.server.host=127.0.0.1", "spring.grpc.server.port=0",
+			"spring.grpc.inprocess.enabled=false" })
 	class ServerWithLocalhostAndRandomPort {
 
 		@Test
@@ -120,7 +94,8 @@ class GrpcServerIntegrationTests {
 
 	@Nested
 	@SpringBootTest(properties = { "spring.grpc.server.port=0",
-			"spring.grpc.client.channels.test-channel.address=static://0.0.0.0:${local.grpc.port}" })
+			"spring.grpc.client.channels.test-channel.address=static://0.0.0.0:${local.grpc.port}",
+			"spring.grpc.inprocess.enabled=false" })
 	@DirtiesContext
 	class ServerConfiguredWithStaticClientChannel {
 
@@ -132,7 +107,8 @@ class GrpcServerIntegrationTests {
 	}
 
 	@Nested
-	@SpringBootTest(properties = "spring.grpc.server.address=unix:unix-test-channel")
+	@SpringBootTest(
+			properties = { "spring.grpc.server.address=unix:unix-test-channel", "spring.grpc.inprocess.enabled=false" })
 	@EnabledOnOs(OS.LINUX)
 	class ServerWithUnixDomain {
 
@@ -147,7 +123,7 @@ class GrpcServerIntegrationTests {
 	@SpringBootTest(properties = { "spring.grpc.server.port=0",
 			"spring.grpc.client.channels.test-channel.address=static://0.0.0.0:${local.grpc.port}",
 			"spring.grpc.client.channels.test-channel.negotiation-type=TLS",
-			"spring.grpc.client.channels.test-channel.secure=false" })
+			"spring.grpc.client.channels.test-channel.secure=false", "spring.grpc.inprocess.enabled=false" })
 	@ActiveProfiles("ssl")
 	@DirtiesContext
 	class ServerWithSsl {
@@ -165,7 +141,7 @@ class GrpcServerIntegrationTests {
 			"spring.grpc.client.channels.test-channel.address=static://0.0.0.0:${local.grpc.port}",
 			"spring.grpc.client.channels.test-channel.ssl.bundle=ssltest",
 			"spring.grpc.client.channels.test-channel.negotiation-type=TLS",
-			"spring.grpc.client.channels.test-channel.secure=false" })
+			"spring.grpc.client.channels.test-channel.secure=false", "spring.grpc.inprocess.enabled=false" })
 	@ActiveProfiles("ssl")
 	@DirtiesContext
 	class ServerWithClientAuth {
