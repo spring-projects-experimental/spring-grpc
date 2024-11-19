@@ -35,7 +35,8 @@ public interface GrpcServerFactory {
 	 * Gets a new fully configured but not started {@link Server} instance. Clients should
 	 * not be able to connect to the returned server until {@link Server#start()} is
 	 * called (which happens when the {@code GrpcServerLifecycle} is started).
-	 * @return a fully configured not started {@link Server}
+	 * @return a fully configured not started {@link Server} or null if the server has no
+	 * lifecycle
 	 * @see GrpcServerLifecycle
 	 */
 	Server createServer();

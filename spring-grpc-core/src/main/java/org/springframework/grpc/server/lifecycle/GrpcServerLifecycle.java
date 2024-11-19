@@ -114,24 +114,28 @@ public class GrpcServerLifecycle implements SmartLifecycle {
 	protected void createAndStartGrpcServer() throws IOException {
 		if (this.server == null) {
 			final Server localServer = this.factory.createServer();
-			this.server = localServer.start();
-			final String address = this.server.getListenSockets().toString();
-			final int port = this.server.getPort();
-			logger.info("gRPC Server started, listening on address: " + this.server.getListenSockets());
-			this.eventPublisher.publishEvent(new GrpcServerStartedEvent(this, localServer, address, port));
+			if (localServer != null) {
 
-			// Prevent the JVM from shutting down while the server is running
-			final Thread awaitThread = new Thread(() -> {
-				try {
-					localServer.awaitTermination();
-				}
-				catch (final InterruptedException e) {
-					Thread.currentThread().interrupt();
-				}
-			});
-			awaitThread.setName("grpc-server-container-" + (serverCounter.incrementAndGet()));
-			awaitThread.setDaemon(false);
-			awaitThread.start();
+				this.server = localServer.start();
+				final String address = this.server.getListenSockets().toString();
+				final int port = this.server.getPort();
+				logger.info("gRPC Server started, listening on address: " + this.server.getListenSockets());
+				this.eventPublisher.publishEvent(new GrpcServerStartedEvent(this, localServer, address, port));
+
+				// Prevent the JVM from shutting down while the server is running
+				final Thread awaitThread = new Thread(() -> {
+					try {
+						localServer.awaitTermination();
+					}
+					catch (final InterruptedException e) {
+						Thread.currentThread().interrupt();
+					}
+				});
+				awaitThread.setName("grpc-server-container-" + (serverCounter.incrementAndGet()));
+				awaitThread.setDaemon(false);
+				awaitThread.start();
+
+			}
 		}
 	}
 
