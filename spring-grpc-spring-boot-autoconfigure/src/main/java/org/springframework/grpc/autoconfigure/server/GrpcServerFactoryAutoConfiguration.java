@@ -64,7 +64,7 @@ public class GrpcServerFactoryAutoConfiguration {
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	@ConditionalOnWebApplication
+	@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 	static class GrpcServletConfiguration {
 
 		@Bean

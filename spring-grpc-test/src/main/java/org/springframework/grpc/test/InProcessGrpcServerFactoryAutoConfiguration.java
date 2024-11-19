@@ -18,6 +18,8 @@ package org.springframework.grpc.test;
 import java.util.List;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnNotWebApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -26,14 +28,17 @@ import org.springframework.grpc.autoconfigure.server.GrpcServerFactoryAutoConfig
 import org.springframework.grpc.server.ServerBuilderCustomizer;
 import org.springframework.grpc.server.service.GrpcServiceDiscoverer;
 
+import io.grpc.BindableService;
 import io.grpc.inprocess.InProcessServerBuilder;
 
 @AutoConfiguration(before = { GrpcServerFactoryAutoConfiguration.class, GrpcClientAutoConfiguration.class })
 @ConditionalOnProperty(prefix = "spring.grpc.inprocess", name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnClass(BindableService.class)
 @ConditionalOnNotWebApplication
 public class InProcessGrpcServerFactoryAutoConfiguration {
 
 	@Bean
+	@ConditionalOnBean(BindableService.class)
 	InProcessGrpcServerFactory grpcServerFactory(GrpcServiceDiscoverer grpcServicesDiscoverer,
 			List<ServerBuilderCustomizer<InProcessServerBuilder>> customizers) {
 		InProcessGrpcServerFactory factory = new InProcessGrpcServerFactory("0.0.0.0:0", customizers);
