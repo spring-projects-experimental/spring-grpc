@@ -16,6 +16,9 @@
 
 package org.springframework.grpc.autoconfigure.server;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,9 +29,6 @@ import org.springframework.boot.context.properties.bind.BindException;
 import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.boot.context.properties.source.MapConfigurationPropertySource;
 import org.springframework.util.unit.DataSize;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertThrows;
 
 /**
  * Tests for {@link GrpcServerProperties}.

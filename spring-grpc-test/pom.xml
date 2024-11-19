@@ -9,7 +9,6 @@
 		<version>0.2.0-SNAPSHOT</version>
 	</parent>
 	<artifactId>spring-grpc-test</artifactId>
-	<packaging>jar</packaging>
 	<name>Spring gRPC Test</name>
 	<description>Test support for gRPC programming</description>
 	<url>https://github.com/spring-projects-experimental/spring-grpc</url>
@@ -28,12 +27,22 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.grpc</groupId>
-			<artifactId>spring-grpc-core</artifactId>
+			<artifactId>spring-grpc-spring-boot-autoconfigure</artifactId>
 			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<version>${spring-boot.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.grpc</groupId>
 			<artifactId>grpc-testing</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.grpc</groupId>
+			<artifactId>grpc-inprocess</artifactId>
+			<optional>true</optional>
 		</dependency>
 	</dependencies>
 </project>
