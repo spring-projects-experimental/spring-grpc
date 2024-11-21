@@ -83,6 +83,32 @@ class GrpcServerIntegrationTests {
 	}
 
 	@Nested
+	@SpringBootTest("spring.grpc.server.exception-handler.enabled=false")
+	class ServerWithUnhandledException {
+
+		@Test
+		void specificErrorResponse(@Autowired GrpcChannelFactory channels) {
+			SimpleGrpc.SimpleBlockingStub client = SimpleGrpc
+				.newBlockingStub(channels.createChannel("0.0.0.0:0").build());
+			assertThat(assertThrows(StatusRuntimeException.class,
+					() -> client.sayHello(HelloRequest.newBuilder().setName("error").build()))
+				.getStatus()
+				.getCode()).isEqualTo(Code.UNKNOWN);
+		}
+
+		@Test
+		void defaultErrorResponseIsUnknown(@Autowired GrpcChannelFactory channels) {
+			SimpleGrpc.SimpleBlockingStub client = SimpleGrpc
+				.newBlockingStub(channels.createChannel("0.0.0.0:0").build());
+			assertThat(assertThrows(StatusRuntimeException.class,
+					() -> client.sayHello(HelloRequest.newBuilder().setName("internal").build()))
+				.getStatus()
+				.getCode()).isEqualTo(Code.UNKNOWN);
+		}
+
+	}
+
+	@Nested
 	@SpringBootTest(properties = { "spring.grpc.server.host=0.0.0.0", "spring.grpc.server.port=0",
 			"spring.grpc.inprocess.enabled=false" })
 	class ServerWithAnyIPv4AddressAndRandomPort {

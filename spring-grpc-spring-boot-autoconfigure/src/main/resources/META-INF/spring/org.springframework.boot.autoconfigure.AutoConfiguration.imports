@@ -4,3 +4,4 @@ org.springframework.grpc.autoconfigure.server.GrpcServerAutoConfiguration
 org.springframework.grpc.autoconfigure.server.GrpcServerHealthAutoConfiguration
 org.springframework.grpc.autoconfigure.server.GrpcServerObservationAutoConfiguration
 org.springframework.grpc.autoconfigure.server.GrpcServerReflectionAutoConfiguration
+org.springframework.grpc.autoconfigure.server.exception.GrpcExceptionHandlerAutoConfiguration
