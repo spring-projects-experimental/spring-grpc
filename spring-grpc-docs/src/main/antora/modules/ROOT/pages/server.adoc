@@ -143,3 +143,15 @@ You can use this option if you want to add a per-service interceptor between glo
 Spring gRPC provides an autoconfigured interceptor that can be used to provide observability to your gRPC services.
 All you need to do is add Spring Boot actuators to your project, and optionally a bridge to your observability platform of choice (just like https://docs.spring.io/spring-boot/reference/actuator/observability.html[any other Spring Boot application]).
 The `grpc-tomcat` sample in the Spring gRPC repository shows how to do it, and you should see trace logging and metrics when you connect to the server.
+
+== Exception Handling
+
+Spring gRPC provides an autoconfigured exception handler that can be used to provide a consistent way to handle exceptions in your gRPC services.
+All you need to do is add `@Beans` of type `GrpcExceptionHandler` to your application context, and they will be used to handle exceptions thrown by your services.
+A `GrpcExceptionHandler` can be used to handle exceptions of a specific type, returning null for those it does not support, or to handle all exceptions.
+
+== Testing
+
+If you include `spring-grpc-test` in your project, your gRPC server in a `@SpringBootTest` will be started in-process (i.e. not listening on a network port).
+All clients that connect to any server via the autoconfigured `GrpcChannelFactory` will be able to connect to it.
+You can switch the in-process server off by setting `spring.grpc.in-process.enabled` to `false`.
