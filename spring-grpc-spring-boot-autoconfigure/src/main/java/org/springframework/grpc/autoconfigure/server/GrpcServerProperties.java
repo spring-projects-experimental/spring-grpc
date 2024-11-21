@@ -17,6 +17,8 @@ package org.springframework.grpc.autoconfigure.server;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.convert.DataSizeUnit;
@@ -66,6 +68,8 @@ public class GrpcServerProperties {
 	@DataSizeUnit(DataUnit.BYTES)
 	private DataSize maxInboundMetadataSize = DataSize.ofBytes(8192);
 
+	private final Health health = new Health();
+
 	private final KeepAlive keepAlive = new KeepAlive();
 
 	/**
@@ -83,7 +87,7 @@ public class GrpcServerProperties {
 	}
 
 	public String getHost() {
-		return host;
+		return this.host;
 	}
 
 	public void setHost(String host) {
@@ -131,8 +135,65 @@ public class GrpcServerProperties {
 		this.maxInboundMetadataSize = maxInboundMetadataSize;
 	}
 
+	public Health getHealth() {
+		return this.health;
+	}
+
 	public KeepAlive getKeepAlive() {
 		return this.keepAlive;
+	}
+
+	public static class Health {
+
+		/**
+		 * Whether to auto-configure Health feature on the gRPC server.
+		 */
+		private Boolean enabled = true;
+
+		private final ActuatorAdapt actuator = new ActuatorAdapt();
+
+		public Boolean getEnabled() {
+			return this.enabled;
+		}
+
+		public void setEnabled(Boolean enabled) {
+			this.enabled = enabled;
+		}
+
+		public ActuatorAdapt getActuator() {
+			return this.actuator;
+		}
+
+	}
+
+	public static class ActuatorAdapt {
+
+		/**
+		 * Whether to adapt Actuator health checks into gRPC health checks.
+		 */
+		private Boolean enabled = true;
+
+		/**
+		 * List of Actuator health checks to adapt into gRPC health checks.
+		 */
+		private List<String> endpoints = new ArrayList<>();
+
+		public Boolean getEnabled() {
+			return this.enabled;
+		}
+
+		public void setEnabled(Boolean enabled) {
+			this.enabled = enabled;
+		}
+
+		public List<String> getEndpoints() {
+			return this.endpoints;
+		}
+
+		public void setEndpoints(List<String> endpoints) {
+			this.endpoints = endpoints;
+		}
+
 	}
 
 	public static class KeepAlive {
@@ -302,7 +363,7 @@ public class GrpcServerProperties {
 		}
 
 		public ClientAuth getClientAuth() {
-			return clientAuth;
+			return this.clientAuth;
 		}
 
 		public void setSecure(boolean secure) {

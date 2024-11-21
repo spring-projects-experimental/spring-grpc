@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.boot.context.properties.bind.BindException;
 import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.boot.context.properties.source.MapConfigurationPropertySource;
@@ -56,6 +57,33 @@ class GrpcServerPropertiesTests {
 			assertThat(properties.getAddress()).isEqualTo("my-server-ip:3130");
 			assertThat(properties.getPort()).isEqualTo(3130);
 			assertThat(properties.getShutdownGracePeriod()).isEqualTo(Duration.ofSeconds(15));
+		}
+
+	}
+
+	@Nested
+	class HealthProperties {
+
+		@Test
+		void bindWithNoSettings() {
+			Map<String, String> map = new HashMap<>();
+			map.put("spring.grpc.server.host", "my-server-ip");
+			GrpcServerProperties.Health properties = bindProperties(map).getHealth();
+			assertThat(properties.getEnabled()).isTrue();
+			assertThat(properties.getActuator().getEnabled()).isTrue();
+			assertThat(properties.getActuator().getEndpoints()).isEmpty();
+		}
+
+		@Test
+		void bindWithoutUnitsSpecified() {
+			Map<String, String> map = new HashMap<>();
+			map.put("spring.grpc.server.health.enabled", "false");
+			map.put("spring.grpc.server.health.actuator.enabled", "false");
+			map.put("spring.grpc.server.health.actuator.endpoints", "a,b,c");
+			GrpcServerProperties.Health properties = bindProperties(map).getHealth();
+			assertThat(properties.getEnabled()).isFalse();
+			assertThat(properties.getActuator().getEnabled()).isFalse();
+			assertThat(properties.getActuator().getEndpoints()).containsExactly("a", "b", "c");
 		}
 
 	}
