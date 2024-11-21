@@ -17,6 +17,7 @@
 package org.springframework.grpc.sample;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertThrows;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -35,6 +36,8 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
 import io.grpc.ManagedChannel;
+import io.grpc.StatusRuntimeException;
+import io.grpc.Status.Code;
 
 /**
  * More detailed integration tests for {@link GrpcServerFactory gRPC server factories} and
@@ -49,6 +52,32 @@ class GrpcServerIntegrationTests {
 		@Test
 		void servesResponseToClient(@Autowired GrpcChannelFactory channels) {
 			assertThatResponseIsServedToChannel(channels.createChannel("0.0.0.0:0").build());
+		}
+
+	}
+
+	@Nested
+	@SpringBootTest
+	class ServerWithException {
+
+		@Test
+		void specificErrorResponse(@Autowired GrpcChannelFactory channels) {
+			SimpleGrpc.SimpleBlockingStub client = SimpleGrpc
+				.newBlockingStub(channels.createChannel("0.0.0.0:0").build());
+			assertThat(assertThrows(StatusRuntimeException.class,
+					() -> client.sayHello(HelloRequest.newBuilder().setName("error").build()))
+				.getStatus()
+				.getCode()).isEqualTo(Code.INVALID_ARGUMENT);
+		}
+
+		@Test
+		void defaultErrorResponseIsUnknown(@Autowired GrpcChannelFactory channels) {
+			SimpleGrpc.SimpleBlockingStub client = SimpleGrpc
+				.newBlockingStub(channels.createChannel("0.0.0.0:0").build());
+			assertThat(assertThrows(StatusRuntimeException.class,
+					() -> client.sayHello(HelloRequest.newBuilder().setName("internal").build()))
+				.getStatus()
+				.getCode()).isEqualTo(Code.UNKNOWN);
 		}
 
 	}
