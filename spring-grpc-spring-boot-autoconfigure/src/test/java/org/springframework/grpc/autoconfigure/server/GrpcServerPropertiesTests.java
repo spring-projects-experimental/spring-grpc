@@ -17,7 +17,7 @@
 package org.springframework.grpc.autoconfigure.server;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import java.time.Duration;
 import java.util.HashMap;
@@ -173,7 +173,7 @@ class GrpcServerPropertiesTests {
 			Map<String, String> map = new HashMap<>();
 			map.put("spring.grpc.server.address", "my-server-ip:3130");
 			map.put("spring.grpc.server.port", "10000");
-			assertThrows(BindException.class, () -> bindProperties(map));
+			assertThatExceptionOfType(BindException.class).isThrownBy(() -> bindProperties(map));
 		}
 
 	}
