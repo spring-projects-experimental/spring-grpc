@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.grpc.autoconfigure.server;
+package org.springframework.grpc.autoconfigure.server.health;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -34,8 +34,9 @@ import org.springframework.boot.ssl.SslBundles;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.grpc.autoconfigure.server.GrpcServerHealthAutoConfiguration.ActuatorHealthAdapter;
-import org.springframework.grpc.autoconfigure.server.GrpcServerHealthAutoConfiguration.ActuatorHealthAdapterConfiguration;
+import org.springframework.grpc.autoconfigure.server.GrpcServerFactoryAutoConfiguration;
+import org.springframework.grpc.autoconfigure.server.ServerBuilderCustomizers;
+import org.springframework.grpc.autoconfigure.server.health.GrpcServerHealthAutoConfiguration.ActuatorHealthAdapterConfiguration;
 import org.springframework.grpc.server.lifecycle.GrpcServerLifecycle;
 import org.springframework.grpc.server.service.GrpcServiceDiscoverer;
 import org.springframework.util.StringUtils;

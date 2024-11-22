@@ -20,10 +20,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import io.grpc.ServerBuilder;
-
 import org.springframework.boot.util.LambdaSafe;
 import org.springframework.grpc.server.ServerBuilderCustomizer;
+
+import io.grpc.ServerBuilder;
 
 /**
  * Invokes the available {@link ServerBuilderCustomizer} instances in the context for a
@@ -31,7 +31,7 @@ import org.springframework.grpc.server.ServerBuilderCustomizer;
  *
  * @author Chris Bono
  */
-class ServerBuilderCustomizers {
+public class ServerBuilderCustomizers {
 
 	private final List<ServerBuilderCustomizer<?>> customizers;
 
