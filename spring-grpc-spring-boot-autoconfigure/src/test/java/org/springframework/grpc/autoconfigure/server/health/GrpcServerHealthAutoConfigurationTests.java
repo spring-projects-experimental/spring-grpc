@@ -166,6 +166,32 @@ class GrpcServerHealthAutoConfigurationTests {
 		}
 
 		@Test
+		void whenActuatorPropertyNotSetAdapterIsAutoConfigured() {
+			GrpcServerHealthAutoConfigurationTests.this.contextRunner()
+				.withBean("healthEndpoint", HealthEndpoint.class, Mockito::mock)
+				.run((context) -> assertThat(context)
+					.hasSingleBean(GrpcServerHealthAutoConfiguration.ActuatorHealthAdapterConfiguration.class));
+		}
+
+		@Test
+		void whenActuatorPropertyIsTrueAdapterIsAutoConfigured() {
+			GrpcServerHealthAutoConfigurationTests.this.contextRunner()
+				.withBean("healthEndpoint", HealthEndpoint.class, Mockito::mock)
+				.withPropertyValues("spring.grpc.server.health.actuator.enabled=true")
+				.run((context) -> assertThat(context)
+					.hasSingleBean(GrpcServerHealthAutoConfiguration.ActuatorHealthAdapterConfiguration.class));
+		}
+
+		@Test
+		void whenActuatorPropertyIsFalseAdapterIsNotAutoConfigured() {
+			GrpcServerHealthAutoConfigurationTests.this.contextRunner()
+				.withBean("healthEndpoint", HealthEndpoint.class, Mockito::mock)
+				.withPropertyValues("spring.grpc.server.health.actuator.enabled=false")
+				.run((context) -> assertThat(context)
+					.doesNotHaveBean(GrpcServerHealthAutoConfiguration.ActuatorHealthAdapterConfiguration.class));
+		}
+
+		@Test
 		void adapterAutoConfiguredAsExpected() {
 			GrpcServerHealthAutoConfigurationTests.this.contextRunner()
 				.withBean("healthEndpoint", HealthEndpoint.class, Mockito::mock)
