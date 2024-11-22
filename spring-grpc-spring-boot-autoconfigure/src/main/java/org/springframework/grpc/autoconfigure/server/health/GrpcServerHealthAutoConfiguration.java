@@ -61,6 +61,8 @@ public class GrpcServerHealthAutoConfiguration {
 	@AutoConfigureAfter(name = "org.springframework.boot.actuate.autoconfigure.health.HealthEndpointAutoConfiguration")
 	@ConditionalOnClass(HealthEndpoint.class)
 	@ConditionalOnBean(HealthEndpoint.class)
+	@ConditionalOnProperty(name = "spring.grpc.server.health.actuator.enabled", havingValue = "true",
+			matchIfMissing = true)
 	@EnableConfigurationProperties(GrpcServerProperties.class)
 	static class ActuatorHealthAdapterConfiguration {
 
