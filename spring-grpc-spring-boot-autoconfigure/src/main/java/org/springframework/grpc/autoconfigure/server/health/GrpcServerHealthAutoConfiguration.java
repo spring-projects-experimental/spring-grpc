@@ -16,9 +16,8 @@
  * Partial copy from net.devh:grpc-spring-boot-starter.
  */
 
-package org.springframework.grpc.autoconfigure.server;
+package org.springframework.grpc.autoconfigure.server.health;
 
-import org.springframework.boot.actuate.health.HealthContributor;
 import org.springframework.boot.actuate.health.HealthEndpoint;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
@@ -30,6 +29,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.grpc.autoconfigure.server.GrpcServerFactoryAutoConfiguration;
+import org.springframework.grpc.autoconfigure.server.GrpcServerProperties;
 
 import io.grpc.BindableService;
 import io.grpc.protobuf.services.HealthStatusManager;
@@ -68,15 +69,6 @@ public class GrpcServerHealthAutoConfiguration {
 				GrpcServerProperties serverProperties) {
 			return new ActuatorHealthAdapter();
 		}
-
-	}
-
-	/**
-	 * Adapts {@link HealthContributor Actuator health checks} into gRPC health checks by
-	 * periodically invoking {@link HealthEndpoint health endpoints} and updating the
-	 * health status in gRPC {@link HealthStatusManager}.
-	 */
-	static class ActuatorHealthAdapter {
 
 	}
 
