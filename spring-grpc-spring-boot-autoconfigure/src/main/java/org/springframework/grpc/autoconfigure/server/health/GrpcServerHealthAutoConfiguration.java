@@ -18,19 +18,34 @@
 
 package org.springframework.grpc.autoconfigure.server.health;
 
+import java.util.List;
+
+import org.springframework.boot.actuate.autoconfigure.endpoint.condition.ConditionalOnAvailableEndpoint;
 import org.springframework.boot.actuate.health.HealthEndpoint;
+import org.springframework.boot.actuate.health.StatusAggregator;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionMessage;
+import org.springframework.boot.autoconfigure.condition.ConditionOutcome;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.SpringBootCondition;
+import org.springframework.boot.autoconfigure.task.TaskSchedulingAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.context.properties.bind.BindResult;
+import org.springframework.boot.context.properties.bind.Bindable;
+import org.springframework.boot.context.properties.bind.Binder;
+import org.springframework.boot.task.SimpleAsyncTaskSchedulerBuilder;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ConditionContext;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.grpc.autoconfigure.server.GrpcServerFactoryAutoConfiguration;
 import org.springframework.grpc.autoconfigure.server.GrpcServerProperties;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import io.grpc.BindableService;
 import io.grpc.protobuf.services.HealthStatusManager;
@@ -58,18 +73,56 @@ public class GrpcServerHealthAutoConfiguration {
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	@AutoConfigureAfter(name = "org.springframework.boot.actuate.autoconfigure.health.HealthEndpointAutoConfiguration")
 	@ConditionalOnClass(HealthEndpoint.class)
-	@ConditionalOnBean(HealthEndpoint.class)
+	@ConditionalOnAvailableEndpoint(endpoint = HealthEndpoint.class)
+	@AutoConfigureAfter(value = TaskSchedulingAutoConfiguration.class,
+			name = "org.springframework.boot.actuate.autoconfigure.health.HealthEndpointAutoConfiguration")
 	@ConditionalOnProperty(name = "spring.grpc.server.health.actuator.enabled", havingValue = "true",
 			matchIfMissing = true)
+	@Conditional(OnHealthIndicatorPathsCondition.class)
 	@EnableConfigurationProperties(GrpcServerProperties.class)
+	@EnableScheduling
 	static class ActuatorHealthAdapterConfiguration {
 
 		@Bean
+		@ConditionalOnMissingBean
 		ActuatorHealthAdapter healthAdapter(HealthStatusManager healthStatusManager, HealthEndpoint healthEndpoint,
-				GrpcServerProperties serverProperties) {
-			return new ActuatorHealthAdapter();
+				StatusAggregator statusAggregator, GrpcServerProperties serverProperties) {
+			return new ActuatorHealthAdapter(healthStatusManager, healthEndpoint, statusAggregator,
+					serverProperties.getHealth().getActuator().getUpdateOverallHealth(),
+					serverProperties.getHealth().getActuator().getHealthIndicatorPaths());
+		}
+
+		@Bean
+		ActuatorHealthAdapterInvoker healthAdapterInvoker(ActuatorHealthAdapter healthAdapter,
+				SimpleAsyncTaskSchedulerBuilder schedulerBuilder, GrpcServerProperties serverProperties) {
+			return new ActuatorHealthAdapterInvoker(healthAdapter, schedulerBuilder,
+					serverProperties.getHealth().getActuator().getUpdateInitialDelay(),
+					serverProperties.getHealth().getActuator().getUpdateRate());
+		}
+
+	}
+
+	/**
+	 * Condition to determine if
+	 * {@code spring.grpc.server.health.actuator.health-indicator-paths} is specified with
+	 * at least one entry.
+	 */
+	static class OnHealthIndicatorPathsCondition extends SpringBootCondition {
+
+		@Override
+		public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
+			String propertyName = "spring.grpc.server.health.actuator.health-indicator-paths";
+			BindResult<List<String>> property = Binder.get(context.getEnvironment())
+				.bind(propertyName, Bindable.listOf(String.class));
+			ConditionMessage.Builder messageBuilder = ConditionMessage
+				.forCondition("Health indicator paths (at least one)");
+			if (property.isBound() && !property.get().isEmpty()) {
+				return ConditionOutcome
+					.match(messageBuilder.because("property %s found with at least one entry".formatted(propertyName)));
+			}
+			return ConditionOutcome.noMatch(
+					messageBuilder.because("property %s not found with at least one entry".formatted(propertyName)));
 		}
 
 	}

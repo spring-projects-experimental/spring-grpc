@@ -18,8 +18,11 @@
 |spring.grpc.client.default-channel.user-agent |  | 
 |spring.grpc.server.address |  | The address to bind to. could be a host:port combination or a pseudo URL like static://host:port. Can not be set if host or port are set independently.
 |spring.grpc.server.exception-handling.enabled | `+++true+++` | Whether to enable user-defined global exception handling on the gRPC server.
-|spring.grpc.server.health.actuator.enabled | `+++true+++` | Whether to adapt Actuator health checks into gRPC health checks.
-|spring.grpc.server.health.actuator.endpoints |  | List of Actuator health checks to adapt into gRPC health checks.
+|spring.grpc.server.health.actuator.enabled | `+++true+++` | Whether to adapt Actuator health indicators into gRPC health checks.
+|spring.grpc.server.health.actuator.health-indicator-paths |  | List of Actuator health indicator paths to adapt into gRPC health checks.
+|spring.grpc.server.health.actuator.update-initial-delay | `+++5s+++` | The initial delay before updating the health status the very first time.
+|spring.grpc.server.health.actuator.update-overall-health | `+++true+++` | Whether to update the overall gRPC server health (the '' service) with the aggregate status of the configured health indicators.
+|spring.grpc.server.health.actuator.update-rate | `+++5s+++` | How often to update the health status.
 |spring.grpc.server.health.enabled | `+++true+++` | Whether to auto-configure Health feature on the gRPC server.
 |spring.grpc.server.host | `+++*+++` | Server address to bind to. The default is any IP address ('*').
 |spring.grpc.server.keep-alive.max-age |  | Maximum time a connection may exist before being gracefully terminated (default infinite).
