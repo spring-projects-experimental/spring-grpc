@@ -30,6 +30,7 @@ import org.mockito.Mockito;
 import org.springframework.boot.actuate.autoconfigure.health.HealthEndpointAutoConfiguration;
 import org.springframework.boot.actuate.health.HealthEndpoint;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.autoconfigure.task.TaskSchedulingAutoConfiguration;
 import org.springframework.boot.ssl.SslBundles;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -142,41 +143,55 @@ class GrpcServerHealthAutoConfigurationTests {
 	@Nested
 	class ActuatorHealthAdapterConfigurationTests {
 
+		private ApplicationContextRunner validContextRunner() {
+			return GrpcServerHealthAutoConfigurationTests.this.contextRunner()
+				.withPropertyValues("spring.grpc.server.health.actuator.health-indicator-paths=my-indicator")
+				.withConfiguration(AutoConfigurations.of(HealthEndpointAutoConfiguration.class,
+						TaskSchedulingAutoConfiguration.class));
+		}
+
 		@Test
 		void adapterIsAutoConfiguredAfterHealthAutoConfiguration() {
-			GrpcServerHealthAutoConfigurationTests.this.contextRunner()
-				.withConfiguration(AutoConfigurations.of(HealthEndpointAutoConfiguration.class))
+			this.validContextRunner()
 				.run((context) -> assertThatBeanDefinitionsContainInOrder(context,
 						HealthEndpointAutoConfiguration.class, ActuatorHealthAdapterConfiguration.class));
 		}
 
 		@Test
+		void adapterIsAutoConfiguredAfterTaskSchedulingAutoConfiguration() {
+			this.validContextRunner()
+				.run((context) -> assertThatBeanDefinitionsContainInOrder(context,
+						TaskSchedulingAutoConfiguration.class, ActuatorHealthAdapterConfiguration.class));
+		}
+
+		@Test
 		void whenHealthEndpointNotOnClasspathAutoConfigurationIsSkipped() {
 			GrpcServerHealthAutoConfigurationTests.this.contextRunner()
+				.withConfiguration(AutoConfigurations.of(TaskSchedulingAutoConfiguration.class))
 				.withClassLoader(new FilteredClassLoader(HealthEndpoint.class))
 				.run((context) -> assertThat(context)
 					.doesNotHaveBean(GrpcServerHealthAutoConfiguration.ActuatorHealthAdapterConfiguration.class));
 		}
 
 		@Test
-		void whenHealthEndpointBeanNotAvailableAutoConfigurationIsSkipped() {
-			GrpcServerHealthAutoConfigurationTests.this.contextRunner()
+		void whenHealthEndpointNotAvailableAutoConfigurationIsSkipped() {
+			this.validContextRunner()
+				.withPropertyValues("management.endpoint.health.enabled=false")
+				.withConfiguration(AutoConfigurations.of(TaskSchedulingAutoConfiguration.class))
 				.run((context) -> assertThat(context)
 					.doesNotHaveBean(GrpcServerHealthAutoConfiguration.ActuatorHealthAdapterConfiguration.class));
 		}
 
 		@Test
 		void whenActuatorPropertyNotSetAdapterIsAutoConfigured() {
-			GrpcServerHealthAutoConfigurationTests.this.contextRunner()
-				.withBean("healthEndpoint", HealthEndpoint.class, Mockito::mock)
+			this.validContextRunner()
 				.run((context) -> assertThat(context)
 					.hasSingleBean(GrpcServerHealthAutoConfiguration.ActuatorHealthAdapterConfiguration.class));
 		}
 
 		@Test
 		void whenActuatorPropertyIsTrueAdapterIsAutoConfigured() {
-			GrpcServerHealthAutoConfigurationTests.this.contextRunner()
-				.withBean("healthEndpoint", HealthEndpoint.class, Mockito::mock)
+			this.validContextRunner()
 				.withPropertyValues("spring.grpc.server.health.actuator.enabled=true")
 				.run((context) -> assertThat(context)
 					.hasSingleBean(GrpcServerHealthAutoConfiguration.ActuatorHealthAdapterConfiguration.class));
@@ -184,18 +199,44 @@ class GrpcServerHealthAutoConfigurationTests {
 
 		@Test
 		void whenActuatorPropertyIsFalseAdapterIsNotAutoConfigured() {
-			GrpcServerHealthAutoConfigurationTests.this.contextRunner()
-				.withBean("healthEndpoint", HealthEndpoint.class, Mockito::mock)
+			this.validContextRunner()
 				.withPropertyValues("spring.grpc.server.health.actuator.enabled=false")
 				.run((context) -> assertThat(context)
 					.doesNotHaveBean(GrpcServerHealthAutoConfiguration.ActuatorHealthAdapterConfiguration.class));
 		}
 
 		@Test
-		void adapterAutoConfiguredAsExpected() {
+		void whenHealthIndicatorPathsIsNotSpecifiedAdapterIsNotAutoConfigured() {
 			GrpcServerHealthAutoConfigurationTests.this.contextRunner()
-				.withBean("healthEndpoint", HealthEndpoint.class, Mockito::mock)
-				.run((context) -> assertThat(context).hasSingleBean(ActuatorHealthAdapter.class));
+				.withConfiguration(AutoConfigurations.of(HealthEndpointAutoConfiguration.class,
+						TaskSchedulingAutoConfiguration.class))
+				.run((context) -> assertThat(context)
+					.doesNotHaveBean(GrpcServerHealthAutoConfiguration.ActuatorHealthAdapterConfiguration.class));
+		}
+
+		@Test
+		void whenHealthIndicatorPathsIsSpecifiedEmptyAdapterIsNotAutoConfigured() {
+			GrpcServerHealthAutoConfigurationTests.this.contextRunner()
+				.withPropertyValues("spring.grpc.server.health.actuator.health-indicator-paths=")
+				.withConfiguration(AutoConfigurations.of(HealthEndpointAutoConfiguration.class,
+						TaskSchedulingAutoConfiguration.class))
+				.run((context) -> assertThat(context)
+					.doesNotHaveBean(GrpcServerHealthAutoConfiguration.ActuatorHealthAdapterConfiguration.class));
+		}
+
+		@Test
+		void whenHasUserDefinedAdapterDoesNotAutoConfigureBean() {
+			ActuatorHealthAdapter customAdapter = mock();
+			this.validContextRunner()
+				.withBean("customAdapter", ActuatorHealthAdapter.class, () -> customAdapter)
+				.run((context) -> assertThat(context).getBean(ActuatorHealthAdapter.class).isSameAs(customAdapter));
+		}
+
+		@Test
+		void adapterAutoConfiguredAsExpected() {
+			this.validContextRunner()
+				.run((context) -> assertThat(context).hasSingleBean(ActuatorHealthAdapter.class)
+					.hasSingleBean(ActuatorHealthAdapterInvoker.class));
 		}
 
 	}

@@ -169,14 +169,30 @@ public class GrpcServerProperties {
 	public static class ActuatorAdapt {
 
 		/**
-		 * Whether to adapt Actuator health checks into gRPC health checks.
+		 * Whether to adapt Actuator health indicators into gRPC health checks.
 		 */
 		private Boolean enabled = true;
 
 		/**
-		 * List of Actuator health checks to adapt into gRPC health checks.
+		 * Whether to update the overall gRPC server health (the '' service) with the
+		 * aggregate status of the configured health indicators.
 		 */
-		private List<String> endpoints = new ArrayList<>();
+		private Boolean updateOverallHealth = true;
+
+		/**
+		 * How often to update the health status.
+		 */
+		private Duration updateRate = Duration.ofSeconds(5);
+
+		/**
+		 * The initial delay before updating the health status the very first time.
+		 */
+		private Duration updateInitialDelay = Duration.ofSeconds(5);
+
+		/**
+		 * List of Actuator health indicator paths to adapt into gRPC health checks.
+		 */
+		private List<String> healthIndicatorPaths = new ArrayList<>();
 
 		public Boolean getEnabled() {
 			return this.enabled;
@@ -186,12 +202,36 @@ public class GrpcServerProperties {
 			this.enabled = enabled;
 		}
 
-		public List<String> getEndpoints() {
-			return this.endpoints;
+		public Boolean getUpdateOverallHealth() {
+			return this.updateOverallHealth;
 		}
 
-		public void setEndpoints(List<String> endpoints) {
-			this.endpoints = endpoints;
+		public void setUpdateOverallHealth(Boolean updateOverallHealth) {
+			this.updateOverallHealth = updateOverallHealth;
+		}
+
+		public Duration getUpdateRate() {
+			return this.updateRate;
+		}
+
+		public void setUpdateRate(Duration updateRate) {
+			this.updateRate = updateRate;
+		}
+
+		public Duration getUpdateInitialDelay() {
+			return this.updateInitialDelay;
+		}
+
+		public void setUpdateInitialDelay(Duration updateInitialDelay) {
+			this.updateInitialDelay = updateInitialDelay;
+		}
+
+		public List<String> getHealthIndicatorPaths() {
+			return this.healthIndicatorPaths;
+		}
+
+		public void setHealthIndicatorPaths(List<String> healthIndicatorPaths) {
+			this.healthIndicatorPaths = healthIndicatorPaths;
 		}
 
 	}

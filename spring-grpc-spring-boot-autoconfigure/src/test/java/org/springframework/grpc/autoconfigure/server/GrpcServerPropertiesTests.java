@@ -71,7 +71,10 @@ class GrpcServerPropertiesTests {
 			GrpcServerProperties.Health properties = bindProperties(map).getHealth();
 			assertThat(properties.getEnabled()).isTrue();
 			assertThat(properties.getActuator().getEnabled()).isTrue();
-			assertThat(properties.getActuator().getEndpoints()).isEmpty();
+			assertThat(properties.getActuator().getHealthIndicatorPaths()).isEmpty();
+			assertThat(properties.getActuator().getUpdateOverallHealth()).isTrue();
+			assertThat(properties.getActuator().getUpdateRate()).isEqualTo(Duration.ofSeconds(5));
+			assertThat(properties.getActuator().getUpdateInitialDelay()).isEqualTo(Duration.ofSeconds(5));
 		}
 
 		@Test
@@ -79,11 +82,17 @@ class GrpcServerPropertiesTests {
 			Map<String, String> map = new HashMap<>();
 			map.put("spring.grpc.server.health.enabled", "false");
 			map.put("spring.grpc.server.health.actuator.enabled", "false");
-			map.put("spring.grpc.server.health.actuator.endpoints", "a,b,c");
+			map.put("spring.grpc.server.health.actuator.health-indicator-paths", "a,b,c");
+			map.put("spring.grpc.server.health.actuator.update-overall-health", "false");
+			map.put("spring.grpc.server.health.actuator.update-rate", "2s");
+			map.put("spring.grpc.server.health.actuator.update-initial-delay", "1m");
 			GrpcServerProperties.Health properties = bindProperties(map).getHealth();
 			assertThat(properties.getEnabled()).isFalse();
 			assertThat(properties.getActuator().getEnabled()).isFalse();
-			assertThat(properties.getActuator().getEndpoints()).containsExactly("a", "b", "c");
+			assertThat(properties.getActuator().getHealthIndicatorPaths()).containsExactly("a", "b", "c");
+			assertThat(properties.getActuator().getUpdateOverallHealth()).isFalse();
+			assertThat(properties.getActuator().getUpdateRate()).isEqualTo(Duration.ofSeconds(2));
+			assertThat(properties.getActuator().getUpdateInitialDelay()).isEqualTo(Duration.ofMinutes(1));
 		}
 
 	}
