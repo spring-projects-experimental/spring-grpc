@@ -138,6 +138,9 @@ However, by setting the `blendWithGlobalInterceptors` attribute on the `@GrpcSer
 You can use this option if you want to add a per-service interceptor between global interceptors.
 ====
 
+[[health]]
+include::health.adoc[leveloffset=+1]
+
 == Observability
 
 Spring gRPC provides an autoconfigured interceptor that can be used to provide observability to your gRPC services.
