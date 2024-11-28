@@ -25,3 +25,30 @@ spring:
 NOTE: The items in the `health-indicator-paths` are the identifiers of the indicator which is typically the name of the indicator bean without the `HealthIndicator` suffix.
 
 You can use the xref:appendix.adoc#common-application-properties["spring.grpc.server.health.*"] application properties to further configure the health feature.
+
+== Client-side
+Spring gRPC can also autoconfigure the https://grpc.io/docs/guides/health-checking/[client-side] health check feature to your gRPC clients.
+To enable health checks on a named channel, simply set the `spring.grpc.client.channels.<channel-name>.health.enabled` application property to `true`.
+To enable health checks for all channels, set the `spring.grpc.client.default-channel.enabled` application property to `true`.
+
+By default, the health check will consult the overall status service (i.e. `""`).
+To use a specific service, use the `health.service-name` application property on the desired channel.
+
+NOTE: The `default-load-balancing-policy` must be set to `round_robin` to participate in the health checking. This is the default used by Spring gRPC but if you change the setting you will not get health checks
+
+The following example enables health checks for all unknown channels (using the overall server status) and for the channel named `one` (using the service `service-one` health check).
+
+[source,yaml,indent=0,subs="verbatim"]
+----
+spring:
+  grpc:
+    client:
+      default-channel:
+      health:
+        enabled: true
+      channels:
+        one:
+          health:
+            enabled: true
+            service-name: service-one
+----

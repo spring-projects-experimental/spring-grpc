@@ -5,6 +5,8 @@
 |spring.grpc.client.default-channel.address |  | 
 |spring.grpc.client.default-channel.default-load-balancing-policy |  | 
 |spring.grpc.client.default-channel.enable-keep-alive |  | 
+|spring.grpc.client.default-channel.health.enabled |  | Whether to enable client-side health check for the channel.
+|spring.grpc.client.default-channel.health.service-name |  | Name of the service to check health on.
 |spring.grpc.client.default-channel.idle-timeout |  | 
 |spring.grpc.client.default-channel.keep-alive-time |  | 
 |spring.grpc.client.default-channel.keep-alive-timeout |  | 
