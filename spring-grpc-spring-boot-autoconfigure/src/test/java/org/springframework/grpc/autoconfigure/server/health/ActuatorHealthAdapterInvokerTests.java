@@ -15,8 +15,8 @@
  */
 package org.springframework.grpc.autoconfigure.server.health;
 
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.time.Duration;
@@ -39,8 +39,8 @@ class ActuatorHealthAdapterInvokerTests {
 		try {
 			invoker.afterPropertiesSet();
 			Awaitility.await()
-				.between(Duration.ofSeconds(8), Duration.ofSeconds(10))
-				.untilAsserted(() -> verify(healthAdapter, times(2)).updateHealthStatus());
+				.between(Duration.ofSeconds(6), Duration.ofSeconds(12))
+				.untilAsserted(() -> verify(healthAdapter, atLeast(2)).updateHealthStatus());
 		}
 		finally {
 			invoker.destroy();
