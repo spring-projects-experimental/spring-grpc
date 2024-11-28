@@ -16,6 +16,7 @@
 package org.springframework.grpc.autoconfigure.client;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -59,7 +60,7 @@ public class GrpcClientAutoConfiguration {
 	}
 
 	@Bean
-	public GrpcChannelConfigurer sslGrpcChannelConfigurer(GrpcClientProperties channels) {
+	public GrpcChannelConfigurer baseGrpcChannelConfigurer(GrpcClientProperties channels) {
 		return (authority, builder) -> {
 			for (String name : channels.getChannels().keySet()) {
 				if (authority.equals(name)) {
@@ -69,6 +70,13 @@ public class GrpcClientAutoConfiguration {
 					}
 					if (channel.getDefaultLoadBalancingPolicy() != null) {
 						builder.defaultLoadBalancingPolicy(channel.getDefaultLoadBalancingPolicy());
+					}
+					if (channel.getHealth().isEnabled()) {
+						String serviceNameToCheck = channel.getHealth().getServiceName() != null
+								? channel.getHealth().getServiceName() : "";
+						Map<String, ?> healthCheckConfig = Map.of("healthCheckConfig",
+								Map.of("serviceName", serviceNameToCheck));
+						builder.defaultServiceConfig(healthCheckConfig);
 					}
 					if (channel.getMaxInboundMessageSize() != null) {
 						builder.maxInboundMessageSize((int) channel.getMaxInboundMessageSize().toBytes());

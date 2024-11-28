@@ -152,6 +152,12 @@ public class GrpcClientProperties implements EnvironmentAware {
 
 		// --------------------------------------------------
 
+		private final Health health = new Health();
+
+		public Health getHealth() {
+			return this.health;
+		}
+
 		/**
 		 * The negotiation type for the channel. Default is
 		 * {@link NegotiationType#PLAINTEXT}.
@@ -437,6 +443,9 @@ public class GrpcClientProperties implements EnvironmentAware {
 			if (this.enableKeepAlive == null) {
 				this.enableKeepAlive = config.enableKeepAlive;
 			}
+			if (this.idleTimeout == null) {
+				this.idleTimeout = config.idleTimeout;
+			}
 			if (this.keepAliveTime == null) {
 				this.keepAliveTime = config.keepAliveTime;
 			}
@@ -455,6 +464,7 @@ public class GrpcClientProperties implements EnvironmentAware {
 			if (this.userAgent == null) {
 				this.userAgent = config.userAgent;
 			}
+			this.health.copyDefaultsFrom(config.health);
 			this.ssl.copyDefaultsFrom(config.ssl);
 		}
 
@@ -519,6 +529,45 @@ public class GrpcClientProperties implements EnvironmentAware {
 
 			public void setBundle(String bundle) {
 				this.bundle = bundle;
+			}
+
+		}
+
+		public static class Health {
+
+			/**
+			 * Whether to enable client-side health check for the channel.
+			 */
+			private Boolean enabled;
+
+			/**
+			 * Name of the service to check health on.
+			 */
+			private String serviceName;
+
+			public boolean isEnabled() {
+				return this.enabled != null ? this.enabled : false;
+			}
+
+			public void setEnabled(Boolean enabled) {
+				this.enabled = enabled;
+			}
+
+			public String getServiceName() {
+				return this.serviceName;
+			}
+
+			public void setServiceName(String serviceName) {
+				this.serviceName = serviceName;
+			}
+
+			public void copyDefaultsFrom(Health config) {
+				if (this.enabled == null) {
+					this.enabled = config.enabled;
+				}
+				if (this.serviceName == null) {
+					this.serviceName = config.serviceName;
+				}
 			}
 
 		}
