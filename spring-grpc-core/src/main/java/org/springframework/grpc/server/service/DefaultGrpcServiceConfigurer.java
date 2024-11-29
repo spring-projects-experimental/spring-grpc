@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
+import org.springframework.grpc.internal.ApplicationContextBeanLookupUtils;
 import org.springframework.grpc.server.GlobalServerInterceptor;
 import org.springframework.lang.Nullable;
 
