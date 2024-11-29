@@ -19,6 +19,7 @@ package org.springframework.grpc.server.service;
 import java.util.List;
 
 import org.springframework.context.ApplicationContext;
+import org.springframework.grpc.internal.ApplicationContextBeanLookupUtils;
 import org.springframework.lang.Nullable;
 
 import io.grpc.BindableService;

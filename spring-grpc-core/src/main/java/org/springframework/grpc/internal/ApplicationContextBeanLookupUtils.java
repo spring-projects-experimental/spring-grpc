@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.springframework.grpc.server.service;
+package org.springframework.grpc.internal;
 
 import java.lang.annotation.Annotation;
 import java.util.LinkedHashMap;
@@ -29,10 +29,13 @@ import org.springframework.util.Assert;
 /**
  * Convenience methods performing bean lookups that are not currently provided by the
  * standard Spring facilities.
+ * <p>
+ * <b>NOTE:</b> This is considered an internal non-public API despite its public method
+ * accessors.
  *
  * @author Chris Bono
  */
-final class ApplicationContextBeanLookupUtils {
+public final class ApplicationContextBeanLookupUtils {
 
 	private ApplicationContextBeanLookupUtils() {
 	}
@@ -56,7 +59,7 @@ final class ApplicationContextBeanLookupUtils {
 	 * @return a map of matching bean instances with the annotation instance (or null)
 	 * ordered according to their {@link Order} with annotation
 	 */
-	static <B, A extends Annotation> LinkedHashMap<B, A> getOrderedBeansWithAnnotation(
+	public static <B, A extends Annotation> LinkedHashMap<B, A> getOrderedBeansWithAnnotation(
 			ApplicationContext applicationContext, Class<B> beanType, Class<A> annotationType) {
 		Assert.notNull(applicationContext, () -> "applicationContext must not be null");
 		var annotatedBeanNamesToBeans = applicationContext.getBeansWithAnnotation(annotationType);
@@ -87,7 +90,7 @@ final class ApplicationContextBeanLookupUtils {
 	 * @return a list of the matching beans ordered according to their {@link Order}
 	 * annotation
 	 */
-	static <B, A extends Annotation> List<B> getBeansWithAnnotation(ApplicationContext applicationContext,
+	public static <B, A extends Annotation> List<B> getBeansWithAnnotation(ApplicationContext applicationContext,
 			Class<B> beanType, Class<A> annotationType) {
 		Assert.notNull(applicationContext, () -> "applicationContext must not be null");
 		var nameToBeanMap = applicationContext.getBeansWithAnnotation(annotationType);
@@ -104,7 +107,7 @@ final class ApplicationContextBeanLookupUtils {
 	 * @param beanType the type of beans in the list
 	 * @param beans the list of beans to sort
 	 */
-	static void sortBeansIncludingOrderAnnotation(ApplicationContext applicationContext, Class<?> beanType,
+	public static void sortBeansIncludingOrderAnnotation(ApplicationContext applicationContext, Class<?> beanType,
 			List<?> beans) {
 		var beanToNameMap = new LinkedHashMap<Object, String>();
 		applicationContext.getBeansOfType(beanType).forEach((name, bean) -> beanToNameMap.put(bean, name));
