@@ -22,8 +22,10 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.util.Assert;
 
 import io.grpc.ChannelCredentials;
+import io.grpc.ClientInterceptor;
 import io.grpc.ForwardingChannelBuilder2;
 import io.grpc.Grpc;
 import io.grpc.ManagedChannel;
@@ -46,16 +48,16 @@ public class DefaultGrpcChannelFactory implements GrpcChannelFactory, Disposable
 
 	private final List<GrpcChannelConfigurer> configurers = new ArrayList<>();
 
+	private final ClientInterceptorsConfigurer interceptorsConfigurer;
+
 	private ChannelCredentialsProvider credentials = ChannelCredentialsProvider.INSECURE;
 
 	private VirtualTargets targets = VirtualTargets.DEFAULT;
 
-	public DefaultGrpcChannelFactory() {
-		this(List.of());
-	}
-
-	public DefaultGrpcChannelFactory(List<GrpcChannelConfigurer> configurers) {
+	public DefaultGrpcChannelFactory(List<GrpcChannelConfigurer> configurers,
+			ClientInterceptorsConfigurer interceptorsConfigurer) {
 		this.configurers.addAll(configurers);
+		this.interceptorsConfigurer = interceptorsConfigurer;
 	}
 
 	public void setVirtualTargets(VirtualTargets targets) {
@@ -68,16 +70,21 @@ public class DefaultGrpcChannelFactory implements GrpcChannelFactory, Disposable
 
 	@Override
 	public ManagedChannelBuilder<?> createChannel(String authority) {
-		ManagedChannelBuilder<?> target = this.builders.computeIfAbsent(authority, path -> {
-			ManagedChannelBuilder<?> builder = newChannel(this.targets.getTarget(path),
-					this.credentials.getChannelCredentials(path));
-			for (GrpcChannelConfigurer configurer : this.configurers) {
-				configurer.configure(path, builder);
-			}
-			return builder;
-		});
-		return new DisposableChannelBuilder(authority, target);
+		return this.createChannel(authority, List.of(), false);
+	}
 
+	@Override
+	public ManagedChannelBuilder<?> createChannel(String authority, List<ClientInterceptor> interceptors,
+			boolean mergeWithGlobalInterceptors) {
+		Assert.notNull(interceptors, () -> "interceptors must not be null");
+		return this.builders.computeIfAbsent(authority, path -> {
+			ManagedChannelBuilder<?> builder = newChannelBuilder(this.targets.getTarget(path),
+					this.credentials.getChannelCredentials(path));
+			this.interceptorsConfigurer.configureInterceptors(authority, builder, interceptors,
+					mergeWithGlobalInterceptors);
+			this.configurers.forEach((c) -> c.configure(path, builder));
+			return new DisposableChannelBuilder(authority, builder);
+		});
 	}
 
 	/**
@@ -87,15 +94,17 @@ public class DefaultGrpcChannelFactory implements GrpcChannelFactory, Disposable
 	 * @param creds the credentials for the channel
 	 * @return a new {@link ManagedChannelBuilder} for the given path and credentials
 	 */
-	protected ManagedChannelBuilder<?> newChannel(String path, ChannelCredentials creds) {
+	protected ManagedChannelBuilder<?> newChannelBuilder(String path, ChannelCredentials creds) {
 		return Grpc.newChannelBuilder(path, creds);
+	}
+
+	private ManagedChannel buildAndRegisterChannel(String channelName, ManagedChannelBuilder<?> channelBuilder) {
+		return DefaultGrpcChannelFactory.this.channels.computeIfAbsent(channelName, (__) -> channelBuilder.build());
 	}
 
 	@Override
 	public void destroy() {
-		for (ManagedChannel channel : this.channels.values()) {
-			channel.shutdown();
-		}
+		this.channels.values().forEach(ManagedChannel::shutdown);
 	}
 
 	/**
@@ -104,9 +113,9 @@ public class DefaultGrpcChannelFactory implements GrpcChannelFactory, Disposable
 	 */
 	class DisposableChannelBuilder extends ForwardingChannelBuilder2<DisposableChannelBuilder> {
 
-		private final ManagedChannelBuilder<?> delegate;
-
 		private final String authority;
+
+		private final ManagedChannelBuilder<?> delegate;
 
 		DisposableChannelBuilder(String authority, ManagedChannelBuilder<?> delegate) {
 			this.authority = authority;
@@ -120,9 +129,7 @@ public class DefaultGrpcChannelFactory implements GrpcChannelFactory, Disposable
 
 		@Override
 		public ManagedChannel build() {
-			ManagedChannel channel = DefaultGrpcChannelFactory.this.channels.computeIfAbsent(this.authority,
-					name -> super.build());
-			return channel;
+			return DefaultGrpcChannelFactory.this.buildAndRegisterChannel(this.authority, this.delegate);
 		}
 
 	}

@@ -15,6 +15,9 @@
  */
 package org.springframework.grpc.test;
 
+import java.util.List;
+
+import org.springframework.grpc.client.ClientInterceptorsConfigurer;
 import org.springframework.grpc.client.DefaultGrpcChannelFactory;
 
 import io.grpc.ChannelCredentials;
@@ -23,8 +26,12 @@ import io.grpc.inprocess.InProcessChannelBuilder;
 
 public class InProcessGrpcChannelFactory extends DefaultGrpcChannelFactory {
 
+	public InProcessGrpcChannelFactory(ClientInterceptorsConfigurer interceptorsConfigurer) {
+		super(List.of(), interceptorsConfigurer);
+	}
+
 	@Override
-	protected ManagedChannelBuilder<?> newChannel(String path, ChannelCredentials creds) {
+	protected ManagedChannelBuilder<?> newChannelBuilder(String path, ChannelCredentials creds) {
 		return InProcessChannelBuilder.forName(path);
 	}
 

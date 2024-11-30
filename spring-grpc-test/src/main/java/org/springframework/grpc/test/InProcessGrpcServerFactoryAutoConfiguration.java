@@ -20,11 +20,14 @@ import java.util.List;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnNotWebApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.grpc.autoconfigure.client.GrpcClientAutoConfiguration;
 import org.springframework.grpc.autoconfigure.server.GrpcServerFactoryAutoConfiguration;
+import org.springframework.grpc.client.ClientInterceptorsConfigurer;
 import org.springframework.grpc.server.ServerBuilderCustomizer;
 import org.springframework.grpc.server.service.GrpcServiceDiscoverer;
 
@@ -37,7 +40,7 @@ import io.grpc.inprocess.InProcessServerBuilder;
 @ConditionalOnNotWebApplication
 public class InProcessGrpcServerFactoryAutoConfiguration {
 
-	private String address = InProcessServerBuilder.generateName();
+	private final String address = InProcessServerBuilder.generateName();
 
 	@Bean
 	@ConditionalOnBean(BindableService.class)
@@ -49,8 +52,14 @@ public class InProcessGrpcServerFactoryAutoConfiguration {
 	}
 
 	@Bean
-	InProcessGrpcChannelFactory grpcChannelFactory() {
-		InProcessGrpcChannelFactory factory = new InProcessGrpcChannelFactory();
+	@ConditionalOnMissingBean
+	ClientInterceptorsConfigurer inProcessClientInterceptorsConfigurer(ApplicationContext applicationContext) {
+		return new ClientInterceptorsConfigurer(applicationContext);
+	}
+
+	@Bean
+	InProcessGrpcChannelFactory grpcChannelFactory(ClientInterceptorsConfigurer interceptorsConfigurer) {
+		InProcessGrpcChannelFactory factory = new InProcessGrpcChannelFactory(interceptorsConfigurer);
 		factory.setVirtualTargets(path -> address);
 		return factory;
 	}
