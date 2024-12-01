@@ -21,12 +21,14 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.ssl.SslBundles;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.grpc.autoconfigure.client.GrpcClientProperties.NamedChannel;
 import org.springframework.grpc.autoconfigure.common.codec.GrpcCodecConfiguration;
 import org.springframework.grpc.client.ChannelCredentialsProvider;
+import org.springframework.grpc.client.ClientInterceptorsConfigurer;
 import org.springframework.grpc.client.DefaultGrpcChannelFactory;
 import org.springframework.grpc.client.GrpcChannelBuilderCustomizer;
 import org.springframework.grpc.client.GrpcChannelFactory;
@@ -41,10 +43,17 @@ import io.grpc.DecompressorRegistry;
 public class GrpcClientAutoConfiguration {
 
 	@Bean
+	@ConditionalOnMissingBean
+	ClientInterceptorsConfigurer clientInterceptorsConfigurer(ApplicationContext applicationContext) {
+		return new ClientInterceptorsConfigurer(applicationContext);
+	}
+
+	@Bean
 	@ConditionalOnMissingBean(GrpcChannelFactory.class)
 	public DefaultGrpcChannelFactory defaultGrpcChannelFactory(List<GrpcChannelBuilderCustomizer> customizers,
-			ChannelCredentialsProvider credentials, GrpcClientProperties channels, SslBundles ignored) {
-		DefaultGrpcChannelFactory factory = new DefaultGrpcChannelFactory(customizers);
+			ClientInterceptorsConfigurer interceptorsConfigurer, ChannelCredentialsProvider credentials,
+			GrpcClientProperties channels, SslBundles ignored) {
+		DefaultGrpcChannelFactory factory = new DefaultGrpcChannelFactory(customizers, interceptorsConfigurer);
 		factory.setCredentialsProvider(credentials);
 		factory.setVirtualTargets(new NamedChannelVirtualTargets(channels));
 		return factory;

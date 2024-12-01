@@ -6,6 +6,8 @@
 
 This section covers the changes made from version 0.2.0 to version 0.3.0.
 
+=== Client Interceptors
+You can now add xref:client.adoc#client-interceptor[Client Interceptors] to created gRPC channels.
 
 === Breaking Changes
 
