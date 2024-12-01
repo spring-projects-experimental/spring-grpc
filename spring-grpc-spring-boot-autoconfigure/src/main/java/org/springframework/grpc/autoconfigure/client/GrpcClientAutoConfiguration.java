@@ -30,7 +30,7 @@ import org.springframework.grpc.autoconfigure.client.GrpcClientProperties.NamedC
 import org.springframework.grpc.autoconfigure.common.codec.GrpcCodecConfiguration;
 import org.springframework.grpc.client.ChannelCredentialsProvider;
 import org.springframework.grpc.client.DefaultGrpcChannelFactory;
-import org.springframework.grpc.client.GrpcChannelConfigurer;
+import org.springframework.grpc.client.GrpcChannelBuilderCustomizer;
 import org.springframework.grpc.client.GrpcChannelFactory;
 import org.springframework.grpc.client.VirtualTargets;
 
@@ -44,9 +44,9 @@ public class GrpcClientAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(GrpcChannelFactory.class)
-	public DefaultGrpcChannelFactory defaultGrpcChannelFactory(final List<GrpcChannelConfigurer> configurers,
+	public DefaultGrpcChannelFactory defaultGrpcChannelFactory(List<GrpcChannelBuilderCustomizer> customizers,
 			ChannelCredentialsProvider credentials, GrpcClientProperties channels, SslBundles ignored) {
-		DefaultGrpcChannelFactory factory = new DefaultGrpcChannelFactory(configurers);
+		DefaultGrpcChannelFactory factory = new DefaultGrpcChannelFactory(customizers);
 		factory.setCredentialsProvider(credentials);
 		factory.setVirtualTargets(new NamedChannelVirtualTargets(channels));
 		return factory;
@@ -60,7 +60,7 @@ public class GrpcClientAutoConfiguration {
 	}
 
 	@Bean
-	public GrpcChannelConfigurer baseGrpcChannelConfigurer(GrpcClientProperties channels) {
+	public GrpcChannelBuilderCustomizer baseGrpcChannelBuilderCustomizer(GrpcClientProperties channels) {
 		return (authority, builder) -> {
 			for (String name : channels.getChannels().keySet()) {
 				if (authority.equals(name)) {
@@ -101,13 +101,13 @@ public class GrpcClientAutoConfiguration {
 
 	@ConditionalOnBean(CompressorRegistry.class)
 	@Bean
-	GrpcChannelConfigurer compressionClientConfigurer(CompressorRegistry registry) {
+	GrpcChannelBuilderCustomizer compressionClientCustomizer(CompressorRegistry registry) {
 		return (name, builder) -> builder.compressorRegistry(registry);
 	}
 
 	@ConditionalOnBean(DecompressorRegistry.class)
 	@Bean
-	GrpcChannelConfigurer decompressionClientConfigurer(DecompressorRegistry registry) {
+	GrpcChannelBuilderCustomizer decompressionClientCustomizer(DecompressorRegistry registry) {
 		return (name, builder) -> builder.decompressorRegistry(registry);
 	}
 

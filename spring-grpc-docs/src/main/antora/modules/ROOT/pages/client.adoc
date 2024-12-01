@@ -82,7 +82,7 @@ spring.grpc.client.channels.local.address=0.0.0.0:9090
 
 There is a default named channel (named "default") that you can configure in the same way, and then it will be used by default if there is no channel with the name specified in the channel creation.
 
-Beans of type `GrpcChannelConfigurer` can be used to customize the `ChannelBuilder` before the channel is built.
+Beans of type `GrpcChannelBuilderCustomizer` can be used to customize the `ChannelBuilder` before the channel is built.
 This can be useful for setting up security, for example.
 
 == The Local Server Port

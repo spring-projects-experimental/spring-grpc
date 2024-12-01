@@ -35,7 +35,7 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.grpc.autoconfigure.client.GrpcClientAutoConfiguration.NamedChannelVirtualTargets;
 import org.springframework.grpc.client.ChannelCredentialsProvider;
 import org.springframework.grpc.client.DefaultGrpcChannelFactory;
-import org.springframework.grpc.client.GrpcChannelConfigurer;
+import org.springframework.grpc.client.GrpcChannelBuilderCustomizer;
 import org.springframework.grpc.client.GrpcChannelFactory;
 
 import io.grpc.Codec;
@@ -91,27 +91,30 @@ class GrpcClientAutoConfigurationTests {
 	}
 
 	@Test
-	void baseChannelConfigurerAutoConfiguredWithHealthAsExpected() {
+	void baseChannelCustomizerAutoConfiguredWithHealthAsExpected() {
 		this.contextRunner()
 			.withPropertyValues("spring.grpc.client.channels.test.health.enabled=true",
 					"spring.grpc.client.channels.test.health.service-name=my-service")
 			.run((context) -> {
-				assertThat(context).getBean("baseGrpcChannelConfigurer", GrpcChannelConfigurer.class).isNotNull();
-				var configurer = context.getBean("baseGrpcChannelConfigurer", GrpcChannelConfigurer.class);
+				assertThat(context).getBean("baseGrpcChannelBuilderCustomizer", GrpcChannelBuilderCustomizer.class)
+					.isNotNull();
+				var customizer = context.getBean("baseGrpcChannelBuilderCustomizer",
+						GrpcChannelBuilderCustomizer.class);
 				ManagedChannelBuilder<?> builder = Mockito.mock();
-				configurer.configure("test", builder);
+				customizer.customize("test", builder);
 				Map<String, ?> healthCheckConfig = Map.of("healthCheckConfig", Map.of("serviceName", "my-service"));
 				verify(builder).defaultServiceConfig(healthCheckConfig);
 			});
 	}
 
 	@Test
-	void baseChannelConfigurerAutoConfiguredWithoutHealthAsExpected() {
+	void baseChannelCustomizerAutoConfiguredWithoutHealthAsExpected() {
 		this.contextRunner().run((context) -> {
-			assertThat(context).getBean("baseGrpcChannelConfigurer", GrpcChannelConfigurer.class).isNotNull();
-			var configurer = context.getBean("baseGrpcChannelConfigurer", GrpcChannelConfigurer.class);
+			assertThat(context).getBean("baseGrpcChannelBuilderCustomizer", GrpcChannelBuilderCustomizer.class)
+				.isNotNull();
+			var customizer = context.getBean("baseGrpcChannelBuilderCustomizer", GrpcChannelBuilderCustomizer.class);
 			ManagedChannelBuilder<?> builder = Mockito.mock();
-			configurer.configure("test", builder);
+			customizer.customize("test", builder);
 			verify(builder, never()).defaultServiceConfig(anyMap());
 		});
 	}
@@ -122,18 +125,19 @@ class GrpcClientAutoConfigurationTests {
 		// registry
 		this.contextRunner()
 			.withClassLoader(new FilteredClassLoader(Codec.class))
-			.run((context) -> assertThat(context).getBean("compressionClientConfigurer", GrpcChannelConfigurer.class)
+			.run((context) -> assertThat(context)
+				.getBean("compressionClientCustomizer", GrpcChannelBuilderCustomizer.class)
 				.isNull());
 	}
 
 	@Test
-	void compressionConfigurerAutoConfiguredAsExpected() {
+	void compressionCustomizerAutoConfiguredAsExpected() {
 		this.contextRunner().run((context) -> {
-			assertThat(context).getBean("compressionClientConfigurer", GrpcChannelConfigurer.class).isNotNull();
-			var configurer = context.getBean("compressionClientConfigurer", GrpcChannelConfigurer.class);
+			assertThat(context).getBean("compressionClientCustomizer", GrpcChannelBuilderCustomizer.class).isNotNull();
+			var customizer = context.getBean("compressionClientCustomizer", GrpcChannelBuilderCustomizer.class);
 			var compressorRegistry = context.getBean(CompressorRegistry.class);
 			ManagedChannelBuilder<?> builder = Mockito.mock();
-			configurer.configure("testChannel", builder);
+			customizer.customize("testChannel", builder);
 			verify(builder).compressorRegistry(compressorRegistry);
 		});
 	}
@@ -144,18 +148,20 @@ class GrpcClientAutoConfigurationTests {
 		// registry
 		this.contextRunner()
 			.withClassLoader(new FilteredClassLoader(Codec.class))
-			.run((context) -> assertThat(context).getBean("decompressionClientConfigurer", GrpcChannelConfigurer.class)
+			.run((context) -> assertThat(context)
+				.getBean("decompressionClientCustomizer", GrpcChannelBuilderCustomizer.class)
 				.isNull());
 	}
 
 	@Test
-	void decompressionConfigurerAutoConfiguredAsExpected() {
+	void decompressionCustomizerAutoConfiguredAsExpected() {
 		this.contextRunner().run((context) -> {
-			assertThat(context).getBean("decompressionClientConfigurer", GrpcChannelConfigurer.class).isNotNull();
-			var configurer = context.getBean("decompressionClientConfigurer", GrpcChannelConfigurer.class);
+			assertThat(context).getBean("decompressionClientCustomizer", GrpcChannelBuilderCustomizer.class)
+				.isNotNull();
+			var customizer = context.getBean("decompressionClientCustomizer", GrpcChannelBuilderCustomizer.class);
 			var decompressorRegistry = context.getBean(DecompressorRegistry.class);
 			ManagedChannelBuilder<?> builder = Mockito.mock();
-			configurer.configure("testChannel", builder);
+			customizer.customize("testChannel", builder);
 			verify(builder).decompressorRegistry(decompressorRegistry);
 		});
 	}

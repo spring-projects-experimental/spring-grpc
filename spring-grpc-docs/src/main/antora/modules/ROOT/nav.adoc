@@ -1,4 +1,5 @@
 * xref:index.adoc[Overview]
+* xref:whats-new.adoc[What's new?]
 * xref:getting-started.adoc[Getting Started]
 * xref:server.adoc[GRPC Server]
 * xref:client.adoc[GRPC Clients]
