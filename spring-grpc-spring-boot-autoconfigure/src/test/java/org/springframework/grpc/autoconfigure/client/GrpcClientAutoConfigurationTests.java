@@ -91,14 +91,14 @@ class GrpcClientAutoConfigurationTests {
 	}
 
 	@Test
-	void baseChannelCustomizerAutoConfiguredWithHealthAsExpected() {
+	void clientPropertiesChannelCustomizerAutoConfiguredWithHealthAsExpected() {
 		this.contextRunner()
 			.withPropertyValues("spring.grpc.client.channels.test.health.enabled=true",
 					"spring.grpc.client.channels.test.health.service-name=my-service")
 			.run((context) -> {
-				assertThat(context).getBean("baseGrpcChannelBuilderCustomizer", GrpcChannelBuilderCustomizer.class)
+				assertThat(context).getBean("clientPropertiesChannelCustomizer", GrpcChannelBuilderCustomizer.class)
 					.isNotNull();
-				var customizer = context.getBean("baseGrpcChannelBuilderCustomizer",
+				var customizer = context.getBean("clientPropertiesChannelCustomizer",
 						GrpcChannelBuilderCustomizer.class);
 				ManagedChannelBuilder<?> builder = Mockito.mock();
 				customizer.customize("test", builder);
@@ -108,11 +108,11 @@ class GrpcClientAutoConfigurationTests {
 	}
 
 	@Test
-	void baseChannelCustomizerAutoConfiguredWithoutHealthAsExpected() {
+	void clientPropertiesChannelCustomizerAutoConfiguredWithoutHealthAsExpected() {
 		this.contextRunner().run((context) -> {
-			assertThat(context).getBean("baseGrpcChannelBuilderCustomizer", GrpcChannelBuilderCustomizer.class)
+			assertThat(context).getBean("clientPropertiesChannelCustomizer", GrpcChannelBuilderCustomizer.class)
 				.isNotNull();
-			var customizer = context.getBean("baseGrpcChannelBuilderCustomizer", GrpcChannelBuilderCustomizer.class);
+			var customizer = context.getBean("clientPropertiesChannelCustomizer", GrpcChannelBuilderCustomizer.class);
 			ManagedChannelBuilder<?> builder = Mockito.mock();
 			customizer.customize("test", builder);
 			verify(builder, never()).defaultServiceConfig(anyMap());

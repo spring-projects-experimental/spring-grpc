@@ -16,8 +16,6 @@
 package org.springframework.grpc.autoconfigure.client;
 
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -60,43 +58,8 @@ public class GrpcClientAutoConfiguration {
 	}
 
 	@Bean
-	public GrpcChannelBuilderCustomizer baseGrpcChannelBuilderCustomizer(GrpcClientProperties channels) {
-		return (authority, builder) -> {
-			for (String name : channels.getChannels().keySet()) {
-				if (authority.equals(name)) {
-					NamedChannel channel = channels.getChannels().get(name);
-					if (channel.getUserAgent() != null) {
-						builder.userAgent(channel.getUserAgent());
-					}
-					if (channel.getDefaultLoadBalancingPolicy() != null) {
-						builder.defaultLoadBalancingPolicy(channel.getDefaultLoadBalancingPolicy());
-					}
-					if (channel.getHealth().isEnabled()) {
-						String serviceNameToCheck = channel.getHealth().getServiceName() != null
-								? channel.getHealth().getServiceName() : "";
-						Map<String, ?> healthCheckConfig = Map.of("healthCheckConfig",
-								Map.of("serviceName", serviceNameToCheck));
-						builder.defaultServiceConfig(healthCheckConfig);
-					}
-					if (channel.getMaxInboundMessageSize() != null) {
-						builder.maxInboundMessageSize((int) channel.getMaxInboundMessageSize().toBytes());
-					}
-					if (channel.getMaxInboundMetadataSize() != null) {
-						builder.maxInboundMetadataSize((int) channel.getMaxInboundMetadataSize().toBytes());
-					}
-					if (channel.getKeepAliveTime() != null) {
-						builder.keepAliveTime(channel.getKeepAliveTime().toNanos(), TimeUnit.NANOSECONDS);
-					}
-					if (channel.getKeepAliveTimeout() != null) {
-						builder.keepAliveTimeout(channel.getKeepAliveTimeout().toNanos(), TimeUnit.NANOSECONDS);
-					}
-					builder.keepAliveWithoutCalls(channel.isKeepAliveWithoutCalls());
-					if (channel.getIdleTimeout() != null) {
-						builder.idleTimeout(channel.getIdleTimeout().toNanos(), TimeUnit.NANOSECONDS);
-					}
-				}
-			}
-		};
+	public GrpcChannelBuilderCustomizer clientPropertiesChannelCustomizer(GrpcClientProperties properties) {
+		return new ClientPropertiesChannelBuilderCustomizer(properties);
 	}
 
 	@ConditionalOnBean(CompressorRegistry.class)
