@@ -100,3 +100,34 @@ SimpleGrpc.SimpleBlockingStub stub(GrpcChannelFactory channels, @LocalGrpcPort i
 	return SimpleGrpc.newBlockingStub(channels.createChannel("0.0.0.0:" + port).build());
 }
 ----
+
+[[client-interceptor]]
+== Client Interceptors
+
+=== Global
+To add a client interceptor to be applied to all created channels you can simply register a client interceptor bean and then annotate it with `@GlobalClientInterceptor`.
+The interceptors are ordered according to their bean natural ordering (i.e. `@Order`).
+
+[source,java]
+----
+@Bean
+@Order(100)
+@GlobalClientInterceptor
+ClientInterceptor myGlobalLoggingInterceptor() {
+    return new MyLoggingInterceptor();
+}
+----
+
+=== Per-Channel
+To add one or more client interceptors to be applied to a single client channel you can simply pass in the interceptor instance(s) when invoking the channel factory to create the channel.
+
+The interceptors are ordered according to their position in the specified list.
+
+=== Blended
+When a channel is constructed with both global and per-client interceptors, the global interceptors are first applied in their sorted order followed by the per-service interceptors in their sorted order.
+
+However, by setting the `mergeWithGlobalInterceptors` parameter on the channel factory to `"true"` you can change this behavior so that the interceptors are all combined and then sorted according to their bean natural ordering (i.e. `@Order` or `Ordered` interface).
+
+You can use this option if you want to add a per-client interceptor between global interceptors.
+
+IMPORTANT: The per-channel interceptors you pass in must either be bean instances marked with `@Order` or regular objects that implement the `Ordered` interface to be properly merged/ordered with the global interceptors.

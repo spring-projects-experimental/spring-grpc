@@ -16,6 +16,9 @@
 
 package org.springframework.grpc.client;
 
+import java.util.List;
+
+import io.grpc.ClientInterceptor;
 import io.grpc.ManagedChannelBuilder;
 
 /**
@@ -33,5 +36,17 @@ public interface GrpcChannelFactory {
 	 * @return a {@link ManagedChannelBuilder} configured for the given authority
 	 */
 	ManagedChannelBuilder<?> createChannel(String authority);
+
+	/**
+	 * Creates a {@link ManagedChannelBuilder} for the given authority and the provided
+	 * client interceptors.
+	 * @param authority the target authority for the channel
+	 * @param interceptors the non-null list of interceptors to be applied to the channel
+	 * @param mergeWithGlobalInterceptors whether the provided interceptors should be
+	 * blended with the global interceptors.
+	 * @return a channel builder conifgured with the provided values
+	 */
+	ManagedChannelBuilder<?> createChannel(String authority, List<ClientInterceptor> interceptors,
+			boolean mergeWithGlobalInterceptors);
 
 }
