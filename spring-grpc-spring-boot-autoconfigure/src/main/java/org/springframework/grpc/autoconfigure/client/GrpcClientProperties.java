@@ -26,9 +26,6 @@ import org.springframework.boot.convert.DataSizeUnit;
 import org.springframework.boot.convert.DurationUnit;
 import org.springframework.boot.ssl.SslBundle;
 import org.springframework.boot.ssl.SslBundles;
-import org.springframework.context.EnvironmentAware;
-import org.springframework.core.env.Environment;
-import org.springframework.core.env.StandardEnvironment;
 import org.springframework.grpc.client.NegotiationType;
 import org.springframework.util.unit.DataSize;
 import org.springframework.util.unit.DataUnit;
@@ -39,21 +36,14 @@ import io.grpc.internal.GrpcUtil;
 import io.grpc.netty.NettyChannelBuilder;
 
 @ConfigurationProperties(prefix = "spring.grpc.client")
-public class GrpcClientProperties implements EnvironmentAware {
+public class GrpcClientProperties {
 
 	private NamedChannel defaultChannel = new NamedChannel();
 
 	private Map<String, NamedChannel> channels = new HashMap<>(Map.of("default", defaultChannel));
 
-	private Environment environment = new StandardEnvironment();
-
 	GrpcClientProperties() {
 		this.defaultChannel.setAddress("static://localhost:9090");
-	}
-
-	@Override
-	public void setEnvironment(Environment environment) {
-		this.environment = environment;
 	}
 
 	public Map<String, NamedChannel> getChannels() {
@@ -66,31 +56,6 @@ public class GrpcClientProperties implements EnvironmentAware {
 	 */
 	public NamedChannel getDefaultChannel() {
 		return defaultChannel;
-	}
-
-	public NamedChannel getChannel(String name) {
-		if ("default".equals(name)) {
-			return defaultChannel;
-		}
-		return channels.computeIfAbsent(name, authority -> {
-			NamedChannel channel = new NamedChannel();
-			channel.copyDefaultsFrom(defaultChannel);
-			if (!authority.contains(":/") && !authority.startsWith("unix:")) {
-				authority = "static://" + authority;
-			}
-			channel.setAddress(authority);
-			return channel;
-		});
-	}
-
-	public String getTarget(String authority) {
-		NamedChannel channel = getChannel(authority);
-		String address = channel.getAddress();
-		if (address.startsWith("static:") || address.startsWith("tcp:")) {
-			address = address.substring(address.indexOf(":") + 1).replaceFirst("/*", "");
-		}
-		address = environment.resolvePlaceholders(address);
-		return address.toString();
 	}
 
 	public static class NamedChannel {
@@ -422,50 +387,6 @@ public class GrpcClientProperties implements EnvironmentAware {
 		 */
 		public void setUserAgent(final String userAgent) {
 			this.userAgent = userAgent;
-		}
-
-		/**
-		 * Copies the defaults from the given configuration. Values are considered
-		 * "default" if they are null. Please note that the getters might return fallback
-		 * values instead.
-		 * @param config The config to copy the defaults from.
-		 */
-		public void copyDefaultsFrom(final NamedChannel config) {
-			if (this == config) {
-				return;
-			}
-			if (this.address == null) {
-				this.address = config.address;
-			}
-			if (this.defaultLoadBalancingPolicy == null) {
-				this.defaultLoadBalancingPolicy = config.defaultLoadBalancingPolicy;
-			}
-			if (this.enableKeepAlive == null) {
-				this.enableKeepAlive = config.enableKeepAlive;
-			}
-			if (this.idleTimeout == null) {
-				this.idleTimeout = config.idleTimeout;
-			}
-			if (this.keepAliveTime == null) {
-				this.keepAliveTime = config.keepAliveTime;
-			}
-			if (this.keepAliveTimeout == null) {
-				this.keepAliveTimeout = config.keepAliveTimeout;
-			}
-			if (this.keepAliveWithoutCalls == null) {
-				this.keepAliveWithoutCalls = config.keepAliveWithoutCalls;
-			}
-			if (this.maxInboundMessageSize == null) {
-				this.maxInboundMessageSize = config.maxInboundMessageSize;
-			}
-			if (this.maxInboundMetadataSize == null) {
-				this.maxInboundMetadataSize = config.maxInboundMetadataSize;
-			}
-			if (this.userAgent == null) {
-				this.userAgent = config.userAgent;
-			}
-			this.health.copyDefaultsFrom(config.health);
-			this.ssl.copyDefaultsFrom(config.ssl);
 		}
 
 		// --------------------------------------------------

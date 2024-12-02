@@ -16,6 +16,7 @@
 package org.springframework.grpc.autoconfigure.client;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -25,14 +26,13 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.grpc.autoconfigure.client.GrpcClientProperties.NamedChannel;
 import org.springframework.grpc.autoconfigure.common.codec.GrpcCodecConfiguration;
 import org.springframework.grpc.client.ChannelCredentialsProvider;
 import org.springframework.grpc.client.ClientInterceptorsConfigurer;
 import org.springframework.grpc.client.DefaultGrpcChannelFactory;
 import org.springframework.grpc.client.GrpcChannelBuilderCustomizer;
 import org.springframework.grpc.client.GrpcChannelFactory;
-import org.springframework.grpc.client.VirtualTargets;
+import org.springframework.grpc.client.NamedChannelRegistry;
 
 import io.grpc.CompressorRegistry;
 import io.grpc.DecompressorRegistry;
@@ -49,13 +49,21 @@ public class GrpcClientAutoConfiguration {
 	}
 
 	@Bean
+	NamedChannelRegistry namedChannelRegistry(GrpcClientProperties properties) {
+		org.springframework.grpc.client.NamedChannel defaultChannel = mapDefaultChannelFromProperties();
+		Map<String, org.springframework.grpc.client.NamedChannel> configuredChannels = mapConfiguredChannelsFromProperties();
+		return new NamedChannelRegistry(defaultChannel, configuredChannels);
+	}
+
+	@Bean
 	@ConditionalOnMissingBean(GrpcChannelFactory.class)
 	public DefaultGrpcChannelFactory defaultGrpcChannelFactory(List<GrpcChannelBuilderCustomizer> customizers,
+			NamedChannelRegistry namedChannelRegistry,
 			ClientInterceptorsConfigurer interceptorsConfigurer, ChannelCredentialsProvider credentials,
-			GrpcClientProperties channels, SslBundles ignored) {
+			SslBundles ignored) {
 		DefaultGrpcChannelFactory factory = new DefaultGrpcChannelFactory(customizers, interceptorsConfigurer);
 		factory.setCredentialsProvider(credentials);
-		factory.setVirtualTargets(new NamedChannelVirtualTargets(channels));
+		factory.setVirtualTargets(namedChannelRegistry);
 		return factory;
 	}
 
@@ -81,22 +89,6 @@ public class GrpcClientAutoConfiguration {
 	@Bean
 	GrpcChannelBuilderCustomizer decompressionClientCustomizer(DecompressorRegistry registry) {
 		return (name, builder) -> builder.decompressorRegistry(registry);
-	}
-
-	static class NamedChannelVirtualTargets implements VirtualTargets {
-
-		private final GrpcClientProperties channels;
-
-		NamedChannelVirtualTargets(GrpcClientProperties channels) {
-			this.channels = channels;
-		}
-
-		@Override
-		public String getTarget(String authority) {
-			NamedChannel channel = this.channels.getChannel(authority);
-			return this.channels.getTarget(channel.getAddress());
-		}
-
 	}
 
 }
