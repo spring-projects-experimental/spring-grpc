@@ -93,8 +93,7 @@ public class GrpcClientAutoConfiguration {
 
 		@Override
 		public String getTarget(String authority) {
-			NamedChannel channel = this.channels.getChannel(authority);
-			return this.channels.getTarget(channel.getAddress());
+			return this.channels.getChannel(authority).getAddress();
 		}
 
 	}
