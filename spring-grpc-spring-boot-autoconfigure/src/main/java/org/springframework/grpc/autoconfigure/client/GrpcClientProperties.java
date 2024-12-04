@@ -19,7 +19,7 @@ import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.convert.DataSizeUnit;
@@ -33,23 +33,14 @@ import org.springframework.grpc.client.NegotiationType;
 import org.springframework.util.unit.DataSize;
 import org.springframework.util.unit.DataUnit;
 
-import io.grpc.LoadBalancerRegistry;
-import io.grpc.ManagedChannelBuilder;
-import io.grpc.internal.GrpcUtil;
-import io.grpc.netty.NettyChannelBuilder;
-
 @ConfigurationProperties(prefix = "spring.grpc.client")
 public class GrpcClientProperties implements EnvironmentAware {
 
-	private NamedChannel defaultChannel = new NamedChannel();
+	private final NamedChannel defaultChannel = new NamedChannel();
 
-	private Map<String, NamedChannel> channels = new HashMap<>();
+	private final Map<String, NamedChannel> channels = new HashMap<>();
 
 	private Environment environment = new StandardEnvironment();
-
-	GrpcClientProperties() {
-		this.defaultChannel.setAddress("static://localhost:9090");
-	}
 
 	@Override
 	public void setEnvironment(Environment environment) {
@@ -57,7 +48,7 @@ public class GrpcClientProperties implements EnvironmentAware {
 	}
 
 	public Map<String, NamedChannel> getChannels() {
-		return channels;
+		return this.channels;
 	}
 
 	/**
@@ -65,16 +56,15 @@ public class GrpcClientProperties implements EnvironmentAware {
 	 * @return the default {@link NamedChannel}
 	 */
 	public NamedChannel getDefaultChannel() {
-		return defaultChannel;
+		return this.defaultChannel;
 	}
 
 	public NamedChannel getChannel(String name) {
 		if ("default".equals(name)) {
-			return defaultChannel;
+			return this.defaultChannel;
 		}
-		return channels.computeIfAbsent(name, authority -> {
-			NamedChannel channel = new NamedChannel();
-			channel.copyDefaultsFrom(defaultChannel);
+		return this.channels.computeIfAbsent(name, authority -> {
+			NamedChannel channel = this.defaultChannel.copy();
 			if (!authority.contains(":/") && !authority.startsWith("unix:")) {
 				authority = "static://" + authority;
 			}
@@ -89,32 +79,21 @@ public class GrpcClientProperties implements EnvironmentAware {
 		if (address.startsWith("static:") || address.startsWith("tcp:")) {
 			address = address.substring(address.indexOf(":") + 1).replaceFirst("/*", "");
 		}
-		address = environment.resolvePlaceholders(address);
-		return address.toString();
+		address = this.environment.resolvePlaceholders(address);
+		return address;
 	}
 
 	public static class NamedChannel {
 
-		private String address = null;
-
 		/**
-		 * Gets the target address uri.
-		 * @return The address to connect to or null
-		 * @see #setAddress(String)
+		 * The target address uri to connect to.
 		 */
+		private String address = "static://localhost:9090";
+
 		public String getAddress() {
 			return this.address;
 		}
 
-		/**
-		 * Set the address uri for the channel. If nothing is configured then the name of
-		 * the client will be used along with the default scheme. We recommend explicitly
-		 * configuring the scheme used for the address resolutions such as {@code dns:/}.
-		 * @param address The address to use for the channel or null to default to the
-		 * fallback.
-		 *
-		 * @see #setAddress(String)
-		 */
 		public void setAddress(final String address) {
 			this.address = address;
 		}
@@ -123,29 +102,15 @@ public class GrpcClientProperties implements EnvironmentAware {
 		// defaultLoadBalancingPolicy
 		// --------------------------------------------------
 
-		private String defaultLoadBalancingPolicy;
-
-		private static final String DEFAULT_DEFAULT_LOAD_BALANCING_POLICY = "round_robin";
-
 		/**
-		 * Gets the default load balancing policy this channel should use.
-		 * @return The default load balancing policy.
-		 * @see ManagedChannelBuilder#defaultLoadBalancingPolicy(String)
+		 * The default load balancing policy the channel should use.
 		 */
+		private String defaultLoadBalancingPolicy = "round_robin";
+
 		public String getDefaultLoadBalancingPolicy() {
-			return this.defaultLoadBalancingPolicy == null ? DEFAULT_DEFAULT_LOAD_BALANCING_POLICY
-					: this.defaultLoadBalancingPolicy;
+			return this.defaultLoadBalancingPolicy;
 		}
 
-		/**
-		 * Sets the default load balancing policy for this channel. This config might be
-		 * overwritten by the service config received from the target address. The names
-		 * have to be resolvable from the {@link LoadBalancerRegistry}. By default this
-		 * the {@code round_robin} policy. Please note that this policy is different from
-		 * the normal grpc-java default policy {@code pick_first}.
-		 * @param defaultLoadBalancingPolicy The default load balancing policy to use or
-		 * null to use the fallback.
-		 */
 		public void setDefaultLoadBalancingPolicy(final String defaultLoadBalancingPolicy) {
 			this.defaultLoadBalancingPolicy = defaultLoadBalancingPolicy;
 		}
@@ -159,13 +124,12 @@ public class GrpcClientProperties implements EnvironmentAware {
 		}
 
 		/**
-		 * The negotiation type for the channel. Default is
-		 * {@link NegotiationType#PLAINTEXT}.
+		 * The negotiation type for the channel.
 		 */
 		private NegotiationType negotiationType = NegotiationType.PLAINTEXT;
 
 		public NegotiationType getNegotiationType() {
-			return negotiationType;
+			return this.negotiationType;
 		}
 
 		public void setNegotiationType(NegotiationType negotiationType) {
@@ -176,144 +140,82 @@ public class GrpcClientProperties implements EnvironmentAware {
 		// KeepAlive
 		// --------------------------------------------------
 
-		private Boolean enableKeepAlive;
-
-		private static final boolean DEFAULT_ENABLE_KEEP_ALIVE = false;
-
 		/**
-		 * Gets whether keepAlive is enabled.
-		 * @return True, if keep alive should be enabled. False otherwise.
-		 *
-		 * @see #setEnableKeepAlive(Boolean)
+		 * Whether keep alive is enabled on the channel.
 		 */
+		private boolean enableKeepAlive = false;
+
 		public boolean isEnableKeepAlive() {
-			return this.enableKeepAlive == null ? DEFAULT_ENABLE_KEEP_ALIVE : this.enableKeepAlive;
+			return this.enableKeepAlive;
 		}
 
-		/**
-		 * Sets whether keepAlive should be enabled. Defaults to false.
-		 * @param enableKeepAlive True, to enable. False, to disable. Null, to use the
-		 * fallback.
-		 */
-		public void setEnableKeepAlive(final Boolean enableKeepAlive) {
+		public void setEnableKeepAlive(boolean enableKeepAlive) {
 			this.enableKeepAlive = enableKeepAlive;
 		}
 
 		// --------------------------------------------------
 
-		@DurationUnit(ChronoUnit.SECONDS)
-		private Duration idleTimeout;
-
-		private static final Duration DEFAULT_IDLE_TIMEOUT = Duration.of(20, ChronoUnit.SECONDS);
-
 		/**
-		 * Gets the idle timeout.
-		 * @return The idle tomeout.
-		 *
-		 * @see #setIdleTimeout(Duration)
+		 * The duration without ongoing RPCs before going to idle mode.
 		 */
+		@DurationUnit(ChronoUnit.SECONDS)
+		private Duration idleTimeout = Duration.ofSeconds(20);
+
 		public Duration getIdleTimeout() {
-			return this.idleTimeout == null ? DEFAULT_IDLE_TIMEOUT : this.idleTimeout;
+			return this.idleTimeout;
 		}
 
-		/**
-		 * The idle timeout.
-		 * @param idleTimeout The new idle timeout, or null to use the fallback.
-		 *
-		 */
-		public void setIdleTimeout(final Duration idleTimeout) {
+		public void setIdleTimeout(Duration idleTimeout) {
 			this.idleTimeout = idleTimeout;
 		}
 
 		// --------------------------------------------------
 
-		@DurationUnit(ChronoUnit.SECONDS)
-		private Duration keepAliveTime;
-
-		private static final Duration DEFAULT_KEEP_ALIVE_TIME = Duration.of(5, ChronoUnit.MINUTES);
-
 		/**
-		 * Gets the default delay before we send a keepAlive.
-		 * @return The default delay before sending keepAlives.
-		 *
-		 * @see #setKeepAliveTime(Duration)
+		 * The delay before sending a keepAlive. Note that shorter intervals increase the
+		 * network burden for the server and this value can not be lower than
+		 * 'permitKeepAliveTime' on the server.
 		 */
+		@DurationUnit(ChronoUnit.SECONDS)
+		private Duration keepAliveTime = Duration.ofMinutes(5);
+
 		public Duration getKeepAliveTime() {
-			return this.keepAliveTime == null ? DEFAULT_KEEP_ALIVE_TIME : this.keepAliveTime;
+			return this.keepAliveTime;
 		}
 
-		/**
-		 * The default delay before we send a keepAlives. Defaults to {@code 5min}.
-		 * Default unit {@link ChronoUnit#SECONDS SECONDS}. Please note that shorter
-		 * intervals increase the network burden for the server. Cannot be lower than
-		 * permitKeepAliveTime on server (default 5min).
-		 * @param keepAliveTime The new default delay before sending keepAlives, or null
-		 * to use the fallback.
-		 *
-		 * @see #setEnableKeepAlive(Boolean)
-		 * @see NettyChannelBuilder#keepAliveTime(long, TimeUnit)
-		 */
-		public void setKeepAliveTime(final Duration keepAliveTime) {
+		public void setKeepAliveTime(Duration keepAliveTime) {
 			this.keepAliveTime = keepAliveTime;
 		}
 
 		// --------------------------------------------------
 
-		@DurationUnit(ChronoUnit.SECONDS)
-		private Duration keepAliveTimeout;
-
-		private static final Duration DEFAULT_KEEP_ALIVE_TIMEOUT = Duration.of(20, ChronoUnit.SECONDS);
-
 		/**
 		 * The default timeout for a keepAlives ping request.
-		 * @return The default timeout for a keepAlives ping request.
-		 *
-		 * @see #setKeepAliveTimeout(Duration)
 		 */
+		@DurationUnit(ChronoUnit.SECONDS)
+		private Duration keepAliveTimeout = Duration.ofSeconds(20);
+
 		public Duration getKeepAliveTimeout() {
-			return this.keepAliveTimeout == null ? DEFAULT_KEEP_ALIVE_TIMEOUT : this.keepAliveTimeout;
+			return this.keepAliveTimeout;
 		}
 
-		/**
-		 * The default timeout for a keepAlives ping request. Defaults to {@code 20s}.
-		 * Default unit {@link ChronoUnit#SECONDS SECONDS}.
-		 * @param keepAliveTimeout The default timeout for a keepAlives ping request.
-		 *
-		 * @see #setEnableKeepAlive(Boolean)
-		 * @see NettyChannelBuilder#keepAliveTimeout(long, TimeUnit)
-		 */
-		public void setKeepAliveTimeout(final Duration keepAliveTimeout) {
+		public void setKeepAliveTimeout(Duration keepAliveTimeout) {
 			this.keepAliveTimeout = keepAliveTimeout;
 		}
 
 		// --------------------------------------------------
 
-		private Boolean keepAliveWithoutCalls;
-
-		private static final boolean DEFAULT_KEEP_ALIVE_WITHOUT_CALLS = false;
-
 		/**
-		 * Gets whether keepAlive will be performed when there are no outstanding RPC on a
+		 * Whether a keepAlive will be performed when there are no outstanding RPC on a
 		 * connection.
-		 * @return True, if keepAlives should be performed even when there are no RPCs.
-		 * False otherwise.
-		 *
-		 * @see #setKeepAliveWithoutCalls(Boolean)
 		 */
+		private boolean keepAliveWithoutCalls = false;
+
 		public boolean isKeepAliveWithoutCalls() {
-			return this.keepAliveWithoutCalls == null ? DEFAULT_KEEP_ALIVE_WITHOUT_CALLS : this.keepAliveWithoutCalls;
+			return this.keepAliveWithoutCalls;
 		}
 
-		/**
-		 * Sets whether keepAlive will be performed when there are no outstanding RPC on a
-		 * connection. Defaults to {@code false}.
-		 * @param keepAliveWithoutCalls whether keepAlive will be performed when there are
-		 * no outstanding RPC on a connection.
-		 *
-		 * @see #setEnableKeepAlive(Boolean)
-		 * @see NettyChannelBuilder#keepAliveWithoutCalls(boolean)
-		 */
-		public void setKeepAliveWithoutCalls(final Boolean keepAliveWithoutCalls) {
+		public void setKeepAliveWithoutCalls(boolean keepAliveWithoutCalls) {
 			this.keepAliveWithoutCalls = keepAliveWithoutCalls;
 		}
 
@@ -321,151 +223,85 @@ public class GrpcClientProperties implements EnvironmentAware {
 		// Message Transfer
 		// --------------------------------------------------
 
+		/**
+		 * Maximum message size allowed to be received by the channel (default 4MiB). Set
+		 * to '-1' to use the highest possible limit (not recommended).
+		 */
 		@DataSizeUnit(DataUnit.BYTES)
-		private DataSize maxInboundMessageSize = null;
+		private DataSize maxInboundMessageSize = DataSize.ofBytes(4194304);
 
 		/**
-		 * Gets the maximum message size allowed to be received by the channel. If not set
-		 * ({@code null}) then {@link GrpcUtil#DEFAULT_MAX_MESSAGE_SIZE gRPC's default}
-		 * should be used. If set to {@code -1} then it will use the highest possible
-		 * limit (not recommended).
-		 * @return The maximum message size allowed or null if the default should be used.
-		 *
-		 * @see #setMaxInboundMessageSize(DataSize)
+		 * Maximum metadata size allowed to be received by the channel (default 8KiB). Set
+		 * to '-1' to use the highest possible limit (not recommended).
 		 */
+		@DataSizeUnit(DataUnit.BYTES)
+		private DataSize maxInboundMetadataSize = DataSize.ofBytes(8192);
+
 		public DataSize getMaxInboundMessageSize() {
 			return this.maxInboundMessageSize;
 		}
 
-		/**
-		 * Sets the maximum message size in bytes allowed to be received by the channel.
-		 * If not set ({@code null}) then it will default to
-		 * {@link GrpcUtil#DEFAULT_MAX_MESSAGE_SIZE gRPC's default}. If set to {@code -1}
-		 * then it will use the highest possible limit (not recommended).
-		 * @param maxInboundMessageSize The new maximum size in bytes allowed for incoming
-		 * messages. {@code -1} for max possible. Null to use the gRPC's default.
-		 *
-		 * @see ManagedChannelBuilder#maxInboundMessageSize(int)
-		 */
 		public void setMaxInboundMessageSize(final DataSize maxInboundMessageSize) {
-			if (maxInboundMessageSize == null || maxInboundMessageSize.toBytes() >= 0) {
-				this.maxInboundMessageSize = maxInboundMessageSize;
-			}
-			else if (maxInboundMessageSize.toBytes() == -1) {
-				this.maxInboundMessageSize = DataSize.ofBytes(Integer.MAX_VALUE);
-			}
-			else {
-				throw new IllegalArgumentException("Unsupported maxInboundMessageSize: " + maxInboundMessageSize);
-			}
+			this.setMaxInboundSize(maxInboundMessageSize, (s) -> this.maxInboundMessageSize = s,
+					"maxInboundMesssageSize");
 		}
 
-		@DataSizeUnit(DataUnit.BYTES)
-		private DataSize maxInboundMetadataSize = null;
-
-		/**
-		 * Sets the maximum size of metadata in bytes allowed to be received. If not set
-		 * ({@code null}) then it will default to gRPC's default. The default is
-		 * implementation-dependent, but is not generally less than 8 KiB and may be
-		 * unlimited. If set to {@code -1} then it will use the highest possible limit
-		 * (not recommended). Integer.MAX_VALUE disables the enforcement.
-		 * @return The maximum size of metadata in bytes allowed to be received or null if
-		 * the default should be used.
-		 *
-		 * @see ManagedChannelBuilder#maxInboundMetadataSize(int) (int)
-		 */
 		public DataSize getMaxInboundMetadataSize() {
-			return maxInboundMetadataSize;
+			return this.maxInboundMetadataSize;
 		}
 
-		/**
-		 * Sets the maximum size of metadata in bytes allowed to be received. If not set
-		 * ({@code null}) then it will default.The default is implementation-dependent,
-		 * but is not generally less than 8 KiB and may be unlimited. If set to {@code -1}
-		 * then it will use the highest possible limit (not recommended).
-		 * Integer.MAX_VALUE disables the enforcement.
-		 * @param maxInboundMetadataSize The new maximum size of metadata in bytes allowed
-		 * to be received. {@code -1} for max possible. Null to use the gRPC's default.
-		 *
-		 * @see ManagedChannelBuilder#maxInboundMetadataSize(int) (int)
-		 */
 		public void setMaxInboundMetadataSize(DataSize maxInboundMetadataSize) {
-			if (maxInboundMetadataSize == null || maxInboundMetadataSize.toBytes() >= 0) {
-				this.maxInboundMetadataSize = maxInboundMetadataSize;
+			this.setMaxInboundSize(maxInboundMetadataSize, (s) -> this.maxInboundMetadataSize = s,
+					"maxInboundMetadataSize");
+		}
+
+		private void setMaxInboundSize(DataSize maxSize, Consumer<DataSize> setter, String propertyName) {
+			if (maxSize != null && maxSize.toBytes() >= 0) {
+				setter.accept(maxSize);
 			}
-			else if (maxInboundMetadataSize.toBytes() == -1) {
-				this.maxInboundMetadataSize = DataSize.ofBytes(Integer.MAX_VALUE);
+			else if (maxSize != null && maxSize.toBytes() == -1) {
+				setter.accept(DataSize.ofBytes(Integer.MAX_VALUE));
 			}
 			else {
-				throw new IllegalArgumentException("Unsupported maxInboundMetadataSize: " + maxInboundMetadataSize);
+				throw new IllegalArgumentException("Unsupported %s: %s".formatted(propertyName, maxSize));
 			}
 		}
 
 		// --------------------------------------------------
 
+		/**
+		 * The custom User-Agent for the channel.
+		 */
 		private String userAgent = null;
 
-		/**
-		 * Get custom User-Agent for the channel.
-		 * @return custom User-Agent for the channel.
-		 *
-		 * @see #setUserAgent(String)
-		 */
 		public String getUserAgent() {
 			return this.userAgent;
 		}
 
-		/**
-		 * Sets custom User-Agent HTTP header.
-		 * @param userAgent Custom User-Agent.
-		 *
-		 * @see ManagedChannelBuilder#userAgent(String)
-		 */
 		public void setUserAgent(final String userAgent) {
 			this.userAgent = userAgent;
 		}
 
 		/**
-		 * Copies the defaults from the given configuration. Values are considered
-		 * "default" if they are null. Please note that the getters might return fallback
-		 * values instead.
-		 * @param config The config to copy the defaults from.
+		 * Provide a copy of the channel instance.
+		 * @return a copy of the channel instance.
 		 */
-		public void copyDefaultsFrom(final NamedChannel config) {
-			if (this == config) {
-				return;
-			}
-			if (this.address == null) {
-				this.address = config.address;
-			}
-			if (this.defaultLoadBalancingPolicy == null) {
-				this.defaultLoadBalancingPolicy = config.defaultLoadBalancingPolicy;
-			}
-			if (this.enableKeepAlive == null) {
-				this.enableKeepAlive = config.enableKeepAlive;
-			}
-			if (this.idleTimeout == null) {
-				this.idleTimeout = config.idleTimeout;
-			}
-			if (this.keepAliveTime == null) {
-				this.keepAliveTime = config.keepAliveTime;
-			}
-			if (this.keepAliveTimeout == null) {
-				this.keepAliveTimeout = config.keepAliveTimeout;
-			}
-			if (this.keepAliveWithoutCalls == null) {
-				this.keepAliveWithoutCalls = config.keepAliveWithoutCalls;
-			}
-			if (this.maxInboundMessageSize == null) {
-				this.maxInboundMessageSize = config.maxInboundMessageSize;
-			}
-			if (this.maxInboundMetadataSize == null) {
-				this.maxInboundMetadataSize = config.maxInboundMetadataSize;
-			}
-			if (this.userAgent == null) {
-				this.userAgent = config.userAgent;
-			}
-			this.health.copyDefaultsFrom(config.health);
-			this.ssl.copyDefaultsFrom(config.ssl);
+		public NamedChannel copy() {
+			NamedChannel copy = new NamedChannel();
+			copy.address = this.address;
+			copy.defaultLoadBalancingPolicy = this.defaultLoadBalancingPolicy;
+			copy.negotiationType = this.negotiationType;
+			copy.enableKeepAlive = this.enableKeepAlive;
+			copy.idleTimeout = this.idleTimeout;
+			copy.keepAliveTime = this.keepAliveTime;
+			copy.keepAliveTimeout = this.keepAliveTimeout;
+			copy.keepAliveWithoutCalls = this.keepAliveWithoutCalls;
+			copy.maxInboundMessageSize = this.maxInboundMessageSize;
+			copy.maxInboundMetadataSize = this.maxInboundMetadataSize;
+			copy.userAgent = this.userAgent;
+			copy.health.copyValuesFrom(this.getHealth());
+			copy.ssl.copyValuesFrom(this.getSsl());
+			return copy;
 		}
 
 		// --------------------------------------------------
@@ -509,16 +345,6 @@ public class GrpcClientProperties implements EnvironmentAware {
 				return (this.enabled != null) ? this.enabled : this.bundle != null;
 			}
 
-			public void copyDefaultsFrom(Ssl config) {
-				if (this.enabled == null) {
-					this.enabled = config.enabled;
-				}
-				if (this.bundle == null) {
-					this.bundle = config.bundle;
-				}
-
-			}
-
 			public void setEnabled(boolean enabled) {
 				this.enabled = enabled;
 			}
@@ -531,6 +357,15 @@ public class GrpcClientProperties implements EnvironmentAware {
 				this.bundle = bundle;
 			}
 
+			/**
+			 * Copies the values from another instance.
+			 * @param other instance to copy values from
+			 */
+			public void copyValuesFrom(Ssl other) {
+				this.enabled = other.enabled;
+				this.bundle = other.bundle;
+			}
+
 		}
 
 		public static class Health {
@@ -538,7 +373,7 @@ public class GrpcClientProperties implements EnvironmentAware {
 			/**
 			 * Whether to enable client-side health check for the channel.
 			 */
-			private Boolean enabled;
+			private boolean enabled = false;
 
 			/**
 			 * Name of the service to check health on.
@@ -546,10 +381,10 @@ public class GrpcClientProperties implements EnvironmentAware {
 			private String serviceName;
 
 			public boolean isEnabled() {
-				return this.enabled != null ? this.enabled : false;
+				return this.enabled;
 			}
 
-			public void setEnabled(Boolean enabled) {
+			public void setEnabled(boolean enabled) {
 				this.enabled = enabled;
 			}
 
@@ -561,13 +396,13 @@ public class GrpcClientProperties implements EnvironmentAware {
 				this.serviceName = serviceName;
 			}
 
-			public void copyDefaultsFrom(Health config) {
-				if (this.enabled == null) {
-					this.enabled = config.enabled;
-				}
-				if (this.serviceName == null) {
-					this.serviceName = config.serviceName;
-				}
+			/**
+			 * Copies the values from another instance.
+			 * @param other instance to copy values from
+			 */
+			public void copyValuesFrom(Health other) {
+				this.enabled = other.enabled;
+				this.serviceName = other.serviceName;
 			}
 
 		}
