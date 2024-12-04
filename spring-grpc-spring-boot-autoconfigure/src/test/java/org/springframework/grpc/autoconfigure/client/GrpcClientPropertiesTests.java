@@ -187,7 +187,7 @@ class GrpcClientPropertiesTests {
 			GrpcClientProperties properties = new GrpcClientProperties();
 			var defaultChannel = properties.getDefaultChannel();
 			assertThat(properties.getChannel("default")).isSameAs(defaultChannel);
-			assertThat(properties.getChannels()).containsExactly(entry("default", defaultChannel));
+			assertThat(properties.getChannels()).hasSize(0);
 		}
 
 		@Test
@@ -210,8 +210,7 @@ class GrpcClientPropertiesTests {
 			defaultChannel.getSsl().setBundle("custom-bundle");
 			var newChannel = properties.getChannel("new");
 			assertThat(newChannel).usingRecursiveComparison().ignoringFields("address").isEqualTo(defaultChannel);
-			assertThat(properties.getChannels()).containsExactly(entry("default", defaultChannel),
-					entry("new", newChannel));
+			assertThat(properties.getChannels()).containsExactly(entry("new", newChannel));
 		}
 
 	}
@@ -225,7 +224,7 @@ class GrpcClientPropertiesTests {
 			map.put("spring.grpc.client.channels.custom.address", "static://my-server:8888");
 			GrpcClientProperties properties = bindProperties(map);
 			assertThat(properties.getTarget("custom")).isEqualTo("my-server:8888");
-			assertThat(properties.getChannels()).containsOnlyKeys("default", "custom");
+			assertThat(properties.getChannels()).containsOnlyKeys("custom");
 		}
 
 	}

@@ -43,7 +43,7 @@ public class GrpcClientProperties implements EnvironmentAware {
 
 	private NamedChannel defaultChannel = new NamedChannel();
 
-	private Map<String, NamedChannel> channels = new HashMap<>(Map.of("default", defaultChannel));
+	private Map<String, NamedChannel> channels = new HashMap<>();
 
 	private Environment environment = new StandardEnvironment();
 
