@@ -51,7 +51,7 @@ class GrpcClientPropertiesTests {
 		void withDefaultValues() {
 			Map<String, String> map = new HashMap<>();
 			// we have to at least bind one property or bind() fails
-			map.put("spring.grpc.client.default-channel.max-inbound-message-size", "200");
+			map.put("spring.grpc.client.default-channel.enable-keep-alive", "false");
 			GrpcClientProperties properties = bindProperties(map);
 			var defaultChannel = properties.getDefaultChannel();
 			assertThat(defaultChannel.getAddress()).isEqualTo("static://localhost:9090");
@@ -65,8 +65,8 @@ class GrpcClientPropertiesTests {
 			assertThat(defaultChannel.getKeepAliveTimeout()).isEqualTo(Duration.ofSeconds(20));
 			assertThat(defaultChannel.isEnableKeepAlive()).isFalse();
 			assertThat(defaultChannel.isKeepAliveWithoutCalls()).isFalse();
-			assertThat(defaultChannel.getMaxInboundMessageSize()).isEqualTo(DataSize.ofBytes(200));
-			assertThat(defaultChannel.getMaxInboundMetadataSize()).isNull();
+			assertThat(defaultChannel.getMaxInboundMessageSize()).isEqualTo(DataSize.ofBytes(4194304));
+			assertThat(defaultChannel.getMaxInboundMetadataSize()).isEqualTo(DataSize.ofBytes(8192));
 			assertThat(defaultChannel.getUserAgent()).isNull();
 			assertThat(defaultChannel.isSecure()).isTrue();
 			assertThat(defaultChannel.getSsl().isEnabled()).isFalse();
@@ -146,35 +146,8 @@ class GrpcClientPropertiesTests {
 		void withNoUserSpecifiedValues() {
 			GrpcClientProperties properties = new GrpcClientProperties();
 			var defaultChannel = properties.getDefaultChannel();
-			var newChannel = new GrpcClientProperties.NamedChannel();
-			newChannel.copyDefaultsFrom(defaultChannel);
+			var newChannel = defaultChannel.copy();
 			assertThat(newChannel).usingRecursiveComparison().isEqualTo(defaultChannel);
-		}
-
-		@Test
-		void withUserSpecifiedValuesAreRetained() {
-			GrpcClientProperties properties = new GrpcClientProperties();
-			var defaultChannel = properties.getDefaultChannel();
-			var newChannel = new GrpcClientProperties.NamedChannel();
-			newChannel.setAddress("static://my-server:9999");
-			newChannel.setDefaultLoadBalancingPolicy("custom");
-			newChannel.getHealth().setEnabled(true);
-			newChannel.getHealth().setServiceName("custom-service");
-			newChannel.setNegotiationType(NegotiationType.TLS);
-			newChannel.setEnableKeepAlive(true);
-			newChannel.setIdleTimeout(Duration.ofMinutes(1));
-			newChannel.setKeepAliveTime(Duration.ofMinutes(4));
-			newChannel.setKeepAliveTimeout(Duration.ofMinutes(6));
-			newChannel.setKeepAliveWithoutCalls(true);
-			newChannel.setMaxInboundMessageSize(DataSize.ofMegabytes(100));
-			newChannel.setMaxInboundMetadataSize(DataSize.ofMegabytes(200));
-			newChannel.setUserAgent("me");
-			newChannel.setSecure(false);
-			newChannel.getSsl().setEnabled(true);
-			newChannel.getSsl().setBundle("custom-bundle");
-			newChannel.copyDefaultsFrom(defaultChannel);
-			assertThat(newChannel).usingRecursiveComparison().isNotEqualTo(defaultChannel);
-			assertThat(newChannel).usingRecursiveComparison().isEqualTo(newChannel);
 		}
 
 	}
