@@ -21,7 +21,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.ssl.SslBundles;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -39,18 +38,12 @@ import io.grpc.DecompressorRegistry;
 
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(GrpcClientProperties.class)
-@Import(GrpcCodecConfiguration.class)
+@Import({ GrpcCodecConfiguration.class, ClientInterceptorsConfiguration.class })
 public class GrpcClientAutoConfiguration {
 
 	@Bean
-	@ConditionalOnMissingBean
-	ClientInterceptorsConfigurer clientInterceptorsConfigurer(ApplicationContext applicationContext) {
-		return new ClientInterceptorsConfigurer(applicationContext);
-	}
-
-	@Bean
 	@ConditionalOnMissingBean(GrpcChannelFactory.class)
-	public DefaultGrpcChannelFactory defaultGrpcChannelFactory(List<GrpcChannelBuilderCustomizer> customizers,
+	DefaultGrpcChannelFactory defaultGrpcChannelFactory(List<GrpcChannelBuilderCustomizer> customizers,
 			ClientInterceptorsConfigurer interceptorsConfigurer, ChannelCredentialsProvider credentials,
 			GrpcClientProperties channels, SslBundles ignored) {
 		DefaultGrpcChannelFactory factory = new DefaultGrpcChannelFactory(customizers, interceptorsConfigurer);
@@ -61,13 +54,12 @@ public class GrpcClientAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(ChannelCredentialsProvider.class)
-	public NamedChannelCredentialsProvider channelCredentialsProvider(GrpcClientProperties channels,
-			SslBundles bundles) {
+	NamedChannelCredentialsProvider channelCredentialsProvider(GrpcClientProperties channels, SslBundles bundles) {
 		return new NamedChannelCredentialsProvider(bundles, channels);
 	}
 
 	@Bean
-	public GrpcChannelBuilderCustomizer clientPropertiesChannelCustomizer(GrpcClientProperties properties) {
+	GrpcChannelBuilderCustomizer clientPropertiesChannelCustomizer(GrpcClientProperties properties) {
 		return new ClientPropertiesChannelBuilderCustomizer(properties);
 	}
 
