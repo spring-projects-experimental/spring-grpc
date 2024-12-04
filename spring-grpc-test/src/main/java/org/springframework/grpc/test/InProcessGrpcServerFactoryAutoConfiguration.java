@@ -20,11 +20,11 @@ import java.util.List;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnNotWebApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.grpc.autoconfigure.client.ClientInterceptorsConfiguration;
 import org.springframework.grpc.autoconfigure.client.GrpcClientAutoConfiguration;
 import org.springframework.grpc.autoconfigure.server.GrpcServerFactoryAutoConfiguration;
 import org.springframework.grpc.client.ClientInterceptorsConfigurer;
@@ -38,6 +38,7 @@ import io.grpc.inprocess.InProcessServerBuilder;
 @ConditionalOnProperty(prefix = "spring.grpc.inprocess", name = "enabled", havingValue = "true", matchIfMissing = true)
 @ConditionalOnClass(BindableService.class)
 @ConditionalOnNotWebApplication
+@Import(ClientInterceptorsConfiguration.class)
 public class InProcessGrpcServerFactoryAutoConfiguration {
 
 	private final String address = InProcessServerBuilder.generateName();
@@ -49,12 +50,6 @@ public class InProcessGrpcServerFactoryAutoConfiguration {
 		InProcessGrpcServerFactory factory = new InProcessGrpcServerFactory(address, customizers);
 		grpcServicesDiscoverer.findServices().forEach(factory::addService);
 		return factory;
-	}
-
-	@Bean
-	@ConditionalOnMissingBean
-	ClientInterceptorsConfigurer inProcessClientInterceptorsConfigurer(ApplicationContext applicationContext) {
-		return new ClientInterceptorsConfigurer(applicationContext);
 	}
 
 	@Bean
