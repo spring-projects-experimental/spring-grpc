@@ -2,7 +2,6 @@ package com.example.demo;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.proto.HelloReply;
@@ -25,7 +24,6 @@ public class GrpcServerService extends SimpleGrpc.SimpleImplBase {
 	}
 
 	@Override
-	@Async
 	public void streamHello(HelloRequest req, StreamObserver<HelloReply> responseObserver) {
 		log.info("Hello " + req.getName());
 		int count = 0;
