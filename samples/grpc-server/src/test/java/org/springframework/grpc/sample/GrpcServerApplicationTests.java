@@ -24,7 +24,8 @@ public class GrpcServerApplicationTests {
 	private static Log log = LogFactory.getLog(GrpcServerApplicationTests.class);
 
 	public static void main(String[] args) {
-		new SpringApplicationBuilder(GrpcServerApplication.class, ExtraConfiguration.class).run(args);
+		new SpringApplicationBuilder(GrpcServerApplication.class, ExtraConfiguration.class)
+			.run("--spring.grpc.inprocess.enabled=false");
 	}
 
 	@Autowired
