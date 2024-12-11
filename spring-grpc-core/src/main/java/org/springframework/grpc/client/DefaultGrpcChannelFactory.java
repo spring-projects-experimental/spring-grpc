@@ -12,21 +12,18 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * */
+ */
 
 package org.springframework.grpc.client;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.util.Assert;
 
 import io.grpc.ChannelCredentials;
-import io.grpc.ClientInterceptor;
-import io.grpc.ForwardingChannelBuilder2;
 import io.grpc.Grpc;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -42,9 +39,7 @@ import io.grpc.ManagedChannelBuilder;
  */
 public class DefaultGrpcChannelFactory implements GrpcChannelFactory, DisposableBean {
 
-	private final Map<String, ManagedChannelBuilder<?>> builders = new ConcurrentHashMap<>();
-
-	private final Map<String, ManagedChannel> channels = new ConcurrentHashMap<>();
+	private final List<ManagedChannelWithShutdown> channels = new ArrayList<>();
 
 	private final List<GrpcChannelBuilderCustomizer> customizers = new ArrayList<>();
 
@@ -71,21 +66,11 @@ public class DefaultGrpcChannelFactory implements GrpcChannelFactory, Disposable
 	}
 
 	@Override
-	public ManagedChannelBuilder<?> createChannel(String authority) {
-		return this.createChannel(authority, List.of(), false);
-	}
-
-	@Override
-	public ManagedChannelBuilder<?> createChannel(String authority, List<ClientInterceptor> interceptors,
-			boolean mergeWithGlobalInterceptors) {
-		Assert.notNull(interceptors, () -> "interceptors must not be null");
-		return this.builders.computeIfAbsent(authority, path -> {
-			ManagedChannelBuilder<?> builder = newChannelBuilder(this.targets.getTarget(path),
-					this.credentials.getChannelCredentials(path));
-			this.interceptorsConfigurer.configureInterceptors(builder, interceptors, mergeWithGlobalInterceptors);
-			this.customizers.forEach((c) -> c.customize(path, builder));
-			return new DisposableChannelBuilder(authority, builder);
-		});
+	public GrpcChannelBuilder createChannel(String target) {
+		ManagedChannelBuilder<?> builder = newChannelBuilder(this.targets.getTarget(target),
+				this.credentials.getChannelCredentials(target));
+		this.customizers.forEach((c) -> c.customize(target, builder));
+		return new GrpcChannelBuilder(builder, this::buildAndRegisterChannel);
 	}
 
 	/**
@@ -93,46 +78,29 @@ public class DefaultGrpcChannelFactory implements GrpcChannelFactory, Disposable
 	 * credentials.
 	 * @param path the target path for the channel
 	 * @param creds the credentials for the channel
-	 * @return a new {@link ManagedChannelBuilder} for the given path and credentials
+	 * @return a new builder for the given path and credentials
 	 */
 	protected ManagedChannelBuilder<?> newChannelBuilder(String path, ChannelCredentials creds) {
 		return Grpc.newChannelBuilder(path, creds);
 	}
 
-	private ManagedChannel buildAndRegisterChannel(String channelName, ManagedChannelBuilder<?> channelBuilder) {
-		return this.channels.computeIfAbsent(channelName, (__) -> channelBuilder.build());
+	private ManagedChannel buildAndRegisterChannel(GrpcChannelBuilder channelBuilder) {
+		ManagedChannel channel = channelBuilder.delegate().build();
+		this.channels.add(new ManagedChannelWithShutdown(channel, channelBuilder.shutdownGracePeriod()));
+		return channel;
 	}
 
 	@Override
 	public void destroy() {
-		this.channels.values().forEach(ManagedChannel::shutdown);
+		this.channels.forEach((c) -> {
+			var shutdownGracePeriod = c.shutdownGracePeriod();
+			var channel = c.channel();
+			// TODO use grace period to do the magical shutdown here
+			channel.shutdown();
+		});
 	}
 
-	/**
-	 * A {@link ManagedChannelBuilder} wrapper that ensures the created channel is
-	 * disposed of when no longer needed.
-	 */
-	class DisposableChannelBuilder extends ForwardingChannelBuilder2<DisposableChannelBuilder> {
-
-		private final String authority;
-
-		private final ManagedChannelBuilder<?> delegate;
-
-		DisposableChannelBuilder(String authority, ManagedChannelBuilder<?> delegate) {
-			this.authority = authority;
-			this.delegate = delegate;
-		}
-
-		@Override
-		protected ManagedChannelBuilder<?> delegate() {
-			return this.delegate;
-		}
-
-		@Override
-		public ManagedChannel build() {
-			return DefaultGrpcChannelFactory.this.buildAndRegisterChannel(this.authority, this.delegate);
-		}
-
+	record ManagedChannelWithShutdown(ManagedChannel channel, Duration shutdownGracePeriod) {
 	}
 
 }
