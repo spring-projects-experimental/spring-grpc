@@ -136,8 +136,7 @@ class GrpcServerHealthAutoConfigurationTests {
 
 	private String beanDefinitionNameForConfigClass(Class<?> configClass) {
 		var fullName = configClass.getName();
-		var beanDefName = fullName.contains("$") ? fullName : configClass.getSimpleName();
-		return StringUtils.uncapitalize(beanDefName);
+		return StringUtils.uncapitalize(fullName);
 	}
 
 	@Nested

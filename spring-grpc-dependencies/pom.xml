@@ -49,7 +49,7 @@
 	</licenses>
 
 	<properties>
-		<spring-framework.version>6.1.14</spring-framework.version>
+		<spring-framework.version>6.2.1</spring-framework.version>
 		<netty.version>4.1.113.Final</netty.version>
 		<grpc.version>1.63.2</grpc.version>
 		<protobuf-java.version>3.25.5</protobuf-java.version>
