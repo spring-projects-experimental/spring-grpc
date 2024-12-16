@@ -83,6 +83,15 @@ public class GrpcClientProperties implements EnvironmentAware {
 		return address;
 	}
 
+	public String getTarget(NamedChannel channel) {
+		String address = channel.getAddress();
+		if (address.startsWith("static:") || address.startsWith("tcp:")) {
+			address = address.substring(address.indexOf(":") + 1).replaceFirst("/*", "");
+		}
+		address = this.environment.resolvePlaceholders(address);
+		return address;
+	}
+
 	public static class NamedChannel {
 
 		/**

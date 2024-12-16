@@ -200,6 +200,19 @@ class GrpcClientPropertiesTests {
 			assertThat(properties.getChannels()).containsOnlyKeys("custom");
 		}
 
+		@Test
+		void withCustomChannelReturnsDuplicateEntryMap() {
+			Map<String, String> map = new HashMap<>();
+			map.put("spring.grpc.client.channels.custom.address", "static://my-server:8888");
+			GrpcClientProperties properties = bindProperties(map);
+			GrpcClientAutoConfiguration.NamedChannelVirtualTargets virtualTargets = new GrpcClientAutoConfiguration.NamedChannelVirtualTargets(
+					properties);
+			var address = virtualTargets.getTarget("custom");
+			assertThat(address).isEqualTo("my-server:8888");
+			assertThat(properties.getTarget("custom")).isEqualTo("my-server:8888");
+			assertThat(properties.getChannels()).containsOnlyKeys("custom");
+		}
+
 	}
 
 }
