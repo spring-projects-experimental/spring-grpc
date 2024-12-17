@@ -131,3 +131,7 @@ However, by setting the `mergeWithGlobalInterceptors` parameter on the channel f
 You can use this option if you want to add a per-client interceptor between global interceptors.
 
 IMPORTANT: The per-channel interceptors you pass in must either be bean instances marked with `@Order` or regular objects that implement the `Ordered` interface to be properly merged/ordered with the global interceptors.
+
+== Observability
+
+Spring gRPC provides an autoconfigured interceptor that can be used to provide observability to your gRPC clients.
