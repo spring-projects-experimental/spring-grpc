@@ -22,7 +22,12 @@
       "type": "java.lang.Boolean",
       "description": "Whether to enable Observations on the server.",
       "defaultValue": true
-
+    },
+    {
+      "name": "spring.grpc.client.observations.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether to enable Observations on the client.",
+      "defaultValue": true
     }
   ]
 }

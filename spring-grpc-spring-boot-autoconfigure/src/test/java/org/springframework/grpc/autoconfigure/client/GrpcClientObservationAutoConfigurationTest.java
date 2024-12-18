@@ -18,7 +18,6 @@ package org.springframework.grpc.autoconfigure.client;
 
 import io.micrometer.core.instrument.binder.grpc.ObservationGrpcClientInterceptor;
 import io.micrometer.observation.ObservationRegistry;
-import org.assertj.core.api.Condition;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
@@ -79,9 +78,10 @@ class GrpcClientObservationAutoConfigurationTests {
 	@Test
 	void whenAllConditionsAreMetThenInterceptorConfiguredAsExpected() {
 		this.validContextRunner().run((context) -> {
-			assertThat(context).hasSingleBean(ObservationGrpcClientInterceptor.class)
-				.has(new Condition<>(beans -> beans.getBeansWithAnnotation(GlobalClientInterceptor.class).size() == 1,
-						"One global interceptor expected"));
+			assertThat(context).hasSingleBean(ObservationGrpcClientInterceptor.class);
+      assertThat(context.getBeansWithAnnotation(GlobalClientInterceptor.class))
+          .hasEntrySatisfying("observationGrpcClientInterceptor",
+      bean -> assertThat(bean.getClass().isAssignableFrom(ObservationGrpcClientInterceptor.class)).isTrue());
 		});
 	}
 
