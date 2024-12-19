@@ -134,5 +134,4 @@ IMPORTANT: The per-channel interceptors you pass in must either be bean instance
 
 == Observability
 
-Spring gRPC provides an autoconfigured interceptor that can be used to provide observability to your gRPC services.
-All you need to do is add Spring Boot actuators to your project, and optionally a bridge to your observability platform of choice (just like https://docs.spring.io/spring-boot/reference/actuator/observability.html[any other Spring Boot application]).
+Spring gRPC provides an autoconfigured interceptor that can be used to provide observability to your gRPC clients.

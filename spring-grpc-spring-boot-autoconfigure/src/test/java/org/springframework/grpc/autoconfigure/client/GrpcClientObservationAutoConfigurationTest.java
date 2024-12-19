@@ -79,9 +79,10 @@ class GrpcClientObservationAutoConfigurationTests {
 	void whenAllConditionsAreMetThenInterceptorConfiguredAsExpected() {
 		this.validContextRunner().run((context) -> {
 			assertThat(context).hasSingleBean(ObservationGrpcClientInterceptor.class);
-      assertThat(context.getBeansWithAnnotation(GlobalClientInterceptor.class))
-          .hasEntrySatisfying("observationGrpcClientInterceptor",
-      bean -> assertThat(bean.getClass().isAssignableFrom(ObservationGrpcClientInterceptor.class)).isTrue());
+			assertThat(context.getBeansWithAnnotation(GlobalClientInterceptor.class)).hasEntrySatisfying(
+					"observationGrpcClientInterceptor",
+					bean -> assertThat(bean.getClass().isAssignableFrom(ObservationGrpcClientInterceptor.class))
+						.isTrue());
 		});
 	}
 
