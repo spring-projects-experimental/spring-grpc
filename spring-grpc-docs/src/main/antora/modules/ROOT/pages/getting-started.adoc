@@ -3,13 +3,9 @@
 
 This section offers jumping off points for how to get started using Spring gRPC. There is a simple sample project in the `samples` directory (e.g. https://github.com/spring-projects-experimental/spring-grpc/tree/main/samples/grpc-server[`grpc-server`]). You can run it with `mvn spring-boot:run` or `gradle bootRun`. You will see the following code in that sample.
 
-Want to get started? Let's speedrun a working service. Go to the [Spring Initializr](https://start.spring.io), select `gRPC`, `Web`, and `GraalVM`. I'll be using Apache Maven in this tutorial but Gradle works, too.
+Want to get started? Let's speedrun a working service. Go to the [Spring Initializr](https://start.spring.io), select `gRPC`, `Web`, and `GraalVM`. Both Apache Maven and Gradle should work. Download the `.zip` file and unzip it. Open it in your IDE in the usual way. E.g. if you're using IntelliJ IDEA: `idea pom.xml`; or for VSCode `code .`. 
 
-If you want to use GraalVM native images, make sure you have the GraalVM distribution of OpenJDK installed. You can do so with [sdkman.io](https://sdkman.io). e.g.: `sdk install java 23.0.1-graalce  && sdk default java 23.0.1-graalce`.
-
-Download the `.zip` file and unzip it. Open it in your IDE in the usual way. If you're using IntelliJ IDEA: `idea pom.xml`. 
-
-Define a `.proto` service definition:
+Define a `.proto` service definition file `src/main/proto/hello.proto` with the following contents:
 
 [source,proto]
 ----
@@ -45,7 +41,14 @@ We'll want to define the stubs for a Java service based on this definition:
 ./mvnw clean package
 ----
 
-You'll get two new folders in the `target` directory: `target/target/generated-sources/protobuf/grpc-java`  and `target/target/generated-sources/protobuf/java`. You may need to instruct your IDE to mark them as  source roots. In IntelliJ IDEA, you'd right click the folder, choose `Mark Directory As` -> `Generated Source Root`. 
+or
+
+[source,shell]
+----
+./gradlew build
+----
+
+You'll get two new folders in the `target` directory (or `build` for Gradle): `target/target/generated-sources/protobuf/grpc-java` and `target/target/generated-sources/protobuf/java`. You may need to instruct your IDE to mark them as  source roots. In IntelliJ IDEA, you'd right click the folder, choose `Mark Directory As` -> `Generated Source Root`. Eclipse or VSCode will add them automatically for you.
 
 Now you can implement a service based on the generated stubs:
 
@@ -98,6 +101,13 @@ Run the program in the usual way:
 ./mvnw spring-boot:run
 ----
 
+or 
+
+[source,shell]
+----
+./gradle bootRun
+----
+
 You can try it out using a gRPC client like `grpcurl`:
 
 [source,shell]
@@ -105,7 +115,7 @@ You can try it out using a gRPC client like `grpcurl`:
 grpcurl -d '{"name":"Hi"}' -plaintext localhost:9090 Simple.SayHello
 ----
 
-You should get a response like: 
+You should get a response like this: 
 
 [source,shell]
 ----
@@ -114,7 +124,8 @@ You should get a response like:
 }
 ----
 
-Want some more details on what's happening? Read on!
+More details on what is going on in the next section.
+
 
 == Details
 
@@ -263,3 +274,7 @@ spring.grpc.client.channels.local.address=0.0.0.0:9090
 ----
 
 There is a default named channel (named "default") that you can configure in the same way, and then it will be used by default if there is no channel with the name specified in the channel creation.
+
+=== Native Images
+
+Native images are supported for gRPC servers and clients. You can build in the https://docs.spring.io/spring-boot/how-to/native-image/developing-your-first-application.html[normal Spring Boot] way for your build tool (Maven or Gradle).
