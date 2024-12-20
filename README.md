@@ -11,12 +11,121 @@ For further information go to our [Spring gRPC reference documentation](https://
 
 This section offers jumping off points for how to get started using Spring gRPC. There is a simple sample project in the `samples` directory (e.g. [`grpc-server`](https://github.com/spring-projects-experimental/spring-grpc/tree/main/samples/grpc-server)). You can run it with `mvn spring-boot:run` or `gradle bootRun`. You will see the following code in that sample.
 
+Want to get started? Let’s speedrun a working service. Go to the [Spring Initializr](https://start.spring.io), select `gRPC`, `Web`, and `GraalVM`. I’ll be using Apache Maven in this tutorial but Gradle works, too.
+
+If you want to use GraalVM native images, make sure you have the GraalVM distribution of OpenJDK installed. You can do so with [sdkman.io](https://sdkman.io). e.g.: `sdk install java 23.0.1-graalce  && sdk default java 23.0.1-graalce`.
+
+Download the `.zip` file and unzip it. Open it in your IDE in the usual way. If you’re using IntelliJ IDEA: `idea pom.xml`.
+
+Define a `.proto` service definition:
+
+```proto
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "org.springframework.grpc.sample.proto";
+option java_outer_classname = "HelloWorldProto";
+
+// The greeting service definition.
+service Simple {
+  // Sends a greeting
+  rpc SayHello (HelloRequest) returns (HelloReply) {
+  }
+  rpc StreamHello(HelloRequest) returns (stream HelloReply) {}
+}
+
+// The request message containing the user's name.
+message HelloRequest {
+  string name = 1;
+}
+
+// The response message containing the greetings
+message HelloReply {
+  string message = 1;
+}
+```
+
+We’ll want to define the stubs for a Java service based on this definition:
+
+```shell
+./mvnw clean package
+```
+
+You’ll get two new folders in the `target` directory: `target/target/generated-sources/protobuf/grpc-java`  and `target/target/generated-sources/protobuf/java`. You may need to instruct your IDE to mark them as  source roots. In IntelliJ IDEA, you’d right click the folder, choose `Mark Directory As` -> `Generated Source Root`.
+
+Now you can implement a service based on the generated stubs:
+
+```java
+@Service
+class GrpcServerService extends SimpleGrpc.SimpleImplBase {
+
+    private static Log log = LogFactory.getLog(GrpcServerService.class);
+
+    @Override
+    public void sayHello(HelloRequest req, StreamObserver<HelloReply> responseObserver) {
+        log.info("Hello " + req.getName());
+        if (req.getName().startsWith("error")) {
+            throw new IllegalArgumentException("Bad name: " + req.getName());
+        }
+        if (req.getName().startsWith("internal")) {
+            throw new RuntimeException();
+        }
+        HelloReply reply = HelloReply.newBuilder().setMessage("Hello ==> " + req.getName()).build();
+        responseObserver.onNext(reply);
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void streamHello(HelloRequest req, StreamObserver<HelloReply> responseObserver) {
+        log.info("Hello " + req.getName());
+        int count = 0;
+        while (count < 10) {
+            HelloReply reply = HelloReply.newBuilder().setMessage("Hello(" + count + ") ==> " + req.getName()).build();
+            responseObserver.onNext(reply);
+            count++;
+            try {
+                Thread.sleep(1000L);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                responseObserver.onError(e);
+                return;
+            }
+        }
+        responseObserver.onCompleted();
+    }
+}
+```
+
+Run the program in the usual way:
+
+```shell
+./mvnw spring-boot:run
+```
+
+You can try it out using a gRPC client like `grpcurl`:
+
+```shell
+grpcurl -d '{"name":"Hi"}' -plaintext localhost:9090 Simple.SayHello
+```
+
+You should get a response like:
+
+```shell
+{
+  "message": "Hello ==\u003e Hi"
+}
+```
+
+Want some more details on what’s happening? Read on!
+
+## Details
+
 You should follow the steps in each of the following section according to your needs.
 
 **📌 NOTE**\
-Spring gRPC supports Spring Boot 3.3.x
+Spring gRPC supports Spring Boot 3.4.x
 
-## Add Milestone and Snapshot Repositories
+### Add Milestone and Snapshot Repositories
 
 If you prefer to add the dependency snippets by hand, follow the directions in the following sections.
 
@@ -55,7 +164,7 @@ repositories {
 }
 ```
 
-## Dependency Management
+### Dependency Management
 
 The Spring gRPC Dependencies declares the recommended versions of all the dependencies used by a given release of Spring gRPC.
 Using the dependencies from your application’s build script avoids the need for you to specify and maintain the dependency versions yourself.
@@ -90,7 +199,7 @@ dependencies {
 
 You need a Protobuf file that defines your service and messages, and you will need to configure your build tools to compile it into Java sources. This is a standard part of gRPC development (i.e. nothing to do with Spring). We now come to the Spring gRPC features.
 
-## gPRC Server
+### gPRC Server
 
 Create a `@Bean` of type `BindableService`. For example:
 
@@ -116,7 +225,7 @@ public class GrpcServerApplication {
 
 Run it from your IDE, or on the command line with `mvn spring-boot:run` or `gradle bootRun`.
 
-## gRPC Client
+### gRPC Client
 
 To create a simple gRPC client, you can use the Spring Boot starter (see above - it’s the same as for the server). Then you can inject a bean of type `GrpcChannelFactory` and use it to create a gRPC channel. The most common usage of a channel is to create a client that binds to a service, such as the one above. The Protobuf-generated sources in your project will contain the stub classes, and they just need to be bound to a channel. For example, to bind to the `SimpleGrpc` service on a local server:
 

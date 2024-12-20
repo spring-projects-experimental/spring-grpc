@@ -18,6 +18,7 @@
 |spring.grpc.client.default-channel.ssl.bundle |  | SSL bundle name.
 |spring.grpc.client.default-channel.ssl.enabled |  | Whether to enable SSL support. Enabled automatically if "bundle" is provided unless specified otherwise.
 |spring.grpc.client.default-channel.user-agent |  | The custom User-Agent for the channel.
+|spring.grpc.client.observations.enabled | `+++true+++` | Whether to enable Observations on the client.
 |spring.grpc.server.address |  | The address to bind to. could be a host:port combination or a pseudo URL like static://host:port. Can not be set if host or port are set independently.
 |spring.grpc.server.exception-handling.enabled | `+++true+++` | Whether to enable user-defined global exception handling on the gRPC server.
 |spring.grpc.server.health.actuator.enabled | `+++true+++` | Whether to adapt Actuator health indicators into gRPC health checks.
