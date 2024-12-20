@@ -16,10 +16,12 @@
 
 package org.springframework.grpc.autoconfigure.server;
 
-import io.grpc.BindableService;
-import io.grpc.ServerServiceDefinition;
-import io.grpc.internal.GrpcUtil;
-import io.grpc.servlet.jakarta.ServletServerBuilder;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.junit.jupiter.api.Test;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;
@@ -27,14 +29,15 @@ import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
+import org.springframework.grpc.autoconfigure.server.GrpcServerFactoryAutoConfiguration.GrpcServletConfiguration;
 import org.springframework.grpc.server.ServerBuilderCustomizer;
 import org.springframework.util.unit.DataSize;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import io.grpc.BindableService;
+import io.grpc.ServerServiceDefinition;
+import io.grpc.internal.GrpcUtil;
+import io.grpc.servlet.jakarta.GrpcServlet;
+import io.grpc.servlet.jakarta.ServletServerBuilder;
 
 /**
  * Tests for {@link GrpcServerAutoConfiguration}.
@@ -59,14 +62,22 @@ class GrpcServletAutoConfigurationTests {
 	void whenGrpcNotOnClasspathAutoConfigurationIsSkipped() {
 		this.contextRunner()
 			.withClassLoader(new FilteredClassLoader(BindableService.class))
-			.run((context) -> assertThat(context).doesNotHaveBean(GrpcServerAutoConfiguration.class)
+			.run((context) -> assertThat(context).doesNotHaveBean(GrpcServletConfiguration.class)
 				.doesNotHaveBean(ServletRegistrationBean.class));
 	}
 
 	@Test
 	void whenNoBindableServicesRegisteredAutoConfigurationIsSkipped() {
 		new ApplicationContextRunner().withConfiguration(AutoConfigurations.of(GrpcServerAutoConfiguration.class))
-			.run((context) -> assertThat(context).doesNotHaveBean(GrpcServerAutoConfiguration.class)
+			.run((context) -> assertThat(context).doesNotHaveBean(GrpcServletConfiguration.class)
+				.doesNotHaveBean(ServletRegistrationBean.class));
+	}
+
+	@Test
+	void whenGrpcServletNotOnClasspathAutoConfigurationIsSkipped() {
+		this.contextRunner()
+			.withClassLoader(new FilteredClassLoader(GrpcServlet.class))
+			.run((context) -> assertThat(context).doesNotHaveBean(GrpcServletConfiguration.class)
 				.doesNotHaveBean(ServletRegistrationBean.class));
 	}
 
