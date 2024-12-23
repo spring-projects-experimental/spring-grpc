@@ -21,14 +21,19 @@ import java.util.stream.Collectors;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.AllNestedConditions;
+import org.springframework.boot.autoconfigure.condition.AnyNestedCondition;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnNotWebApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.context.properties.PropertyMapper;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.ConfigurationCondition.ConfigurationPhase;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.Ordered;
 import org.springframework.grpc.server.service.GrpcServiceDiscoverer;
@@ -56,16 +61,20 @@ import io.grpc.servlet.jakarta.ServletServerBuilder;
 public class GrpcServerFactoryAutoConfiguration {
 
 	@Configuration(proxyBeanMethods = false)
-	@ConditionalOnNotWebApplication
-	@Import({ GrpcServerFactoryConfigurations.ShadedNettyServerFactoryConfiguration.class,
-			GrpcServerFactoryConfigurations.NettyServerFactoryConfiguration.class })
+	@Conditional(OnNativeGrpcServerCondition.class)
 	static class GrpcServerFactoryConfiguration {
+
+		@Configuration(proxyBeanMethods = false)
+		@Import({ GrpcServerFactoryConfigurations.ShadedNettyServerFactoryConfiguration.class,
+				GrpcServerFactoryConfigurations.NettyServerFactoryConfiguration.class })
+		static class NettyServerFactoryConfiguration {
+
+		}
 
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-	@ConditionalOnClass(GrpcServlet.class)
+	@Conditional(OnGrpcServletCondition.class)
 	static class GrpcServletConfiguration {
 
 		@Bean
@@ -86,6 +95,57 @@ public class GrpcServerFactoryAutoConfiguration {
 					servletServerBuilder.buildServlet());
 			servlet.setUrlMappings(paths);
 			return servlet;
+		}
+
+	}
+
+	static class OnGrpcServletCondition extends AllNestedConditions {
+
+		OnGrpcServletCondition() {
+			super(ConfigurationPhase.PARSE_CONFIGURATION);
+		}
+
+		@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
+		static class OnServletWebApplication {
+
+		}
+
+		@ConditionalOnClass(GrpcServlet.class)
+		static class OnGrpcServletClass {
+
+		}
+
+		@ConditionalOnProperty(prefix = "spring.grpc.server", name = "servlet.enabled", havingValue = "true",
+				matchIfMissing = true)
+		static class OnExplicitlyEnabled {
+
+		}
+
+	}
+
+	static class OnNativeGrpcServerCondition extends AnyNestedCondition {
+
+		OnNativeGrpcServerCondition() {
+			super(ConfigurationPhase.PARSE_CONFIGURATION);
+		}
+
+		@ConditionalOnNotWebApplication
+		static class OnNonWebApplication {
+
+		}
+
+		@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
+		@ConditionalOnProperty(prefix = "spring.grpc.server", name = "servlet.enabled", havingValue = "false",
+				matchIfMissing = false)
+		static class OnExplicitlyDisabledServlet {
+
+		}
+
+		@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.REACTIVE)
+		@ConditionalOnProperty(prefix = "spring.grpc.server", name = "reactive.enabled", havingValue = "false",
+				matchIfMissing = false)
+		static class OnExplicitlyDisabledWebflux {
+
 		}
 
 	}
