@@ -36,6 +36,7 @@ import org.springframework.grpc.client.GrpcChannelFactory;
 import org.springframework.grpc.sample.proto.HelloReply;
 import org.springframework.grpc.sample.proto.HelloRequest;
 import org.springframework.grpc.sample.proto.SimpleGrpc;
+import org.springframework.grpc.test.AutoConfigureInProcessTransport;
 import org.springframework.test.annotation.DirtiesContext;
 
 import io.grpc.ManagedChannel;
@@ -52,7 +53,7 @@ import io.grpc.protobuf.services.HealthStatusManager;
 class GrpcServerHealthIntegrationTests {
 
 	@Nested
-	@SpringBootTest(properties = { "spring.grpc.inprocess.enabled=false", "spring.grpc.server.port=0",
+	@SpringBootTest(properties = { "spring.grpc.server.port=0",
 			"spring.grpc.client.channels.health-test.address=static://0.0.0.0:${local.grpc.port}",
 			"spring.grpc.client.channels.health-test.health.enabled=true",
 			"spring.grpc.client.channels.health-test.health.service-name=my-service" })
@@ -112,6 +113,7 @@ class GrpcServerHealthIntegrationTests {
 	@SpringBootTest(properties = { "spring.grpc.server.health.actuator.health-indicator-paths=custom",
 			"spring.grpc.server.health.actuator.update-initial-delay=3s",
 			"spring.grpc.server.health.actuator.update-rate=3s", "management.health.defaults.enabled=true" })
+	@AutoConfigureInProcessTransport
 	@DirtiesContext
 	class WithActuatorHealthAdapter {
 

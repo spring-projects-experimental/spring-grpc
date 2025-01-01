@@ -16,11 +16,13 @@ import org.springframework.grpc.client.GrpcChannelFactory;
 import org.springframework.grpc.sample.proto.HelloReply;
 import org.springframework.grpc.sample.proto.HelloRequest;
 import org.springframework.grpc.sample.proto.SimpleGrpc;
+import org.springframework.grpc.test.AutoConfigureInProcessTransport;
 import org.springframework.grpc.test.LocalGrpcPort;
 import org.springframework.test.annotation.DirtiesContext;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
 		properties = { "spring.grpc.server.servlet.enabled=false", "spring.grpc.server.port=0" })
+@AutoConfigureInProcessTransport
 public class ListenOnTwoPortsTests {
 
 	private static Log log = LogFactory.getLog(ListenOnTwoPortsTests.class);

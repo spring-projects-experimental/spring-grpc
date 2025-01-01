@@ -19,14 +19,13 @@ import org.springframework.grpc.sample.proto.SimpleGrpc;
 import org.springframework.grpc.test.LocalGrpcPort;
 import org.springframework.test.annotation.DirtiesContext;
 
-@SpringBootTest(properties = { "spring.grpc.server.port=0", "spring.grpc.inprocess.enabled=false" })
+@SpringBootTest(properties = { "spring.grpc.server.port=0" })
 public class GrpcServerApplicationTests {
 
 	private static Log log = LogFactory.getLog(GrpcServerApplicationTests.class);
 
 	public static void main(String[] args) {
-		new SpringApplicationBuilder(GrpcServerApplication.class, ExtraConfiguration.class)
-			.run("--spring.grpc.inprocess.enabled=false");
+		new SpringApplicationBuilder(GrpcServerApplication.class, ExtraConfiguration.class).run();
 	}
 
 	@Autowired
