@@ -23,9 +23,11 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.grpc.autoconfigure.server.GrpcServerProperties;
+import org.springframework.grpc.client.ChannelBuilderOptions;
 import org.springframework.grpc.client.GrpcChannelFactory;
 import org.springframework.grpc.sample.proto.HelloReply;
 import org.springframework.grpc.sample.proto.HelloRequest;
@@ -36,8 +38,9 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
 import io.grpc.ManagedChannel;
-import io.grpc.StatusRuntimeException;
 import io.grpc.Status.Code;
+import io.grpc.StatusRuntimeException;
+import io.grpc.netty.NettyChannelBuilder;
 
 /**
  * More detailed integration tests for {@link GrpcServerFactory gRPC server factories} and
@@ -51,7 +54,7 @@ class GrpcServerIntegrationTests {
 
 		@Test
 		void servesResponseToClient(@Autowired GrpcChannelFactory channels) {
-			assertThatResponseIsServedToChannel(channels.createChannel("0.0.0.0:0").build());
+			assertThatResponseIsServedToChannel(channels.createChannel("0.0.0.0:0", ChannelBuilderOptions.defaults()));
 		}
 
 	}
@@ -63,7 +66,7 @@ class GrpcServerIntegrationTests {
 		@Test
 		void specificErrorResponse(@Autowired GrpcChannelFactory channels) {
 			SimpleGrpc.SimpleBlockingStub client = SimpleGrpc
-				.newBlockingStub(channels.createChannel("0.0.0.0:0").build());
+				.newBlockingStub(channels.createChannel("0.0.0.0:0", ChannelBuilderOptions.defaults()));
 			assertThat(assertThrows(StatusRuntimeException.class,
 					() -> client.sayHello(HelloRequest.newBuilder().setName("error").build()))
 				.getStatus()
@@ -73,7 +76,7 @@ class GrpcServerIntegrationTests {
 		@Test
 		void defaultErrorResponseIsUnknown(@Autowired GrpcChannelFactory channels) {
 			SimpleGrpc.SimpleBlockingStub client = SimpleGrpc
-				.newBlockingStub(channels.createChannel("0.0.0.0:0").build());
+				.newBlockingStub(channels.createChannel("0.0.0.0:0", ChannelBuilderOptions.defaults()));
 			assertThat(assertThrows(StatusRuntimeException.class,
 					() -> client.sayHello(HelloRequest.newBuilder().setName("internal").build()))
 				.getStatus()
@@ -89,7 +92,7 @@ class GrpcServerIntegrationTests {
 		@Test
 		void specificErrorResponse(@Autowired GrpcChannelFactory channels) {
 			SimpleGrpc.SimpleBlockingStub client = SimpleGrpc
-				.newBlockingStub(channels.createChannel("0.0.0.0:0").build());
+				.newBlockingStub(channels.createChannel("0.0.0.0:0", ChannelBuilderOptions.defaults()));
 			assertThat(assertThrows(StatusRuntimeException.class,
 					() -> client.sayHello(HelloRequest.newBuilder().setName("error").build()))
 				.getStatus()
@@ -99,7 +102,7 @@ class GrpcServerIntegrationTests {
 		@Test
 		void defaultErrorResponseIsUnknown(@Autowired GrpcChannelFactory channels) {
 			SimpleGrpc.SimpleBlockingStub client = SimpleGrpc
-				.newBlockingStub(channels.createChannel("0.0.0.0:0").build());
+				.newBlockingStub(channels.createChannel("0.0.0.0:0", ChannelBuilderOptions.defaults()));
 			assertThat(assertThrows(StatusRuntimeException.class,
 					() -> client.sayHello(HelloRequest.newBuilder().setName("internal").build()))
 				.getStatus()
@@ -116,7 +119,8 @@ class GrpcServerIntegrationTests {
 		@Test
 		void servesResponseToClientWithAnyIPv4AddressAndRandomPort(@Autowired GrpcChannelFactory channels,
 				@LocalGrpcPort int port) {
-			assertThatResponseIsServedToChannel(channels.createChannel("0.0.0.0:" + port).build());
+			assertThatResponseIsServedToChannel(
+					channels.createChannel("0.0.0.0:" + port, ChannelBuilderOptions.defaults()));
 		}
 
 	}
@@ -129,7 +133,8 @@ class GrpcServerIntegrationTests {
 		@Test
 		void servesResponseToClientWithAnyIPv4AddressAndRandomPort(@Autowired GrpcChannelFactory channels,
 				@LocalGrpcPort int port) {
-			assertThatResponseIsServedToChannel(channels.createChannel("0.0.0.0:" + port).build());
+			assertThatResponseIsServedToChannel(
+					channels.createChannel("0.0.0.0:" + port, ChannelBuilderOptions.defaults()));
 		}
 
 	}
@@ -142,7 +147,8 @@ class GrpcServerIntegrationTests {
 		@Test
 		void servesResponseToClientWithLocalhostAndRandomPort(@Autowired GrpcChannelFactory channels,
 				@LocalGrpcPort int port) {
-			assertThatResponseIsServedToChannel(channels.createChannel("127.0.0.1:" + port).build());
+			assertThatResponseIsServedToChannel(
+					channels.createChannel("127.0.0.1:" + port, ChannelBuilderOptions.defaults()));
 		}
 
 	}
@@ -156,7 +162,8 @@ class GrpcServerIntegrationTests {
 
 		@Test
 		void servesResponseToClientWithConfiguredChannel(@Autowired GrpcChannelFactory channels) {
-			assertThatResponseIsServedToChannel(channels.createChannel("test-channel").build());
+			assertThatResponseIsServedToChannel(
+					channels.createChannel("test-channel", ChannelBuilderOptions.defaults()));
 		}
 
 	}
@@ -169,7 +176,8 @@ class GrpcServerIntegrationTests {
 
 		@Test
 		void clientChannelWithUnixDomain(@Autowired GrpcChannelFactory channels) {
-			assertThatResponseIsServedToChannel(channels.createChannel("unix:unix-test-channel").build());
+			assertThatResponseIsServedToChannel(channels.createChannel("unix:unix-test-channel",
+					ChannelBuilderOptions.defaults().<NettyChannelBuilder>withCustomizer((__, b) -> b.usePlaintext())));
 		}
 
 	}
@@ -185,7 +193,8 @@ class GrpcServerIntegrationTests {
 
 		@Test
 		void clientChannelWithSsl(@Autowired GrpcChannelFactory channels) {
-			assertThatResponseIsServedToChannel(channels.createChannel("test-channel").build());
+			assertThatResponseIsServedToChannel(
+					channels.createChannel("test-channel", ChannelBuilderOptions.defaults()));
 		}
 
 	}
@@ -203,7 +212,8 @@ class GrpcServerIntegrationTests {
 
 		@Test
 		void clientChannelWithSsl(@Autowired GrpcChannelFactory channels) {
-			assertThatResponseIsServedToChannel(channels.createChannel("test-channel").build());
+			assertThatResponseIsServedToChannel(
+					channels.createChannel("test-channel", ChannelBuilderOptions.defaults()));
 		}
 
 	}

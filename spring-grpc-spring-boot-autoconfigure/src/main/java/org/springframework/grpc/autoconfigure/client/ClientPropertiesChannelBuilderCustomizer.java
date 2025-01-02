@@ -32,10 +32,12 @@ import io.grpc.ManagedChannelBuilder;
  * A {@link GrpcChannelBuilderCustomizer} that maps {@link GrpcClientProperties client
  * properties} to a channel builder.
  *
+ * @param <T> the type of the builder
  * @author David Syer
  * @author Chris Bono
  */
-class ClientPropertiesChannelBuilderCustomizer implements GrpcChannelBuilderCustomizer {
+class ClientPropertiesChannelBuilderCustomizer<T extends ManagedChannelBuilder<T>>
+		implements GrpcChannelBuilderCustomizer<T> {
 
 	private final GrpcClientProperties properties;
 
@@ -44,14 +46,16 @@ class ClientPropertiesChannelBuilderCustomizer implements GrpcChannelBuilderCust
 	}
 
 	@Override
-	public void customize(String authority, ManagedChannelBuilder<?> builder) {
+	public void customize(String authority, T builder) {
 		NamedChannel channel = this.properties.getChannels().get(authority);
 		if (channel == null) {
 			return;
 		}
 		PropertyMapper mapper = PropertyMapper.get().alwaysApplyingWhenNonNull();
 		mapper.from(channel.getUserAgent()).to(builder::userAgent);
-		mapper.from(channel.getDefaultLoadBalancingPolicy()).to(builder::defaultLoadBalancingPolicy);
+		if (!authority.startsWith("unix:")) {
+			mapper.from(channel.getDefaultLoadBalancingPolicy()).to(builder::defaultLoadBalancingPolicy);
+		}
 		mapper.from(channel.getMaxInboundMessageSize()).asInt(DataSize::toBytes).to(builder::maxInboundMessageSize);
 		mapper.from(channel.getMaxInboundMetadataSize()).asInt(DataSize::toBytes).to(builder::maxInboundMessageSize);
 		mapper.from(channel.getKeepAliveTime()).to(durationProperty(builder::keepAliveTime));

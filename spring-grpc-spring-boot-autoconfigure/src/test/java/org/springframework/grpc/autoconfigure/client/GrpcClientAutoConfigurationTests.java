@@ -18,13 +18,18 @@ package org.springframework.grpc.autoconfigure.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
+import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
+import org.mockito.InOrder;
 import org.mockito.Mockito;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;
@@ -32,44 +37,33 @@ import org.springframework.boot.autoconfigure.ssl.SslAutoConfiguration;
 import org.springframework.boot.ssl.SslBundles;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.grpc.autoconfigure.client.GrpcClientAutoConfiguration.NamedChannelVirtualTargets;
 import org.springframework.grpc.client.ChannelCredentialsProvider;
-import org.springframework.grpc.client.DefaultGrpcChannelFactory;
 import org.springframework.grpc.client.GrpcChannelBuilderCustomizer;
 import org.springframework.grpc.client.GrpcChannelFactory;
+import org.springframework.grpc.client.NettyGrpcChannelFactory;
+import org.springframework.grpc.client.ShadedNettyGrpcChannelFactory;
 
 import io.grpc.Codec;
 import io.grpc.CompressorRegistry;
 import io.grpc.DecompressorRegistry;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.netty.NettyChannelBuilder;
 
 /**
  * Tests for {@link GrpcClientAutoConfiguration}.
  *
  * @author Chris Bono
  */
+@SuppressWarnings({ "unchecked", "rawtypes" })
 class GrpcClientAutoConfigurationTests {
 
 	private ApplicationContextRunner contextRunner() {
 		return new ApplicationContextRunner()
 			.withConfiguration(AutoConfigurations.of(GrpcClientAutoConfiguration.class, SslAutoConfiguration.class));
-	}
-
-	@Test
-	void whenHasUserDefinedChannelFactoryDoesNotAutoConfigureBean() {
-		GrpcChannelFactory customChannelFactory = mock(GrpcChannelFactory.class);
-		this.contextRunner()
-			.withBean("customChannelFactory", GrpcChannelFactory.class, () -> customChannelFactory)
-			.run((context) -> assertThat(context).getBean(GrpcChannelFactory.class).isSameAs(customChannelFactory));
-	}
-
-	@Test
-	void channelFactoryAutoConfiguredAsExpected() {
-		this.contextRunner()
-			.run((context) -> assertThat(context).getBean(DefaultGrpcChannelFactory.class)
-				.hasFieldOrPropertyWithValue("credentials", context.getBean(NamedChannelCredentialsProvider.class))
-				.extracting("targets")
-				.isInstanceOf(NamedChannelVirtualTargets.class));
 	}
 
 	@Test
@@ -164,6 +158,132 @@ class GrpcClientAutoConfigurationTests {
 			customizer.customize("testChannel", builder);
 			verify(builder).decompressorRegistry(decompressorRegistry);
 		});
+	}
+
+	@Test
+	void whenHasUserDefinedChannelBuilderCustomizersDoesNotAutoConfigureBean() {
+		ChannelBuilderCustomizers customCustomizers = mock(ChannelBuilderCustomizers.class);
+		this.contextRunner()
+			.withBean("customCustomizers", ChannelBuilderCustomizers.class, () -> customCustomizers)
+			.run((context) -> assertThat(context).getBean(ChannelBuilderCustomizers.class).isSameAs(customCustomizers));
+	}
+
+	@Test
+	void channelBuilderCustomizersAutoConfiguredAsExpected() {
+		this.contextRunner()
+			.withUserConfiguration(ChannelBuilderCustomizersConfig.class)
+			.run((context) -> assertThat(context).getBean(ChannelBuilderCustomizers.class)
+				.extracting("customizers", InstanceOfAssertFactories.list(GrpcChannelBuilderCustomizer.class))
+				.contains(ChannelBuilderCustomizersConfig.CUSTOMIZER_BAR,
+						ChannelBuilderCustomizersConfig.CUSTOMIZER_FOO));
+	}
+
+	@Test
+	void whenHasUserDefinedChannelFactoryDoesNotAutoConfigureBean() {
+		GrpcChannelFactory customChannelFactory = mock(GrpcChannelFactory.class);
+		this.contextRunner()
+			.withBean("customChannelFactory", GrpcChannelFactory.class, () -> customChannelFactory)
+			.run((context) -> assertThat(context).getBean(GrpcChannelFactory.class).isSameAs(customChannelFactory));
+	}
+
+	@Test
+	void whenShadedAndNonShadedNettyOnClasspathShadedNettyFactoryIsAutoConfigured() {
+		this.contextRunner()
+			.run((context) -> assertThat(context).getBean(GrpcChannelFactory.class)
+				.isInstanceOf(ShadedNettyGrpcChannelFactory.class));
+	}
+
+	@Test
+	void whenOnlyNonShadedNettyOnClasspathNonShadedNettyFactoryIsAutoConfigured() {
+		this.contextRunner()
+			.withClassLoader(new FilteredClassLoader(io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder.class))
+			.run((context) -> assertThat(context).getBean(GrpcChannelFactory.class)
+				.isInstanceOf(NettyGrpcChannelFactory.class));
+	}
+
+	@Test
+	void shadedNettyChannelFactoryAutoConfiguredAsExpected() {
+		channelFactoryAutoConfiguredAsExpected(this.contextRunner(), ShadedNettyGrpcChannelFactory.class);
+	}
+
+	@Test
+	void nettyChannelFactoryAutoConfiguredAsExpected() {
+		channelFactoryAutoConfiguredAsExpected(this.contextRunner()
+			.withClassLoader(new FilteredClassLoader(io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder.class)),
+				NettyGrpcChannelFactory.class);
+	}
+
+	@Test
+	void noChannelFactoryAutoConfiguredAsExpected() {
+		this.contextRunner()
+			.withClassLoader(new FilteredClassLoader(NettyChannelBuilder.class,
+					io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder.class))
+			.run((context) -> assertThat(context).doesNotHaveBean(GrpcChannelFactory.class));
+	}
+
+	private void channelFactoryAutoConfiguredAsExpected(ApplicationContextRunner contextRunner,
+			Class<?> expectedChannelFactoryType) {
+		contextRunner.withPropertyValues("spring.grpc.server.port=0")
+			.run((context) -> assertThat(context).getBean(GrpcChannelFactory.class)
+				.isInstanceOf(expectedChannelFactoryType)
+				.hasFieldOrPropertyWithValue("credentials", context.getBean(NamedChannelCredentialsProvider.class))
+				.extracting("targets")
+				.isInstanceOf(NamedChannelVirtualTargets.class));
+	}
+
+	@Test
+	void shadedNettyChannelFactoryAutoConfiguredWithCustomizers() {
+		io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder builder = mock();
+		channelFactoryAutoConfiguredWithCustomizers(this.contextRunner(), builder, ShadedNettyGrpcChannelFactory.class);
+	}
+
+	@Test
+	void nettyChannelFactoryAutoConfiguredWithCustomizers() {
+		NettyChannelBuilder builder = mock();
+		channelFactoryAutoConfiguredWithCustomizers(this.contextRunner()
+			.withClassLoader(new FilteredClassLoader(io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder.class)),
+				builder, NettyGrpcChannelFactory.class);
+	}
+
+	@SuppressWarnings("unchecked")
+	private <T extends ManagedChannelBuilder<T>> void channelFactoryAutoConfiguredWithCustomizers(
+			ApplicationContextRunner contextRunner, ManagedChannelBuilder<T> mockChannelBuilder,
+			Class<?> expectedChannelFactoryType) {
+		GrpcChannelBuilderCustomizer<T> customizer1 = (__, b) -> b.keepAliveTime(40L, TimeUnit.SECONDS);
+		GrpcChannelBuilderCustomizer<T> customizer2 = (__, b) -> b.keepAliveTime(50L, TimeUnit.SECONDS);
+		ChannelBuilderCustomizers customizers = new ChannelBuilderCustomizers(List.of(customizer1, customizer2));
+		contextRunner.withPropertyValues("spring.grpc.server.port=0")
+			.withBean("channelBuilderCustomizers", ChannelBuilderCustomizers.class, () -> customizers)
+			.run((context) -> assertThat(context).getBean(GrpcChannelFactory.class)
+				.isInstanceOf(expectedChannelFactoryType)
+				.extracting("globalCustomizers", InstanceOfAssertFactories.list(GrpcChannelBuilderCustomizer.class))
+				.satisfies((allCustomizers) -> {
+					allCustomizers.forEach((c) -> c.customize("channel1", mockChannelBuilder));
+					InOrder ordered = inOrder(mockChannelBuilder);
+					ordered.verify(mockChannelBuilder).keepAliveTime(40L, TimeUnit.SECONDS);
+					ordered.verify(mockChannelBuilder).keepAliveTime(50L, TimeUnit.SECONDS);
+				}));
+	}
+
+	@Configuration(proxyBeanMethods = false)
+	static class ChannelBuilderCustomizersConfig {
+
+		static GrpcChannelBuilderCustomizer<?> CUSTOMIZER_FOO = mock();
+
+		static GrpcChannelBuilderCustomizer<?> CUSTOMIZER_BAR = mock();
+
+		@Bean
+		@Order(200)
+		GrpcChannelBuilderCustomizer<?> customizerFoo() {
+			return CUSTOMIZER_FOO;
+		}
+
+		@Bean
+		@Order(100)
+		GrpcChannelBuilderCustomizer<?> customizerBar() {
+			return CUSTOMIZER_BAR;
+		}
+
 	}
 
 }

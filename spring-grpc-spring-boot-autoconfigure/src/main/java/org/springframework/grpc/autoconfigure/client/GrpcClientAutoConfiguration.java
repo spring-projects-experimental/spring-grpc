@@ -15,42 +15,30 @@
  */
 package org.springframework.grpc.autoconfigure.client;
 
-import java.util.List;
-
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.ssl.SslBundles;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.grpc.autoconfigure.client.GrpcClientProperties.NamedChannel;
 import org.springframework.grpc.autoconfigure.common.codec.GrpcCodecConfiguration;
 import org.springframework.grpc.client.ChannelCredentialsProvider;
-import org.springframework.grpc.client.ClientInterceptorsConfigurer;
-import org.springframework.grpc.client.DefaultGrpcChannelFactory;
 import org.springframework.grpc.client.GrpcChannelBuilderCustomizer;
-import org.springframework.grpc.client.GrpcChannelFactory;
 import org.springframework.grpc.client.VirtualTargets;
 
 import io.grpc.CompressorRegistry;
 import io.grpc.DecompressorRegistry;
+import io.grpc.ManagedChannelBuilder;
 
-@Configuration(proxyBeanMethods = false)
+@AutoConfiguration
 @EnableConfigurationProperties(GrpcClientProperties.class)
-@Import({ GrpcCodecConfiguration.class, ClientInterceptorsConfiguration.class })
+@Import({ GrpcCodecConfiguration.class, ClientInterceptorsConfiguration.class,
+		GrpcChannelFactoryConfigurations.ShadedNettyChannelFactoryConfiguration.class,
+		GrpcChannelFactoryConfigurations.NettyChannelFactoryConfiguration.class })
 public class GrpcClientAutoConfiguration {
-
-	@Bean
-	@ConditionalOnMissingBean(GrpcChannelFactory.class)
-	DefaultGrpcChannelFactory defaultGrpcChannelFactory(List<GrpcChannelBuilderCustomizer> customizers,
-			ClientInterceptorsConfigurer interceptorsConfigurer, ChannelCredentialsProvider credentials,
-			GrpcClientProperties channels, SslBundles ignored) {
-		DefaultGrpcChannelFactory factory = new DefaultGrpcChannelFactory(customizers, interceptorsConfigurer);
-		factory.setCredentialsProvider(credentials);
-		factory.setVirtualTargets(new NamedChannelVirtualTargets(channels));
-		return factory;
-	}
 
 	@Bean
 	@ConditionalOnMissingBean(ChannelCredentialsProvider.class)
@@ -59,20 +47,29 @@ public class GrpcClientAutoConfiguration {
 	}
 
 	@Bean
-	GrpcChannelBuilderCustomizer clientPropertiesChannelCustomizer(GrpcClientProperties properties) {
-		return new ClientPropertiesChannelBuilderCustomizer(properties);
+	<T extends ManagedChannelBuilder<T>> GrpcChannelBuilderCustomizer<T> clientPropertiesChannelCustomizer(
+			GrpcClientProperties properties) {
+		return new ClientPropertiesChannelBuilderCustomizer<>(properties);
 	}
 
 	@ConditionalOnBean(CompressorRegistry.class)
 	@Bean
-	GrpcChannelBuilderCustomizer compressionClientCustomizer(CompressorRegistry registry) {
+	<T extends ManagedChannelBuilder<T>> GrpcChannelBuilderCustomizer<T> compressionClientCustomizer(
+			CompressorRegistry registry) {
 		return (name, builder) -> builder.compressorRegistry(registry);
 	}
 
 	@ConditionalOnBean(DecompressorRegistry.class)
 	@Bean
-	GrpcChannelBuilderCustomizer decompressionClientCustomizer(DecompressorRegistry registry) {
+	<T extends ManagedChannelBuilder<T>> GrpcChannelBuilderCustomizer<T> decompressionClientCustomizer(
+			DecompressorRegistry registry) {
 		return (name, builder) -> builder.decompressorRegistry(registry);
+	}
+
+	@ConditionalOnMissingBean
+	@Bean
+	ChannelBuilderCustomizers channelBuilderCustomizers(ObjectProvider<GrpcChannelBuilderCustomizer<?>> customizers) {
+		return new ChannelBuilderCustomizers(customizers.orderedStream().toList());
 	}
 
 	static class NamedChannelVirtualTargets implements VirtualTargets {

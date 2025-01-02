@@ -32,6 +32,7 @@ import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.grpc.client.ChannelBuilderOptions;
 import org.springframework.grpc.client.GrpcChannelFactory;
 import org.springframework.grpc.sample.proto.HelloReply;
 import org.springframework.grpc.sample.proto.HelloRequest;
@@ -62,7 +63,7 @@ class GrpcServerHealthIntegrationTests {
 		@Test
 		void loadBalancerRespectsServerHealth(@Autowired GrpcChannelFactory channels,
 				@Autowired HealthStatusManager healthStatusManager) {
-			ManagedChannel channel = channels.createChannel("health-test").build();
+			ManagedChannel channel = channels.createChannel("health-test", ChannelBuilderOptions.defaults());
 			SimpleGrpc.SimpleBlockingStub client = SimpleGrpc.newBlockingStub(channel);
 
 			// put the service up (SERVING) and give load balancer time to update
@@ -117,7 +118,7 @@ class GrpcServerHealthIntegrationTests {
 
 		@Test
 		void healthIndicatorsAdaptedToGrpcHealthStatus(@Autowired GrpcChannelFactory channels) {
-			var channel = channels.createChannel("0.0.0.0:0").build();
+			var channel = channels.createChannel("0.0.0.0:0", ChannelBuilderOptions.defaults());
 			var healthStub = HealthGrpc.newBlockingStub(channel);
 			var serviceName = "custom";
 

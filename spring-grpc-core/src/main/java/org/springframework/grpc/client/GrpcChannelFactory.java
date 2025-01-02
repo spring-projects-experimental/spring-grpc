@@ -16,37 +16,48 @@
 
 package org.springframework.grpc.client;
 
-import java.util.List;
-
+import io.grpc.ChannelCredentials;
 import io.grpc.ClientInterceptor;
-import io.grpc.ManagedChannelBuilder;
+import io.grpc.Grpc;
+import io.grpc.ManagedChannel;
 
 /**
- * Factory interface for creating {@link ManagedChannelBuilder} instances for a given
- * authority.
+ * Factory interface for creating {@link ManagedChannel} instances.
  *
  * @author Dave Syer
- * @see ManagedChannelBuilder
+ * @author Chris Bono
  */
 public interface GrpcChannelFactory {
 
 	/**
-	 * Creates a {@link ManagedChannelBuilder} for the given authority.
-	 * @param authority the target authority for the channel
-	 * @return a {@link ManagedChannelBuilder} configured for the given authority
+	 * Creates a {@link ManagedChannel} for the given target string. The target can be
+	 * either a valid nameresolver-compliant URI, an authority string as described in
+	 * {@link Grpc#newChannelBuilder(String, ChannelCredentials)}, or a named channel
+	 * which will return a builder that is based on a user-configured channel.
+	 * <p>
+	 * The returned channel is configured to use all globally registered
+	 * {@link ClientInterceptor interceptors}.
+	 * @param target the target string as described in method javadocs
+	 * @return a channel for the given target
 	 */
-	ManagedChannelBuilder<?> createChannel(String authority);
+	default ManagedChannel createChannel(String target) {
+		return this.createChannel(target, ChannelBuilderOptions.defaults());
+	}
 
 	/**
-	 * Creates a {@link ManagedChannelBuilder} for the given authority and the provided
-	 * client interceptors.
-	 * @param authority the target authority for the channel
-	 * @param interceptors the non-null list of interceptors to be applied to the channel
-	 * @param mergeWithGlobalInterceptors whether the provided interceptors should be
-	 * blended with the global interceptors.
-	 * @return a channel builder conifgured with the provided values
+	 * Creates a {@link ManagedChannel} for the given target string. The target can be
+	 * either a valid nameresolver-compliant URI, an authority string as described in
+	 * {@link Grpc#newChannelBuilder(String, ChannelCredentials)}, or a named channel
+	 * which will return a builder that is based on a user-configured channel.
+	 * <p>
+	 * The returned channel is configured to use all globally registered
+	 * {@link ClientInterceptor interceptors} and any user-provided interceptor if
+	 * specified in the {@link ChannelBuilderOptions#customizer() options}.
+	 * @param target the target string as described in method javadocs
+	 * @param options the options for building the created channel, or
+	 * {@link ChannelBuilderOptions#defaults()} to use default options
+	 * @return a channel for the given target
 	 */
-	ManagedChannelBuilder<?> createChannel(String authority, List<ClientInterceptor> interceptors,
-			boolean mergeWithGlobalInterceptors);
+	ManagedChannel createChannel(String target, ChannelBuilderOptions options);
 
 }

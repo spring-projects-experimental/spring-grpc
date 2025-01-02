@@ -16,11 +16,9 @@ To bind to this service on a local server:
 ----
 @Bean
 SimpleGrpc.SimpleBlockingStub stub(GrpcChannelFactory channels) {
-	return SimpleGrpc.newBlockingStub(channels.createChannel("0.0.0.0:9090").build());
+	return SimpleGrpc.newBlockingStub(channels.createChannel("0.0.0.0:9090"));
 }
 ----
-
-The `GrpcChannelFactory` creates a `ChannelBuilder` that you can customize before building the channel if necessary.
 
 === Shaded Netty Client
 
@@ -61,7 +59,53 @@ dependencies {
 ----
 
 == Channel Configuration
+The channel factory provides an API to create channels.
+The channel creation process can be configured as follows.
 
+=== Channel Builder Customizer
+The `ManagedChannelBuilder` used by the factory to create the channel can be customized prior to channel creation.
+
+==== Global
+To customize the builder used for all created channels you can register one more `GrpcChannelBuilderCustomizer` beans.
+The customizers are applied to the auto-configured `GrpcChannelFactory` in order according to their bean natural ordering (i.e. `@Order`).
+
+[source,java]
+----
+@Bean
+@Order(100)
+GrpcChannelBuilderCustomizer<NettyChannelBuilder> flowControlCustomizer() {
+    return (name, builder) -> builder.flowControlWindow(1024 * 1024);
+}
+
+@Bean
+@Order(200)
+<T extends ManagedChannelBuilder<T>> GrpcChannelBuilderCustomizer<T> retryChannelCustomizer() {
+	return (name, builder) -> builder.enableRetry().maxRetryAttempts(5);
+}
+----
+
+In the preceding example, the `flowControlCustomizer` customizer is applied prior to the `retryChannelCustomizer`.
+Furthermore, the `flowControlCustomizer` is only applied if the auto-configured channel factory is a `NettyGrpcChannelFactory`.
+
+==== Per-channel
+To customize an individual channel you can specify a `GrpcChannelBuilderCustomizer` on the options passed to the factory during channel creation.
+The per-channel customizer will be applied after any global customizers.
+
+[source,java]
+----
+@Bean
+SimpleGrpc.SimpleBlockingStub stub(GrpcChannelFactory channelFactory) {
+    ChannelBuilderOptions options = ChannelBuilderOptions.defaults()
+            .withCustomizer((__, b) -> b.disableRetry());
+    ManagedChannel channel = channelFactory.createChannel("localhost", options);
+    return SimpleGrpc.newBlockingStub(channel);
+}
+----
+The above example disables retries for the single created channel only.
+
+WARNING: While the channel builder customizer gives you full access to the native channel builder, you should not call `build` on the customized builder as the channel factory handles the `build` call for you and doing so will create orphaned channels.
+
+=== Application Properties
 The default `GrpcChannelFactory` implementation can also create a "named" channel, which you can then use to extract the configuration to connect to the server.
 For example:
 
@@ -69,7 +113,7 @@ For example:
 ----
 @Bean
 SimpleGrpc.SimpleBlockingStub stub(GrpcChannelFactory channels) {
-	return SimpleGrpc.newBlockingStub(channels.createChannel("local").build());
+	return SimpleGrpc.newBlockingStub(channels.createChannel("local"));
 }
 ----
 
@@ -81,9 +125,6 @@ spring.grpc.client.channels.local.address=0.0.0.0:9090
 ----
 
 There is a default named channel that you can configure as `spring.grpc.client.default-channel.*`, and then it will be used by default if there is no channel with the name specified in the channel creation.
-
-Beans of type `GrpcChannelBuilderCustomizer` can be used to customize the `ChannelBuilder` before the channel is built.
-This can be useful for setting up security, for example.
 
 == The Local Server Port
 
@@ -106,27 +147,52 @@ SimpleGrpc.SimpleBlockingStub stub(GrpcChannelFactory channels, @LocalGrpcPort i
 
 === Global
 To add a client interceptor to be applied to all created channels you can simply register a client interceptor bean and then annotate it with `@GlobalClientInterceptor`.
-The interceptors are ordered according to their bean natural ordering (i.e. `@Order`).
+When you register multiple interceptor beans they are ordered according to their bean natural ordering (i.e. `@Order`).
 
 [source,java]
 ----
 @Bean
 @Order(100)
 @GlobalClientInterceptor
-ClientInterceptor myGlobalLoggingInterceptor() {
-    return new MyLoggingInterceptor();
+ClientInterceptor globalLoggingInterceptor() {
+    return new LoggingInterceptor();
+}
+
+@Bean
+@Order(200)
+@GlobalClientInterceptor
+ClientInterceptor globalExtraThingsInterceptor() {
+    return new ExtraThingsInterceptor();
 }
 ----
 
-=== Per-Channel
-To add one or more client interceptors to be applied to a single client channel you can simply pass in the interceptor instance(s) when invoking the channel factory to create the channel.
+In the preceding example, the `globalLoggingInterceptor` customizer is applied prior to the `globalExtraThingsInterceptor`.
 
-The interceptors are ordered according to their position in the specified list.
+=== Per-Channel
+To add one or more client interceptors to be applied to a single client channel you can simply set the interceptor instance(s) on the options passed to the channel factory when creating the channel.
+
+[source,java]
+----
+@Bean
+SimpleGrpc.SimpleBlockingStub stub(GrpcChannelFactory channelFactory) {
+    ClientInterceptor interceptor1 = getChannelInterceptor1();
+    ClientInterceptor interceptor2 = getChannelInterceptor2();
+    ChannelBuilderOptions options = ChannelBuilderOptions.defaults()
+            .withInterceptors(List.of(interceptor1, interceptor2));
+    ManagedChannel channel = channelFactory.createChannel("localhost", options);
+    return SimpleGrpc.newBlockingStub(channel);
+}
+----
+The above example applies `interceptor1` then `interceptor2` to the single created channel.
+
+WARNING: While the channel builder customizer gives you full access to the native channel builder, we recommend not calling `intercept` on the customized builder but rather set the per-channel interceptors using the `ChannelBuilderOptions` as described above.
+If you do call `intercept` directly on the builder then those interceptors will be applied before the above described `global` and `per-channel` interceptors.
+
 
 === Blended
-When a channel is constructed with both global and per-client interceptors, the global interceptors are first applied in their sorted order followed by the per-service interceptors in their sorted order.
+When a channel is constructed with both global and per-channel interceptors, the global interceptors are first applied in their sorted order followed by the per-channel interceptors in their sorted order.
 
-However, by setting the `mergeWithGlobalInterceptors` parameter on the channel factory to `"true"` you can change this behavior so that the interceptors are all combined and then sorted according to their bean natural ordering (i.e. `@Order` or `Ordered` interface).
+However, by setting the `withInterceptorsMerge` parameter on the `ChannelBuilderOptions` passed to the channel factory to `"true"` you can change this behavior so that the interceptors are all combined and then sorted according to their bean natural ordering (i.e. `@Order` or `Ordered` interface).
 
 You can use this option if you want to add a per-client interceptor between global interceptors.
 
