@@ -54,7 +54,7 @@ class GrpcServerIntegrationTests {
 
 		@Test
 		void servesResponseToClient(@Autowired GrpcChannelFactory channels) {
-			assertThatResponseIsServedToChannel(channels.createChannel("0.0.0.0:0", ChannelBuilderOptions.defaults()));
+			assertThatResponseIsServedToChannel(channels.createChannel("0.0.0.0:0"));
 		}
 
 	}
@@ -65,8 +65,7 @@ class GrpcServerIntegrationTests {
 
 		@Test
 		void specificErrorResponse(@Autowired GrpcChannelFactory channels) {
-			SimpleGrpc.SimpleBlockingStub client = SimpleGrpc
-				.newBlockingStub(channels.createChannel("0.0.0.0:0", ChannelBuilderOptions.defaults()));
+			SimpleGrpc.SimpleBlockingStub client = SimpleGrpc.newBlockingStub(channels.createChannel("0.0.0.0:0"));
 			assertThat(assertThrows(StatusRuntimeException.class,
 					() -> client.sayHello(HelloRequest.newBuilder().setName("error").build()))
 				.getStatus()
@@ -75,8 +74,7 @@ class GrpcServerIntegrationTests {
 
 		@Test
 		void defaultErrorResponseIsUnknown(@Autowired GrpcChannelFactory channels) {
-			SimpleGrpc.SimpleBlockingStub client = SimpleGrpc
-				.newBlockingStub(channels.createChannel("0.0.0.0:0", ChannelBuilderOptions.defaults()));
+			SimpleGrpc.SimpleBlockingStub client = SimpleGrpc.newBlockingStub(channels.createChannel("0.0.0.0:0"));
 			assertThat(assertThrows(StatusRuntimeException.class,
 					() -> client.sayHello(HelloRequest.newBuilder().setName("internal").build()))
 				.getStatus()
@@ -91,8 +89,7 @@ class GrpcServerIntegrationTests {
 
 		@Test
 		void specificErrorResponse(@Autowired GrpcChannelFactory channels) {
-			SimpleGrpc.SimpleBlockingStub client = SimpleGrpc
-				.newBlockingStub(channels.createChannel("0.0.0.0:0", ChannelBuilderOptions.defaults()));
+			SimpleGrpc.SimpleBlockingStub client = SimpleGrpc.newBlockingStub(channels.createChannel("0.0.0.0:0"));
 			assertThat(assertThrows(StatusRuntimeException.class,
 					() -> client.sayHello(HelloRequest.newBuilder().setName("error").build()))
 				.getStatus()
@@ -101,8 +98,7 @@ class GrpcServerIntegrationTests {
 
 		@Test
 		void defaultErrorResponseIsUnknown(@Autowired GrpcChannelFactory channels) {
-			SimpleGrpc.SimpleBlockingStub client = SimpleGrpc
-				.newBlockingStub(channels.createChannel("0.0.0.0:0", ChannelBuilderOptions.defaults()));
+			SimpleGrpc.SimpleBlockingStub client = SimpleGrpc.newBlockingStub(channels.createChannel("0.0.0.0:0"));
 			assertThat(assertThrows(StatusRuntimeException.class,
 					() -> client.sayHello(HelloRequest.newBuilder().setName("internal").build()))
 				.getStatus()
@@ -119,8 +115,7 @@ class GrpcServerIntegrationTests {
 		@Test
 		void servesResponseToClientWithAnyIPv4AddressAndRandomPort(@Autowired GrpcChannelFactory channels,
 				@LocalGrpcPort int port) {
-			assertThatResponseIsServedToChannel(
-					channels.createChannel("0.0.0.0:" + port, ChannelBuilderOptions.defaults()));
+			assertThatResponseIsServedToChannel(channels.createChannel("0.0.0.0:" + port));
 		}
 
 	}
@@ -133,8 +128,7 @@ class GrpcServerIntegrationTests {
 		@Test
 		void servesResponseToClientWithAnyIPv4AddressAndRandomPort(@Autowired GrpcChannelFactory channels,
 				@LocalGrpcPort int port) {
-			assertThatResponseIsServedToChannel(
-					channels.createChannel("0.0.0.0:" + port, ChannelBuilderOptions.defaults()));
+			assertThatResponseIsServedToChannel(channels.createChannel("0.0.0.0:" + port));
 		}
 
 	}
@@ -147,8 +141,7 @@ class GrpcServerIntegrationTests {
 		@Test
 		void servesResponseToClientWithLocalhostAndRandomPort(@Autowired GrpcChannelFactory channels,
 				@LocalGrpcPort int port) {
-			assertThatResponseIsServedToChannel(
-					channels.createChannel("127.0.0.1:" + port, ChannelBuilderOptions.defaults()));
+			assertThatResponseIsServedToChannel(channels.createChannel("127.0.0.1:" + port));
 		}
 
 	}
@@ -162,8 +155,7 @@ class GrpcServerIntegrationTests {
 
 		@Test
 		void servesResponseToClientWithConfiguredChannel(@Autowired GrpcChannelFactory channels) {
-			assertThatResponseIsServedToChannel(
-					channels.createChannel("test-channel", ChannelBuilderOptions.defaults()));
+			assertThatResponseIsServedToChannel(channels.createChannel("test-channel"));
 		}
 
 	}
@@ -193,8 +185,7 @@ class GrpcServerIntegrationTests {
 
 		@Test
 		void clientChannelWithSsl(@Autowired GrpcChannelFactory channels) {
-			assertThatResponseIsServedToChannel(
-					channels.createChannel("test-channel", ChannelBuilderOptions.defaults()));
+			assertThatResponseIsServedToChannel(channels.createChannel("test-channel"));
 		}
 
 	}
@@ -212,8 +203,7 @@ class GrpcServerIntegrationTests {
 
 		@Test
 		void clientChannelWithSsl(@Autowired GrpcChannelFactory channels) {
-			assertThatResponseIsServedToChannel(
-					channels.createChannel("test-channel", ChannelBuilderOptions.defaults()));
+			assertThatResponseIsServedToChannel(channels.createChannel("test-channel"));
 		}
 
 	}
