@@ -12,7 +12,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.grpc.client.ChannelBuilderOptions;
 import org.springframework.grpc.client.GrpcChannelFactory;
 import org.springframework.grpc.test.LocalGrpcPort;
 import org.springframework.test.annotation.DirtiesContext;
@@ -53,8 +52,7 @@ public class DemoApplicationTests {
 		@Bean
 		@Lazy
 		SimpleGrpc.SimpleBlockingStub stub(GrpcChannelFactory channels, @LocalGrpcPort int port) {
-			return SimpleGrpc
-				.newBlockingStub(channels.createChannel("0.0.0.0:" + port, ChannelBuilderOptions.defaults()));
+			return SimpleGrpc.newBlockingStub(channels.createChannel("0.0.0.0:" + port));
 		}
 
 	}

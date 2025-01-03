@@ -13,7 +13,6 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.grpc.client.ChannelBuilderOptions;
 import org.springframework.grpc.client.GrpcChannelFactory;
 import org.springframework.grpc.sample.proto.HelloReply;
 import org.springframework.grpc.sample.proto.HelloRequest;
@@ -51,8 +50,7 @@ public class GrpcServerApplicationTests {
 		@Bean
 		@Lazy
 		SimpleGrpc.SimpleBlockingStub stub(GrpcChannelFactory channels, @LocalServerPort int port) {
-			return SimpleGrpc
-				.newBlockingStub(channels.createChannel("0.0.0.0:" + port, ChannelBuilderOptions.defaults()));
+			return SimpleGrpc.newBlockingStub(channels.createChannel("0.0.0.0:" + port));
 		}
 
 	}

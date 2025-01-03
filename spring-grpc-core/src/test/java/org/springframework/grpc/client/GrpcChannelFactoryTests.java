@@ -50,7 +50,7 @@ class GrpcChannelFactoryTests {
 			var customizer2 = mock(GrpcChannelBuilderCustomizer.class);
 			var channelFactory = new DefaultGrpcChannelFactory(List.of(customizer1, customizer2), mock());
 			channelFactory.setVirtualTargets(path -> path);
-			var channel = channelFactory.createChannel(channelName, ChannelBuilderOptions.defaults());
+			var channel = channelFactory.createChannel(channelName);
 			assertThat(channel).isNotNull();
 			var inOrder = inOrder(customizer1, customizer2);
 			inOrder.verify(customizer1).customize(anyString(), any(ManagedChannelBuilder.class));
@@ -95,7 +95,7 @@ class GrpcChannelFactoryTests {
 			var channelName = "localhost";
 			var channelFactory = new DefaultGrpcChannelFactory(List.of(), configurer);
 			channelFactory.setVirtualTargets(path -> path);
-			var channel = channelFactory.createChannel(channelName, ChannelBuilderOptions.defaults());
+			var channel = channelFactory.createChannel(channelName);
 			assertThat(channel).isNotNull();
 			verify(configurer).configureInterceptors(any(ManagedChannelBuilder.class),
 					assertArg((interceptors) -> assertThat(interceptors).isEmpty()), eq(false));
@@ -131,9 +131,8 @@ class GrpcChannelFactoryTests {
 			var channel = channelFactory.createChannel(channelName,
 					ChannelBuilderOptions.defaults().withCustomizer(customizer1));
 			assertThat(channel).isNotNull();
-			verify(customizer1).customize(anyString(), ArgumentMatchers.assertArg((builder) -> {
-				assertThat(builder).isInstanceOf(NettyChannelBuilder.class);
-			}));
+			verify(customizer1).customize(anyString(), ArgumentMatchers
+				.assertArg((builder) -> assertThat(builder).isInstanceOf(NettyChannelBuilder.class)));
 		}
 
 		@Test
@@ -145,9 +144,8 @@ class GrpcChannelFactoryTests {
 			var channel = channelFactory.createChannel(channelName,
 					ChannelBuilderOptions.defaults().withCustomizer(customizer1));
 			assertThat(channel).isNotNull();
-			verify(customizer1).customize(anyString(), ArgumentMatchers.assertArg((builder) -> {
-				assertThat(builder).isInstanceOf(io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder.class);
-			}));
+			verify(customizer1).customize(anyString(), ArgumentMatchers.assertArg((builder) -> assertThat(builder)
+				.isInstanceOf(io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder.class)));
 		}
 
 	}
