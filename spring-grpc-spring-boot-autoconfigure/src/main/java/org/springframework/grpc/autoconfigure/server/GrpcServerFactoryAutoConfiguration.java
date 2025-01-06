@@ -99,7 +99,7 @@ public class GrpcServerFactoryAutoConfiguration {
 
 	}
 
-	static class OnGrpcServletCondition extends AllNestedConditions {
+	public static class OnGrpcServletCondition extends AllNestedConditions {
 
 		OnGrpcServletCondition() {
 			super(ConfigurationPhase.PARSE_CONFIGURATION);
@@ -123,7 +123,7 @@ public class GrpcServerFactoryAutoConfiguration {
 
 	}
 
-	static class OnNativeGrpcServerCondition extends AnyNestedCondition {
+	public static class OnNativeGrpcServerCondition extends AnyNestedCondition {
 
 		OnNativeGrpcServerCondition() {
 			super(ConfigurationPhase.PARSE_CONFIGURATION);
