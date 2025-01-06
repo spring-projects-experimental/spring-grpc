@@ -23,13 +23,12 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.springframework.boot.security.servlet.ApplicationContextRequestMatcher;
-import org.springframework.context.ApplicationContext;
+import org.springframework.grpc.server.service.GrpcServiceDiscoverer;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.util.Assert;
 
-import io.grpc.BindableService;
 import jakarta.servlet.http.HttpServletRequest;
 
 /**
@@ -43,10 +42,11 @@ public class GrpcServletRequest {
 
 	/**
 	 * Returns a matcher that includes all gRPC services from the application context. The
-	 * {@link GrpcServletRequestMatcher#excluding(Class<?>...) excluding} method can be
-	 * used to remove specific services by class if required. For example:
+	 * {@link GrpcServletRequestMatcher#excluding(String...) excluding} method can be used
+	 * to remove specific services by name if required. For example:
+	 *
 	 * <pre class="code">
-	 * GrpcServletRequest.all().excluding(MyCustomService.class)
+	 * GrpcServletRequest.all().excluding("my-service")
 	 * </pre>
 	 * @return the configured {@link RequestMatcher}
 	 */
@@ -57,9 +57,10 @@ public class GrpcServletRequest {
 	/**
 	 * The request matcher used to match against resource locations.
 	 */
-	public static final class GrpcServletRequestMatcher extends ApplicationContextRequestMatcher<ApplicationContext> {
+	public static final class GrpcServletRequestMatcher
+			extends ApplicationContextRequestMatcher<GrpcServiceDiscoverer> {
 
-		private final Set<Class<?>> exclusions;
+		private final Set<String> exclusions;
 
 		private volatile RequestMatcher delegate;
 
@@ -67,8 +68,8 @@ public class GrpcServletRequest {
 			this(new HashSet<>());
 		}
 
-		private GrpcServletRequestMatcher(Set<Class<?>> exclusions) {
-			super(ApplicationContext.class);
+		private GrpcServletRequestMatcher(Set<String> exclusions) {
+			super(GrpcServiceDiscoverer.class);
 			this.exclusions = exclusions;
 		}
 
@@ -78,44 +79,43 @@ public class GrpcServletRequest {
 		 * @param rest additional services to exclude
 		 * @return a new {@link GrpcServletRequestMatcher}
 		 */
-		public GrpcServletRequestMatcher excluding(Class<?>... rest) {
+		public GrpcServletRequestMatcher excluding(String... rest) {
 			return excluding(Set.of(rest));
 		}
 
 		/**
 		 * Return a new {@link GrpcServletRequestMatcher} based on this one but excluding
 		 * the specified services.
-		 * @param exclusions additional services to exclude
+		 * @param exclusions additional service names to exclude
 		 * @return a new {@link GrpcServletRequestMatcher}
 		 */
-		public GrpcServletRequestMatcher excluding(Set<Class<?>> exclusions) {
+		public GrpcServletRequestMatcher excluding(Set<String> exclusions) {
 			Assert.notNull(exclusions, "Exclusions must not be null");
-			Set<Class<?>> subset = new LinkedHashSet<>(this.exclusions);
+			Set<String> subset = new LinkedHashSet<>(this.exclusions);
 			subset.addAll(exclusions);
 			return new GrpcServletRequestMatcher(subset);
 		}
 
 		@Override
-		protected void initialized(Supplier<ApplicationContext> context) {
+		protected void initialized(Supplier<GrpcServiceDiscoverer> context) {
 			List<RequestMatcher> matchers = getDelegateMatchers(context.get()).toList();
 			this.delegate = matchers.isEmpty() ? request -> false : new OrRequestMatcher(matchers);
 		}
 
-		private Stream<RequestMatcher> getDelegateMatchers(ApplicationContext context) {
+		private Stream<RequestMatcher> getDelegateMatchers(GrpcServiceDiscoverer context) {
 			return getPatterns(context).map(AntPathRequestMatcher::new);
 		}
 
-		private Stream<String> getPatterns(ApplicationContext context) {
-			return context.getBeanProvider(BindableService.class)
+		private Stream<String> getPatterns(GrpcServiceDiscoverer context) {
+			return context.findServices()
 				.stream()
 				.filter(service -> !this.exclusions.stream()
-					.anyMatch(type -> type.isAssignableFrom(service.getClass())))
-				.map(BindableService::bindService)
+					.anyMatch(type -> type.equals(service.getServiceDescriptor().getName())))
 				.map(service -> "/" + service.getServiceDescriptor().getName() + "/**");
 		}
 
 		@Override
-		protected boolean matches(HttpServletRequest request, Supplier<ApplicationContext> context) {
+		protected boolean matches(HttpServletRequest request, Supplier<GrpcServiceDiscoverer> context) {
 			return this.delegate.matches(request);
 		}
 

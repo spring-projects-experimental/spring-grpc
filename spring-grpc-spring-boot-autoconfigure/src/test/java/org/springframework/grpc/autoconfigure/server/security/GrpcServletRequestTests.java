@@ -22,6 +22,8 @@ import static org.mockito.Mockito.when;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.grpc.autoconfigure.server.security.GrpcServletRequest.GrpcServletRequestMatcher;
+import org.springframework.grpc.server.service.DefaultGrpcServiceDiscoverer;
+import org.springframework.grpc.server.service.GrpcServiceDiscoverer;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.web.context.WebApplicationContext;
@@ -40,6 +42,8 @@ public class GrpcServletRequestTests {
 		ServerServiceDefinition serviceDefinition = ServerServiceDefinition.builder("my-service").build();
 		when(service.bindService()).thenReturn(serviceDefinition);
 		this.context.registerBean(BindableService.class, () -> service);
+		this.context.registerBean(GrpcServiceDiscoverer.class,
+				() -> new DefaultGrpcServiceDiscoverer((input, info) -> input.bindService(), context));
 	}
 
 	@Test
@@ -58,7 +62,7 @@ public class GrpcServletRequestTests {
 
 	@Test
 	void requestMatcherExcludes() {
-		GrpcServletRequestMatcher matcher = GrpcServletRequest.all().excluding(MockService.class);
+		GrpcServletRequestMatcher matcher = GrpcServletRequest.all().excluding("my-service");
 		MockHttpServletRequest request = mockRequest("/my-service/Method");
 		assertThat(matcher.matches(request)).isFalse();
 	};
