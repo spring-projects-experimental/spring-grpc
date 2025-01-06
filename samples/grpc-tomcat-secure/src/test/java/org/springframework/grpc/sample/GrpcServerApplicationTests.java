@@ -3,6 +3,8 @@ package org.springframework.grpc.sample;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.List;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.jupiter.api.Test;
@@ -69,10 +71,8 @@ public class GrpcServerApplicationTests {
 		@Bean
 		@Lazy
 		SimpleGrpc.SimpleBlockingStub basic(GrpcChannelFactory channels, @LocalServerPort int port) {
-			return SimpleGrpc.newBlockingStub(channels.createChannel("0.0.0.0:" + port,
-					ChannelBuilderOptions.defaults()
-						.withCustomizer((authority, channel) -> channel
-							.intercept(new BasicAuthenticationInterceptor("user", "user")))));
+			return SimpleGrpc.newBlockingStub(channels.createChannel("0.0.0.0:" + port, ChannelBuilderOptions.defaults()
+				.withInterceptors(List.of(new BasicAuthenticationInterceptor("user", "user")))));
 		}
 
 		@Bean
