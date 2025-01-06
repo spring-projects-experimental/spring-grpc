@@ -19,8 +19,7 @@ import com.example.demo.proto.HelloReply;
 import com.example.demo.proto.HelloRequest;
 import com.example.demo.proto.SimpleGrpc;
 
-@SpringBootTest(properties = { "spring.grpc.client.channels.test.address=static://localhost:0",
-		"spring.grpc.inprocess.enabled=false" })
+@SpringBootTest(properties = { "spring.grpc.client.channels.test.address=static://localhost:0" })
 public class DemoApplicationTests {
 
 	private static Log log = LogFactory.getLog(DemoApplicationTests.class);

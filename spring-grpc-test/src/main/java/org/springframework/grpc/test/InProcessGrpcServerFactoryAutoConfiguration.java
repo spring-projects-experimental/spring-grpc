@@ -35,7 +35,7 @@ import io.grpc.BindableService;
 import io.grpc.inprocess.InProcessServerBuilder;
 
 @AutoConfiguration(before = { GrpcServerFactoryAutoConfiguration.class, GrpcClientAutoConfiguration.class })
-@ConditionalOnProperty(prefix = "spring.grpc.inprocess", name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "spring.grpc.inprocess", name = "enabled", havingValue = "true")
 @ConditionalOnClass(BindableService.class)
 @ConditionalOnNotWebApplication
 @Import(ClientInterceptorsConfiguration.class)

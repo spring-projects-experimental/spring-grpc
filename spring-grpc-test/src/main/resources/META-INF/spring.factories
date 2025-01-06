@@ -1,3 +1,7 @@
 # Application Context Initializers
 org.springframework.context.ApplicationContextInitializer=\
 org.springframework.grpc.test.ServerPortInfoApplicationContextInitializer
+
+# Environment Customizer Factories
+org.springframework.test.context.ContextCustomizerFactory=\
+org.springframework.grpc.test.InProcessTransportContextCustomizerFactory
