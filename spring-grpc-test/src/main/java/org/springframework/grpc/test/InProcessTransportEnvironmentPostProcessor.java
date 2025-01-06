@@ -16,9 +16,13 @@
 package org.springframework.grpc.test;
 
 import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.SpringApplicationAotProcessor;
 import org.springframework.boot.env.EnvironmentPostProcessor;
+import org.springframework.core.NativeDetector;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
@@ -27,6 +31,9 @@ public class InProcessTransportEnvironmentPostProcessor implements EnvironmentPo
 
 	@Override
 	public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
+		if (!EnablementDeducer.inTest(Thread.currentThread())) {
+			return;
+		}
 		if (AnnotationUtils.findAnnotation(application.getMainApplicationClass(),
 				AutoConfigureInProcessTransport.class) == null) {
 			return;
@@ -34,6 +41,56 @@ public class InProcessTransportEnvironmentPostProcessor implements EnvironmentPo
 		MapPropertySource inProcessTransportPropertySource = new MapPropertySource("inProcessTransportPropertySource",
 				Collections.singletonMap("spring.grpc.inprocess.enabled", "true"));
 		environment.getPropertySources().addFirst(inProcessTransportPropertySource);
+	}
+
+	/**
+	 * Copied from Spring Boot's {@code DevToolsEnablementDeducer}.
+	 */
+	static final class EnablementDeducer {
+
+		private static final Set<String> INCLUDED_STACK_ELEMENTS;
+
+		static {
+			Set<String> included = new LinkedHashSet<>();
+			included.add("org.junit.runners.");
+			included.add("org.junit.platform.");
+			included.add("org.springframework.boot.test.");
+			included.add(SpringApplicationAotProcessor.class.getName());
+			included.add("cucumber.runtime.");
+			INCLUDED_STACK_ELEMENTS = Collections.unmodifiableSet(included);
+		}
+
+		private EnablementDeducer() {
+		}
+
+		/**
+		 * Checks if a specific {@link StackTraceElement} in the current thread's
+		 * stacktrace shows that we are being launched from a test, not a main method, and
+		 * not in a native image.
+		 * @param thread the current thread
+		 * @return {@code true} if should be enabled
+		 */
+		public static boolean inTest(Thread thread) {
+			if (NativeDetector.inNativeImage()) {
+				return false;
+			}
+			for (StackTraceElement element : thread.getStackTrace()) {
+				if (isIncludedStackElement(element)) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		private static boolean isIncludedStackElement(StackTraceElement element) {
+			for (String included : INCLUDED_STACK_ELEMENTS) {
+				if (element.getClassName().startsWith(included)) {
+					return true;
+				}
+			}
+			return false;
+		}
+
 	}
 
 }
