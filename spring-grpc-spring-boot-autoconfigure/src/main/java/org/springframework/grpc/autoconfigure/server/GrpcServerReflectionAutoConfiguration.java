@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Bean;
 
 import io.grpc.BindableService;
 import io.grpc.protobuf.services.ProtoReflectionService;
+import io.grpc.protobuf.services.ProtoReflectionServiceV1;
 
 /**
  * {@link EnableAutoConfiguration Auto-configuration} for gRPC Reflection service
@@ -24,7 +25,7 @@ public class GrpcServerReflectionAutoConfiguration {
 
 	@Bean
 	public BindableService serverReflection() {
-		return ProtoReflectionService.newInstance();
+		return ProtoReflectionServiceV1.newInstance();
 	}
 
 }
