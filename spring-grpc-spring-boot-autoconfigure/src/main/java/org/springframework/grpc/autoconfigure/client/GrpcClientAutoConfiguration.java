@@ -23,11 +23,10 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.ssl.SslBundles;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.grpc.autoconfigure.client.GrpcClientProperties.NamedChannel;
 import org.springframework.grpc.autoconfigure.common.codec.GrpcCodecConfiguration;
 import org.springframework.grpc.client.ChannelCredentialsProvider;
 import org.springframework.grpc.client.GrpcChannelBuilderCustomizer;
-import org.springframework.grpc.client.VirtualTargets;
+import org.springframework.grpc.client.NamedChannelRegistry;
 
 import io.grpc.CompressorRegistry;
 import io.grpc.DecompressorRegistry;
@@ -41,15 +40,22 @@ import io.grpc.ManagedChannelBuilder;
 public class GrpcClientAutoConfiguration {
 
 	@Bean
+	@ConditionalOnMissingBean
+	NamedChannelRegistry namedChannelRegistry(GrpcClientProperties properties) {
+		return new NamedChannelRegistry(properties.getDefaultChannel(), properties.getChannels());
+	}
+
+	@Bean
 	@ConditionalOnMissingBean(ChannelCredentialsProvider.class)
-	NamedChannelCredentialsProvider channelCredentialsProvider(GrpcClientProperties channels, SslBundles bundles) {
-		return new NamedChannelCredentialsProvider(bundles, channels);
+	NamedChannelCredentialsProvider channelCredentialsProvider(SslBundles bundles,
+			NamedChannelRegistry channelRegistry) {
+		return new NamedChannelCredentialsProvider(bundles, channelRegistry);
 	}
 
 	@Bean
 	<T extends ManagedChannelBuilder<T>> GrpcChannelBuilderCustomizer<T> clientPropertiesChannelCustomizer(
-			GrpcClientProperties properties) {
-		return new ClientPropertiesChannelBuilderCustomizer<>(properties);
+			NamedChannelRegistry channelRegistry) {
+		return new ClientPropertiesChannelBuilderCustomizer<>(channelRegistry);
 	}
 
 	@ConditionalOnBean(CompressorRegistry.class)
@@ -70,22 +76,6 @@ public class GrpcClientAutoConfiguration {
 	@Bean
 	ChannelBuilderCustomizers channelBuilderCustomizers(ObjectProvider<GrpcChannelBuilderCustomizer<?>> customizers) {
 		return new ChannelBuilderCustomizers(customizers.orderedStream().toList());
-	}
-
-	static class NamedChannelVirtualTargets implements VirtualTargets {
-
-		private final GrpcClientProperties channels;
-
-		NamedChannelVirtualTargets(GrpcClientProperties channels) {
-			this.channels = channels;
-		}
-
-		@Override
-		public String getTarget(String authority) {
-			NamedChannel channel = this.channels.getChannel(authority);
-			return this.channels.getTarget(channel);
-		}
-
 	}
 
 }

@@ -17,17 +17,18 @@
 package org.springframework.grpc.autoconfigure.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.entry;
 
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.boot.context.properties.source.MapConfigurationPropertySource;
+import org.springframework.grpc.client.NamedChannel;
 import org.springframework.grpc.client.NegotiationType;
 import org.springframework.util.unit.DataSize;
 
@@ -48,77 +49,98 @@ class GrpcClientPropertiesTests {
 	class BindPropertiesAPI {
 
 		@Test
-		void withDefaultValues() {
-			Map<String, String> map = new HashMap<>();
-			// we have to at least bind one property or bind() fails
-			map.put("spring.grpc.client.default-channel.enable-keep-alive", "false");
-			GrpcClientProperties properties = bindProperties(map);
-			var defaultChannel = properties.getDefaultChannel();
-			assertThat(defaultChannel.getAddress()).isEqualTo("static://localhost:9090");
-			assertThat(defaultChannel.getDefaultLoadBalancingPolicy()).isEqualTo("round_robin");
-			assertThat(defaultChannel.getHealth().isEnabled()).isFalse();
-			assertThat(defaultChannel.getHealth().getServiceName()).isNull();
-			assertThat(defaultChannel.getNegotiationType()).isEqualTo(NegotiationType.PLAINTEXT);
-			assertThat(defaultChannel.isEnableKeepAlive()).isFalse();
-			assertThat(defaultChannel.getIdleTimeout()).isEqualTo(Duration.ofSeconds(20));
-			assertThat(defaultChannel.getKeepAliveTime()).isEqualTo(Duration.ofMinutes(5));
-			assertThat(defaultChannel.getKeepAliveTimeout()).isEqualTo(Duration.ofSeconds(20));
-			assertThat(defaultChannel.isEnableKeepAlive()).isFalse();
-			assertThat(defaultChannel.isKeepAliveWithoutCalls()).isFalse();
-			assertThat(defaultChannel.getMaxInboundMessageSize()).isEqualTo(DataSize.ofBytes(4194304));
-			assertThat(defaultChannel.getMaxInboundMetadataSize()).isEqualTo(DataSize.ofBytes(8192));
-			assertThat(defaultChannel.getUserAgent()).isNull();
-			assertThat(defaultChannel.isSecure()).isTrue();
-			assertThat(defaultChannel.getSsl().isEnabled()).isFalse();
-			assertThat(defaultChannel.getSsl().getBundle()).isNull();
+		void defaultChannelWithDefaultValues() {
+			this.withDefaultValues("default-channel", GrpcClientProperties::getDefaultChannel);
 		}
 
 		@Test
-		void withSpecifiedValues() {
+		void specificChannelWithDefaultValues() {
+			this.withDefaultValues("channels.c1", (p) -> p.getChannels().get("c1"));
+		}
+
+		private void withDefaultValues(String channelName,
+				Function<GrpcClientProperties, NamedChannel> channelFromProperties) {
 			Map<String, String> map = new HashMap<>();
-			map.put("spring.grpc.client.default-channel.address", "static://my-server:8888");
-			map.put("spring.grpc.client.default-channel.default-load-balancing-policy", "pick_first");
-			map.put("spring.grpc.client.default-channel.health.enabled", "true");
-			map.put("spring.grpc.client.default-channel.health.service-name", "my-service");
-			map.put("spring.grpc.client.default-channel.negotiation-type", "plaintext_upgrade");
-			map.put("spring.grpc.client.default-channel.enable-keep-alive", "true");
-			map.put("spring.grpc.client.default-channel.idle-timeout", "1m");
-			map.put("spring.grpc.client.default-channel.keep-alive-time", "200s");
-			map.put("spring.grpc.client.default-channel.keep-alive-timeout", "60000ms");
-			map.put("spring.grpc.client.default-channel.keep-alive-without-calls", "true");
-			map.put("spring.grpc.client.default-channel.max-inbound-message-size", "200MB");
-			map.put("spring.grpc.client.default-channel.max-inbound-metadata-size", "1GB");
-			map.put("spring.grpc.client.default-channel.user-agent", "me");
-			map.put("spring.grpc.client.default-channel.secure", "false");
-			map.put("spring.grpc.client.default-channel.ssl.enabled", "true");
-			map.put("spring.grpc.client.default-channel.ssl.bundle", "my-bundle");
+			// we have to at least bind one property or bind() fails
+			map.put("spring.grpc.client.%s.enable-keep-alive".formatted(channelName), "false");
 			GrpcClientProperties properties = bindProperties(map);
-			var defaultChannel = properties.getDefaultChannel();
-			assertThat(defaultChannel.getAddress()).isEqualTo("static://my-server:8888");
-			assertThat(defaultChannel.getDefaultLoadBalancingPolicy()).isEqualTo("pick_first");
-			assertThat(defaultChannel.getHealth().isEnabled()).isTrue();
-			assertThat(defaultChannel.getHealth().getServiceName()).isEqualTo("my-service");
-			assertThat(defaultChannel.getNegotiationType()).isEqualTo(NegotiationType.PLAINTEXT_UPGRADE);
-			assertThat(defaultChannel.isEnableKeepAlive()).isTrue();
-			assertThat(defaultChannel.getIdleTimeout()).isEqualTo(Duration.ofMinutes(1));
-			assertThat(defaultChannel.getKeepAliveTime()).isEqualTo(Duration.ofSeconds(200));
-			assertThat(defaultChannel.getKeepAliveTimeout()).isEqualTo(Duration.ofMillis(60000));
-			assertThat(defaultChannel.isEnableKeepAlive()).isTrue();
-			assertThat(defaultChannel.isKeepAliveWithoutCalls()).isTrue();
-			assertThat(defaultChannel.getMaxInboundMessageSize()).isEqualTo(DataSize.ofMegabytes(200));
-			assertThat(defaultChannel.getMaxInboundMetadataSize()).isEqualTo(DataSize.ofGigabytes(1));
-			assertThat(defaultChannel.getUserAgent()).isEqualTo("me");
-			assertThat(defaultChannel.isSecure()).isFalse();
-			assertThat(defaultChannel.getSsl().isEnabled()).isTrue();
-			assertThat(defaultChannel.getSsl().getBundle()).isEqualTo("my-bundle");
+			var channel = channelFromProperties.apply(properties);
+			assertThat(channel.getAddress()).isEqualTo("static://localhost:9090");
+			assertThat(channel.getDefaultLoadBalancingPolicy()).isEqualTo("round_robin");
+			assertThat(channel.getHealth().isEnabled()).isFalse();
+			assertThat(channel.getHealth().getServiceName()).isNull();
+			assertThat(channel.getNegotiationType()).isEqualTo(NegotiationType.PLAINTEXT);
+			assertThat(channel.isEnableKeepAlive()).isFalse();
+			assertThat(channel.getIdleTimeout()).isEqualTo(Duration.ofSeconds(20));
+			assertThat(channel.getKeepAliveTime()).isEqualTo(Duration.ofMinutes(5));
+			assertThat(channel.getKeepAliveTimeout()).isEqualTo(Duration.ofSeconds(20));
+			assertThat(channel.isEnableKeepAlive()).isFalse();
+			assertThat(channel.isKeepAliveWithoutCalls()).isFalse();
+			assertThat(channel.getMaxInboundMessageSize()).isEqualTo(DataSize.ofBytes(4194304));
+			assertThat(channel.getMaxInboundMetadataSize()).isEqualTo(DataSize.ofBytes(8192));
+			assertThat(channel.getUserAgent()).isNull();
+			assertThat(channel.isSecure()).isTrue();
+			assertThat(channel.getSsl().isEnabled()).isFalse();
+			assertThat(channel.getSsl().getBundle()).isNull();
+		}
+
+		@Test
+		void defaultChannelWithSpecifiedValues() {
+			this.withSpecifiedValues("default-channel", GrpcClientProperties::getDefaultChannel);
+		}
+
+		@Test
+		void specificChannelWithSpecifiedValues() {
+			this.withSpecifiedValues("channels.c1", (p) -> p.getChannels().get("c1"));
+		}
+
+		private void withSpecifiedValues(String channelName,
+				Function<GrpcClientProperties, NamedChannel> channelFromProperties) {
+			Map<String, String> map = new HashMap<>();
+			var propPrefix = "spring.grpc.client.%s.".formatted(channelName);
+			map.put("%s.address".formatted(propPrefix), "static://my-server:8888");
+			map.put("%s.default-load-balancing-policy".formatted(propPrefix), "pick_first");
+			map.put("%s.health.enabled".formatted(propPrefix), "true");
+			map.put("%s.health.service-name".formatted(propPrefix), "my-service");
+			map.put("%s.negotiation-type".formatted(propPrefix), "plaintext_upgrade");
+			map.put("%s.enable-keep-alive".formatted(propPrefix), "true");
+			map.put("%s.idle-timeout".formatted(propPrefix), "1m");
+			map.put("%s.keep-alive-time".formatted(propPrefix), "200s");
+			map.put("%s.keep-alive-timeout".formatted(propPrefix), "60000ms");
+			map.put("%s.keep-alive-without-calls".formatted(propPrefix), "true");
+			map.put("%s.max-inbound-message-size".formatted(propPrefix), "200MB");
+			map.put("%s.max-inbound-metadata-size".formatted(propPrefix), "1GB");
+			map.put("%s.user-agent".formatted(propPrefix), "me");
+			map.put("%s.secure".formatted(propPrefix), "false");
+			map.put("%s.ssl.enabled".formatted(propPrefix), "true");
+			map.put("%s.ssl.bundle".formatted(propPrefix), "my-bundle");
+			GrpcClientProperties properties = bindProperties(map);
+			var channel = channelFromProperties.apply(properties);
+			assertThat(channel.getAddress()).isEqualTo("static://my-server:8888");
+			assertThat(channel.getDefaultLoadBalancingPolicy()).isEqualTo("pick_first");
+			assertThat(channel.getHealth().isEnabled()).isTrue();
+			assertThat(channel.getHealth().getServiceName()).isEqualTo("my-service");
+			assertThat(channel.getNegotiationType()).isEqualTo(NegotiationType.PLAINTEXT_UPGRADE);
+			assertThat(channel.isEnableKeepAlive()).isTrue();
+			assertThat(channel.getIdleTimeout()).isEqualTo(Duration.ofMinutes(1));
+			assertThat(channel.getKeepAliveTime()).isEqualTo(Duration.ofSeconds(200));
+			assertThat(channel.getKeepAliveTimeout()).isEqualTo(Duration.ofMillis(60000));
+			assertThat(channel.isEnableKeepAlive()).isTrue();
+			assertThat(channel.isKeepAliveWithoutCalls()).isTrue();
+			assertThat(channel.getMaxInboundMessageSize()).isEqualTo(DataSize.ofMegabytes(200));
+			assertThat(channel.getMaxInboundMetadataSize()).isEqualTo(DataSize.ofGigabytes(1));
+			assertThat(channel.getUserAgent()).isEqualTo("me");
+			assertThat(channel.isSecure()).isFalse();
+			assertThat(channel.getSsl().isEnabled()).isTrue();
+			assertThat(channel.getSsl().getBundle()).isEqualTo("my-bundle");
 		}
 
 		@Test
 		void withoutKeepAliveUnitsSpecified() {
 			Map<String, String> map = new HashMap<>();
-			map.put("spring.grpc.client.default-channel.idle-timeout", "1");
-			map.put("spring.grpc.client.default-channel.keep-alive-time", "60");
-			map.put("spring.grpc.client.default-channel.keep-alive-timeout", "5");
+			map.put("spring.grpc.client.default-channel.idle-timeout", "1000");
+			map.put("spring.grpc.client.default-channel.keep-alive-time", "60000");
+			map.put("spring.grpc.client.default-channel.keep-alive-timeout", "5000");
 			GrpcClientProperties properties = bindProperties(map);
 			var defaultChannel = properties.getDefaultChannel();
 			assertThat(defaultChannel.getIdleTimeout()).isEqualTo(Duration.ofSeconds(1));
@@ -135,82 +157,6 @@ class GrpcClientPropertiesTests {
 			var defaultChannel = properties.getDefaultChannel();
 			assertThat(defaultChannel.getMaxInboundMessageSize()).isEqualTo(DataSize.ofBytes(1000));
 			assertThat(defaultChannel.getMaxInboundMetadataSize()).isEqualTo(DataSize.ofBytes(256));
-		}
-
-	}
-
-	@Nested
-	class CopyDefaultsAPI {
-
-		@Test
-		void withNoUserSpecifiedValues() {
-			GrpcClientProperties properties = new GrpcClientProperties();
-			var defaultChannel = properties.getDefaultChannel();
-			var newChannel = defaultChannel.copy();
-			assertThat(newChannel).usingRecursiveComparison().isEqualTo(defaultChannel);
-		}
-
-	}
-
-	@Nested
-	class GetChannelAPI {
-
-		@Test
-		void withDefaultNameReturnsDefaultChannel() {
-			GrpcClientProperties properties = new GrpcClientProperties();
-			var defaultChannel = properties.getDefaultChannel();
-			assertThat(properties.getChannel("default")).isSameAs(defaultChannel);
-			assertThat(properties.getChannels()).hasSize(0);
-		}
-
-		@Test
-		void withUnknownNameReturnsNewChannelWithCopiedDefaults() {
-			GrpcClientProperties properties = new GrpcClientProperties();
-			var defaultChannel = properties.getDefaultChannel();
-			defaultChannel.setAddress("static://my-server:9999");
-			defaultChannel.setDefaultLoadBalancingPolicy("custom");
-			defaultChannel.getHealth().setEnabled(true);
-			defaultChannel.getHealth().setServiceName("custom-service");
-			defaultChannel.setEnableKeepAlive(true);
-			defaultChannel.setIdleTimeout(Duration.ofMinutes(1));
-			defaultChannel.setKeepAliveTime(Duration.ofMinutes(4));
-			defaultChannel.setKeepAliveTimeout(Duration.ofMinutes(6));
-			defaultChannel.setKeepAliveWithoutCalls(true);
-			defaultChannel.setMaxInboundMessageSize(DataSize.ofMegabytes(100));
-			defaultChannel.setMaxInboundMetadataSize(DataSize.ofMegabytes(200));
-			defaultChannel.setUserAgent("me");
-			defaultChannel.getSsl().setEnabled(true);
-			defaultChannel.getSsl().setBundle("custom-bundle");
-			var newChannel = properties.getChannel("new");
-			assertThat(newChannel).usingRecursiveComparison().ignoringFields("address").isEqualTo(defaultChannel);
-			assertThat(properties.getChannels()).containsExactly(entry("new", newChannel));
-		}
-
-	}
-
-	@Nested
-	class GetTargetAPI {
-
-		@Test
-		void withCustomChannelReturnsCustomChannelAddress() {
-			Map<String, String> map = new HashMap<>();
-			map.put("spring.grpc.client.channels.custom.address", "static://my-server:8888");
-			GrpcClientProperties properties = bindProperties(map);
-			assertThat(properties.getTarget("custom")).isEqualTo("my-server:8888");
-			assertThat(properties.getChannels()).containsOnlyKeys("custom");
-		}
-
-		@Test
-		void withCustomChannelReturnsDuplicateEntryMap() {
-			Map<String, String> map = new HashMap<>();
-			map.put("spring.grpc.client.channels.custom.address", "static://my-server:8888");
-			GrpcClientProperties properties = bindProperties(map);
-			GrpcClientAutoConfiguration.NamedChannelVirtualTargets virtualTargets = new GrpcClientAutoConfiguration.NamedChannelVirtualTargets(
-					properties);
-			var address = virtualTargets.getTarget("custom");
-			assertThat(address).isEqualTo("my-server:8888");
-			assertThat(properties.getTarget("custom")).isEqualTo("my-server:8888");
-			assertThat(properties.getChannels()).containsOnlyKeys("custom");
 		}
 
 	}
