@@ -15,8 +15,6 @@
  */
 package org.springframework.grpc.autoconfigure.server.security;
 
-import java.util.concurrent.Executors;
-
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -31,12 +29,12 @@ import org.springframework.grpc.server.ServerBuilderCustomizer;
 import org.springframework.grpc.server.exception.GrpcExceptionHandler;
 import org.springframework.grpc.server.security.SecurityContextServerInterceptor;
 import org.springframework.grpc.server.security.SecurityGrpcExceptionHandler;
-import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.security.concurrent.DelegatingSecurityContextExecutor;
 import org.springframework.security.config.ObjectPostProcessor;
 import org.springframework.security.web.SecurityFilterChain;
 
 import io.grpc.ServerBuilder;
+import io.grpc.internal.GrpcUtil;
 
 @ConditionalOnClass(ObjectPostProcessor.class)
 @AutoConfiguration(before = GrpcExceptionHandlerAutoConfiguration.class, after = SecurityAutoConfiguration.class)
@@ -64,10 +62,9 @@ public class GrpcSecurityAutoConfiguration {
 		}
 
 		@Bean
-		public <T extends ServerBuilder<T>> ServerBuilderCustomizer<T> securityContextCustomizer() {
-			// TODO: configure the thread pool via GrpcServerProperties?
-			return (serverBuilder) -> serverBuilder.executor(new DelegatingSecurityContextExecutor(
-					Executors.newCachedThreadPool(new CustomizableThreadFactory("grpc-server-"))));
+		public <T extends ServerBuilder<T>> ServerBuilderCustomizer<T> securityContextExecutorCustomizer() {
+			return (serverBuilder) -> serverBuilder
+					.executor(new DelegatingSecurityContextExecutor(GrpcUtil.SHARED_CHANNEL_EXECUTOR.create()));
 		}
 
 	}
