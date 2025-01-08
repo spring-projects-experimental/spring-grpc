@@ -201,3 +201,46 @@ IMPORTANT: The per-channel interceptors you pass in must either be bean instance
 == Observability
 
 Spring gRPC provides an autoconfigured interceptor that can be used to provide observability to your gRPC clients.
+
+== Security
+
+If your remote gRPC server expects requests to be authenticated you will need to configure the client to provide authentication credentials.
+
+=== Mutual TLS
+
+Mutual TLS (mTLS) is a security protocol that requires both the client and the server to present certificates to each other.
+A Spring gRPC client can use mTLS by configuring the client in `application.properties`.
+The mechanism is through the use of https://docs.spring.io/spring-boot/reference/features/ssl.html#features.ssl.bundles[SSL Bundles] (from Spring Boot).
+Here's an example:
+
+[source,properties]
+----
+spring.grpc.client.channels.my-channel.ssl.bundle=sslclient
+spring.grpc.client.channels.my-channel.negotiation-type=TLS
+spring.ssl.bundle.jks.sslclient.keystore.location=classpath:client.jks
+spring.ssl.bundle.jks.sslclient.keystore.password=secret
+spring.ssl.bundle.jks.sslclient.keystore.type=JKS
+spring.ssl.bundle.jks.sslclient.key.password=password
+----
+
+The first two lines configure a channel named `my-channel` so that it has an SSL bundle named `sslclient`.
+The rest is the configuration of the SSL bundle itself, in this case using JKS encoding (other options are available).
+
+=== HTTP Headers
+
+Spring gRPC provides a couple of interceptor that can be used to provide security to your gRPC clients.
+There is one for Basic HHTP authentication and one for OAuth2 (bearer tokens).
+Here's an example of creating a channel that uses Basic HTTP authentication:
+
+[source,java]
+----
+@Bean
+@Lazy
+Channel basic(GrpcChannelFactory channels) {
+	return channels.createChannel("my-channel", ChannelBuilderOptions.defaults()
+		.withInterceptors(List.of(new BasicAuthenticationInterceptor("user", "password"))));
+}
+----
+
+Usage of the bearer token interceptor is similar.
+You can look at the implementation of those interceptors to see how to create your own for custom headers.

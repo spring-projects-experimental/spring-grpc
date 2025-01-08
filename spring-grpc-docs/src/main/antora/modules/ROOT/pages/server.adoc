@@ -163,3 +163,67 @@ A `GrpcExceptionHandler` can be used to handle exceptions of a specific type, re
 If you include `spring-grpc-test` in your project, your gRPC server in a `@SpringBootTest` will be started in-process (i.e. not listening on a network port).
 All clients that connect to any server via the autoconfigured `GrpcChannelFactory` will be able to connect to it.
 You can switch the in-process server off by setting `spring.grpc.in-process.enabled` to `false`.
+
+== Security
+
+== Netty
+
+The netty-based server supports TLS and mTLS out of the box.
+To configure the server you can configure an SSL Bundle in the `application.properties` or `application.yml` file.
+An example would be:
+
+[source,properties]
+----
+spring.grpc.server.ssl.bundle=ssltest
+spring.ssl.bundle.jks.ssltest.keystore.location=classpath:test.jks
+spring.ssl.bundle.jks.ssltest.keystore.password=secret
+spring.ssl.bundle.jks.ssltest.keystore.type=JKS
+spring.ssl.bundle.jks.ssltest.key.password=password
+----
+
+Here we configure a bundle named "ssltest" that uses a JKS keystore, similar to what you do with TLS support for https://docs.spring.io/spring-boot/how-to/webserver.html#howto.webserver.configure-ssl[Spring Boot in other areas].
+It is then applied to the gRPC server using the `spring.grpc.server.ssl.bundle` property.
+To use self-signed certificates, for testing purposes only, you also need to set `spring.grpc.server.ssl.secure=false`.
+
+== Servlet
+
+The servlet-based server supports any security configuration that the servlet container supports, including Spring Security.
+This means that you can easily implement your favourite authentication and authorization mechanisms.
+The server will reject unauthenticated requests with a 401 status code and unauthenticated requests with an invalid token with a 403 status code, as with a normal HTTP API.
+It will also send an appropriate `WWW-Authenticate` header, e.g. with the value `Bearer` to indicate that it is expecting a token (for example).
+The gRPC response will also contain a `Status` with the appropriate error code and message.
+For authorization checking, e.g. role-based access control, your `BindableService` beans can be annotated with `@PreAuthorize`.
+
+N.B. if you customize the gRPC server call executors, you will need to ensure that you wrap them in a `DelegatingSecurityContextExecutor` (from Spring Security).
+Spring gRPC handles this for the default configuration.
+
+Spring gRPC will automatically configure the gRPC server interceptors, and https://docs.spring.io/spring-boot/reference/web/spring-security.html[Spring Boot will provide defaults] for an `AuthenticationManager` and a `UserDetailsService`.
+Spring Boot will also provide default configuration for an OAuth2 resource server, if you set the classpath up correctly (following the https://docs.spring.io/spring-boot/reference/web/spring-security.html#web.security.oauth2.server[Spring Boot documentation]) which will be used to validate the token.
+You will want to provide your own `SecurityFilterChain` because the one provided by Spring Boot will enable CSRF protection for all endpoints, which is not compatible with gRPC.
+Here's an example with HTTP Basic authentication:
+
+[source,java]
+----
+@Bean
+public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+	return http.httpBasic(Customizer.withDefaults())
+		.authorizeHttpRequests((requests) -> requests.anyRequest().authenticated())
+		.csrf(csrf -> csrf.disable())
+		.build();
+}
+----
+
+Disabling CSRF is fine if you have no other HTTP endpoints, but if you do you will need to be careful to disable CSRF protection for gRPC requests.
+To help you do that you can use a `GrpcServletRequest` to check if the request is a gRPC request and disable CSRF protection for it.
+Example:
+
+[source,java]
+----
+@Bean
+public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+	return http
+		... // configure endpoint paths and authentication patterns
+		.csrf(csrf -> csrf.ignoringRequestMatchers(GrpcServletRequest.all()))
+		.build();
+}
+----
