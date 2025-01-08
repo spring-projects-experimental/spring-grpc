@@ -64,7 +64,7 @@ public class GrpcSecurityAutoConfiguration {
 		@Bean
 		public <T extends ServerBuilder<T>> ServerBuilderCustomizer<T> securityContextExecutorCustomizer() {
 			return (serverBuilder) -> serverBuilder
-					.executor(new DelegatingSecurityContextExecutor(GrpcUtil.SHARED_CHANNEL_EXECUTOR.create()));
+				.executor(new DelegatingSecurityContextExecutor(GrpcUtil.SHARED_CHANNEL_EXECUTOR.create()));
 		}
 
 	}
