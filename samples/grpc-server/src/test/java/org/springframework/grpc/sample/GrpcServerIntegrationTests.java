@@ -23,22 +23,27 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.grpc.autoconfigure.server.GrpcServerProperties;
 import org.springframework.grpc.client.ChannelBuilderOptions;
 import org.springframework.grpc.client.GrpcChannelFactory;
 import org.springframework.grpc.sample.proto.HelloReply;
 import org.springframework.grpc.sample.proto.HelloRequest;
 import org.springframework.grpc.sample.proto.SimpleGrpc;
+import org.springframework.grpc.server.GlobalServerInterceptor;
 import org.springframework.grpc.server.GrpcServerFactory;
 import org.springframework.grpc.test.AutoConfigureInProcessTransport;
 import org.springframework.grpc.test.LocalGrpcPort;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
+import io.grpc.ForwardingServerCallListener;
 import io.grpc.ManagedChannel;
+import io.grpc.ServerCall.Listener;
+import io.grpc.ServerInterceptor;
 import io.grpc.Status.Code;
 import io.grpc.StatusRuntimeException;
 import io.grpc.netty.NettyChannelBuilder;
@@ -82,6 +87,64 @@ class GrpcServerIntegrationTests {
 					() -> client.sayHello(HelloRequest.newBuilder().setName("internal").build()))
 				.getStatus()
 				.getCode()).isEqualTo(Code.UNKNOWN);
+		}
+
+	}
+
+	@Nested
+	@SpringBootTest
+	@AutoConfigureInProcessTransport
+	class ServerWithExceptionInInterceptor {
+
+		@Test
+		void specificErrorResponse(@Autowired GrpcChannelFactory channels) {
+			SimpleGrpc.SimpleBlockingStub client = SimpleGrpc.newBlockingStub(channels.createChannel("0.0.0.0:0"));
+			assertThat(assertThrows(StatusRuntimeException.class,
+					() -> client.sayHello(HelloRequest.newBuilder().setName("foo").build()))
+				.getStatus()
+				.getCode()).isEqualTo(Code.INVALID_ARGUMENT);
+		}
+
+		@TestConfiguration
+		static class TestConfig {
+
+			@Bean
+			@GlobalServerInterceptor
+			public ServerInterceptor exceptionInterceptor() {
+				return new CustomInterceptor();
+			}
+
+			static class CustomInterceptor implements ServerInterceptor {
+
+				@Override
+				public <ReqT, RespT> io.grpc.ServerCall.Listener<ReqT> interceptCall(
+						io.grpc.ServerCall<ReqT, RespT> call, io.grpc.Metadata headers,
+						io.grpc.ServerCallHandler<ReqT, RespT> next) {
+					return new CustomListener<>(next.startCall(call, headers));
+				}
+
+			}
+
+			static class CustomListener<ReqT> extends ForwardingServerCallListener<ReqT> {
+
+				private Listener<ReqT> delegate;
+
+				CustomListener(io.grpc.ServerCall.Listener<ReqT> delegate) {
+					this.delegate = delegate;
+				}
+
+				@Override
+				public void onReady() {
+					throw new IllegalArgumentException("test");
+				}
+
+				@Override
+				protected Listener<ReqT> delegate() {
+					return this.delegate;
+				}
+
+			}
+
 		}
 
 	}

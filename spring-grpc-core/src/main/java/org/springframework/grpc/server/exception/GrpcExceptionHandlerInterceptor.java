@@ -41,7 +41,7 @@ import io.grpc.Status;
  * @see ServerInterceptor
  * @see GrpcExceptionHandler
  */
-@Order(Ordered.LOWEST_PRECEDENCE)
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class GrpcExceptionHandlerInterceptor implements ServerInterceptor {
 
 	private final GrpcExceptionHandler exceptionHandler;
@@ -77,6 +77,16 @@ public class GrpcExceptionHandlerInterceptor implements ServerInterceptor {
 			super(delegate);
 			this.call = call;
 			this.exceptionHandler = exceptionHandler;
+		}
+
+		@Override
+		public void onReady() {
+			try {
+				super.onReady();
+			}
+			catch (Throwable t) {
+				this.call.close(this.exceptionHandler.handleException(t), new Metadata());
+			}
 		}
 
 		@Override
