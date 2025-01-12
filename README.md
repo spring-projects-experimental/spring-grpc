@@ -240,7 +240,7 @@ To create a simple gRPC client, you can use the Spring Boot starter (see above -
 ```java
 @Bean
 SimpleGrpc.SimpleBlockingStub stub(GrpcChannelFactory channels) {
-	return SimpleGrpc.newBlockingStub(channels.createChannel("0.0.0.0:9090").build());
+	return SimpleGrpc.newBlockingStub(channels.createChannel("0.0.0.0:9090"));
 }
 ```
 
@@ -251,7 +251,7 @@ The default `GrpcChannelFactory` implementation can also create a "named" channe
 ```java
 @Bean
 SimpleGrpc.SimpleBlockingStub stub(GrpcChannelFactory channels) {
-	return SimpleGrpc.newBlockingStub(channels.createChannel("local").build());
+	return SimpleGrpc.newBlockingStub(channels.createChannel("local"));
 }
 ```
 
