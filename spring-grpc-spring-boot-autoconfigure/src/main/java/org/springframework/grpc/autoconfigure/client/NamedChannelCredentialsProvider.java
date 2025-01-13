@@ -19,9 +19,8 @@ import javax.net.ssl.TrustManagerFactory;
 
 import org.springframework.boot.ssl.SslBundle;
 import org.springframework.boot.ssl.SslBundles;
+import org.springframework.grpc.autoconfigure.client.GrpcClientProperties.ChannelConfig;
 import org.springframework.grpc.client.ChannelCredentialsProvider;
-import org.springframework.grpc.client.NamedChannel;
-import org.springframework.grpc.client.NamedChannelRegistry;
 import org.springframework.grpc.client.NegotiationType;
 import org.springframework.grpc.internal.InsecureTrustManagerFactory;
 
@@ -29,20 +28,25 @@ import io.grpc.ChannelCredentials;
 import io.grpc.InsecureChannelCredentials;
 import io.grpc.TlsChannelCredentials;
 
+/**
+ * Provides channel credentials using channel configuration and {@link SslBundles}.
+ *
+ * @author David Syer
+ */
 public class NamedChannelCredentialsProvider implements ChannelCredentialsProvider {
 
 	private final SslBundles bundles;
 
-	private final NamedChannelRegistry channelRegistry;
+	private final GrpcClientProperties properties;
 
-	public NamedChannelCredentialsProvider(SslBundles bundles, NamedChannelRegistry channelRegistry) {
+	public NamedChannelCredentialsProvider(SslBundles bundles, GrpcClientProperties properties) {
 		this.bundles = bundles;
-		this.channelRegistry = channelRegistry;
+		this.properties = properties;
 	}
 
 	@Override
 	public ChannelCredentials getChannelCredentials(String path) {
-		NamedChannel channel = this.channelRegistry.getChannel(path);
+		ChannelConfig channel = this.properties.getChannel(path);
 		if (!channel.getSsl().isEnabled() && channel.getNegotiationType() == NegotiationType.PLAINTEXT) {
 			return InsecureChannelCredentials.create();
 		}

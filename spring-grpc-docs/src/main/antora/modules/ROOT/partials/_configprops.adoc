@@ -1,7 +1,7 @@
 |===
 |Name | Default | Description
 
-|spring.grpc.client.channels |  | 
+|spring.grpc.client.channels |  | Map of channels configured by name.
 |spring.grpc.client.default-channel.address | `+++static://localhost:9090+++` | The target address uri to connect to.
 |spring.grpc.client.default-channel.default-load-balancing-policy | `+++round_robin+++` | The default load balancing policy the channel should use.
 |spring.grpc.client.default-channel.enable-keep-alive | `+++false+++` | Whether keep alive is enabled on the channel.

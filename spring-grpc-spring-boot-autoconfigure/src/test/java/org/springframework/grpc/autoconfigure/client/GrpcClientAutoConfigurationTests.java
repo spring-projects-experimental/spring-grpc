@@ -43,8 +43,6 @@ import org.springframework.core.annotation.Order;
 import org.springframework.grpc.client.ChannelCredentialsProvider;
 import org.springframework.grpc.client.GrpcChannelBuilderCustomizer;
 import org.springframework.grpc.client.GrpcChannelFactory;
-import org.springframework.grpc.client.NamedChannel;
-import org.springframework.grpc.client.NamedChannelRegistry;
 import org.springframework.grpc.client.NettyGrpcChannelFactory;
 import org.springframework.grpc.client.ShadedNettyGrpcChannelFactory;
 
@@ -68,26 +66,6 @@ class GrpcClientAutoConfigurationTests {
 	}
 
 	@Test
-	void whenHasUserDefinedChannelRegistryDoesNotAutoConfigureBean() {
-		NamedChannelRegistry customChannelRegistry = mock(NamedChannelRegistry.class);
-		this.contextRunner()
-			.withBean("customChannelRegistry", NamedChannelRegistry.class, () -> customChannelRegistry)
-			.run((context) -> assertThat(context).getBean(NamedChannelRegistry.class).isSameAs(customChannelRegistry));
-	}
-
-	@Test
-	void channelRegistryAutoConfiguredAsExpected() {
-		this.contextRunner()
-			.run((context) -> assertThat(context).getBean(NamedChannelRegistry.class).satisfies((channelRegistry) -> {
-				var properties = context.getBean(GrpcClientProperties.class);
-				assertThat(channelRegistry.getDefaultChannel()).isEqualTo(properties.getDefaultChannel());
-				assertThat(channelRegistry)
-					.extracting("channels", InstanceOfAssertFactories.map(String.class, NamedChannel.class))
-					.containsExactlyInAnyOrderEntriesOf(properties.getChannels());
-			}));
-	}
-
-	@Test
 	void whenHasUserDefinedCredentialsProviderDoesNotAutoConfigureBean() {
 		ChannelCredentialsProvider customCredentialsProvider = mock(ChannelCredentialsProvider.class);
 		this.contextRunner()
@@ -100,9 +78,18 @@ class GrpcClientAutoConfigurationTests {
 	void credentialsProviderAutoConfiguredAsExpected() {
 		this.contextRunner()
 			.run((context) -> assertThat(context).getBean(NamedChannelCredentialsProvider.class)
-				.hasFieldOrPropertyWithValue("channelRegistry", context.getBean(NamedChannelRegistry.class))
+				.hasFieldOrPropertyWithValue("properties", context.getBean(GrpcClientProperties.class))
 				.extracting("bundles")
 				.isInstanceOf(SslBundles.class));
+	}
+
+	@Test
+	void clientPropertiesAutoConfiguredResolvesPlaceholders() {
+		this.contextRunner()
+			.withPropertyValues("spring.grpc.client.channels.c1.address=my-server-${channelName}:8888",
+					"channelName=foo")
+			.run((context) -> assertThat(context).getBean(GrpcClientProperties.class)
+				.satisfies((properties) -> assertThat(properties.getTarget("c1")).isEqualTo("my-server-foo:8888")));
 	}
 
 	@Test
@@ -249,7 +236,7 @@ class GrpcClientAutoConfigurationTests {
 				.isInstanceOf(expectedChannelFactoryType)
 				.hasFieldOrPropertyWithValue("credentials", context.getBean(NamedChannelCredentialsProvider.class))
 				.extracting("targets")
-				.isInstanceOf(NamedChannelRegistry.class));
+				.isInstanceOf(GrpcClientProperties.class));
 	}
 
 	@Test

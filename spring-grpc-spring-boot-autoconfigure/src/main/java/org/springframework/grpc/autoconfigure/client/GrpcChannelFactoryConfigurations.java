@@ -27,7 +27,6 @@ import org.springframework.grpc.client.ChannelCredentialsProvider;
 import org.springframework.grpc.client.ClientInterceptorsConfigurer;
 import org.springframework.grpc.client.GrpcChannelBuilderCustomizer;
 import org.springframework.grpc.client.GrpcChannelFactory;
-import org.springframework.grpc.client.NamedChannelRegistry;
 import org.springframework.grpc.client.NettyGrpcChannelFactory;
 import org.springframework.grpc.client.ShadedNettyGrpcChannelFactory;
 
@@ -47,14 +46,14 @@ class GrpcChannelFactoryConfigurations {
 	static class ShadedNettyChannelFactoryConfiguration {
 
 		@Bean
-		ShadedNettyGrpcChannelFactory shadedNettyGrpcChannelFactory(NamedChannelRegistry namedChannelRegistry,
+		ShadedNettyGrpcChannelFactory shadedNettyGrpcChannelFactory(GrpcClientProperties properties,
 				ChannelBuilderCustomizers channelBuilderCustomizers,
 				ClientInterceptorsConfigurer interceptorsConfigurer, ChannelCredentialsProvider credentials) {
 			List<GrpcChannelBuilderCustomizer<io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder>> builderCustomizers = List
 				.of(channelBuilderCustomizers::customize);
 			var factory = new ShadedNettyGrpcChannelFactory(builderCustomizers, interceptorsConfigurer);
 			factory.setCredentialsProvider(credentials);
-			factory.setVirtualTargets(namedChannelRegistry);
+			factory.setVirtualTargets(properties);
 			return factory;
 		}
 
@@ -67,14 +66,14 @@ class GrpcChannelFactoryConfigurations {
 	static class NettyChannelFactoryConfiguration {
 
 		@Bean
-		NettyGrpcChannelFactory nettyGrpcChannelFactory(NamedChannelRegistry namedChannelRegistry,
+		NettyGrpcChannelFactory nettyGrpcChannelFactory(GrpcClientProperties properties,
 				ChannelBuilderCustomizers channelBuilderCustomizers,
 				ClientInterceptorsConfigurer interceptorsConfigurer, ChannelCredentialsProvider credentials) {
 			List<GrpcChannelBuilderCustomizer<NettyChannelBuilder>> builderCustomizers = List
 				.of(channelBuilderCustomizers::customize);
 			var factory = new NettyGrpcChannelFactory(builderCustomizers, interceptorsConfigurer);
 			factory.setCredentialsProvider(credentials);
-			factory.setVirtualTargets(namedChannelRegistry);
+			factory.setVirtualTargets(properties);
 			return factory;
 		}
 
