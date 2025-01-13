@@ -85,7 +85,7 @@ public class GrpcExceptionHandlerInterceptor implements ServerInterceptor {
 				super.onReady();
 			}
 			catch (Throwable t) {
-				this.call.close(this.exceptionHandler.handleException(t), new Metadata());
+				this.call.close(this.exceptionHandler.handleException(t), headers(t));
 			}
 		}
 
@@ -95,7 +95,7 @@ public class GrpcExceptionHandlerInterceptor implements ServerInterceptor {
 				super.onMessage(message);
 			}
 			catch (Throwable t) {
-				this.call.close(this.exceptionHandler.handleException(t), new Metadata());
+				this.call.close(this.exceptionHandler.handleException(t), headers(t));
 			}
 		}
 
@@ -105,8 +105,13 @@ public class GrpcExceptionHandlerInterceptor implements ServerInterceptor {
 				super.onHalfClose();
 			}
 			catch (Throwable t) {
-				this.call.close(this.exceptionHandler.handleException(t), new Metadata());
+				this.call.close(this.exceptionHandler.handleException(t), headers(t));
 			}
+		}
+
+		private Metadata headers(Throwable t) {
+			Metadata result = Status.trailersFromThrowable(t);
+			return result != null ? result : new Metadata();
 		}
 
 	}
