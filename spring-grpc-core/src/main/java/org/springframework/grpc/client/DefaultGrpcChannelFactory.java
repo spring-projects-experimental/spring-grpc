@@ -18,9 +18,12 @@ package org.springframework.grpc.client;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.core.log.LogAccessor;
 import org.springframework.util.Assert;
 
 import io.grpc.ChannelCredentials;
@@ -40,6 +43,8 @@ import io.grpc.ManagedChannelBuilder;
  */
 public class DefaultGrpcChannelFactory<T extends ManagedChannelBuilder<T>>
 		implements GrpcChannelFactory, DisposableBean {
+
+	private final LogAccessor log = new LogAccessor(getClass());
 
 	private final List<ManagedChannelWithShutdown> channels = new ArrayList<>();
 
@@ -105,14 +110,56 @@ public class DefaultGrpcChannelFactory<T extends ManagedChannelBuilder<T>>
 		return (T) Grpc.newChannelBuilder(target, credentials);
 	}
 
+	/**
+	 * Performs a shutdown on all created channels as follows:
+	 * <ul>
+	 * <li>First an {@link ManagedChannel#shutdown() orderly shutdown} is initiated on
+	 * each channel.
+	 * <li>Next the channels are ordered by smallest to largest grace period, and in
+	 * serial fashion each channel is sent an {@link ManagedChannel#awaitTermination
+	 * awaitTermination} with the channel's remaining grace period.
+	 * <li>Finally, any channel not terminated is sent a
+	 * {@link ManagedChannel#shutdownNow() forceful shutdown}.
+	 * </ul>
+	 */
 	@Override
 	public void destroy() {
-		this.channels.forEach((c) -> {
-			var shutdownGracePeriod = c.shutdownGracePeriod();
-			var channel = c.channel();
-			// TODO use grace period to do the magical shutdown here
-			channel.shutdown();
-		});
+		this.channels.stream().map(ManagedChannelWithShutdown::channel).forEach(ManagedChannel::shutdown);
+		this.channels.sort(Comparator.comparingLong((t) -> t.shutdownGracePeriod().toMillis()));
+		try {
+			long start = System.currentTimeMillis();
+			this.channels.forEach((channelWithShutdown) -> {
+				var channel = channelWithShutdown.channel();
+				var gracePeriod = channelWithShutdown.shutdownGracePeriod();
+				if (!channel.isTerminated()) {
+					this.log.debug(() -> "Awaiting channel termination: " + channel.authority());
+					long totalTimeWaitedSinceStart = System.currentTimeMillis() - start;
+					long gracePeriodRemaining = gracePeriod.toMillis() - totalTimeWaitedSinceStart;
+					this.awaitTermination(channel, gracePeriodRemaining);
+				}
+				this.log.debug(() -> "Completed channel termination: " + channel.authority());
+			});
+		}
+		finally {
+			this.channels.stream().map(ManagedChannelWithShutdown::channel).forEach((channel) -> {
+				if (!channel.isTerminated()) {
+					this.log.debug(() -> "Channel not terminated yet - forcing shutdown: " + channel.authority());
+					channel.shutdownNow();
+				}
+			});
+		}
+	}
+
+	private void awaitTermination(ManagedChannel channel, long awaitMillis) {
+		try {
+			if (awaitMillis > 0) {
+				channel.awaitTermination(awaitMillis, TimeUnit.MILLISECONDS);
+			}
+		}
+		catch (InterruptedException e) {
+			this.log.debug(() -> "Channel wait exceeded grace period - forcing shutdown: " + channel.authority());
+			channel.shutdownNow();
+		}
 	}
 
 	record ManagedChannelWithShutdown(ManagedChannel channel, Duration shutdownGracePeriod) {
