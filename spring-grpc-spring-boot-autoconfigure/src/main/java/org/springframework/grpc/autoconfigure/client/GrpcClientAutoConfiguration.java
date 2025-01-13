@@ -26,7 +26,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.grpc.autoconfigure.common.codec.GrpcCodecConfiguration;
 import org.springframework.grpc.client.ChannelCredentialsProvider;
 import org.springframework.grpc.client.GrpcChannelBuilderCustomizer;
-import org.springframework.grpc.client.NamedChannelRegistry;
 
 import io.grpc.CompressorRegistry;
 import io.grpc.DecompressorRegistry;
@@ -40,22 +39,15 @@ import io.grpc.ManagedChannelBuilder;
 public class GrpcClientAutoConfiguration {
 
 	@Bean
-	@ConditionalOnMissingBean
-	NamedChannelRegistry namedChannelRegistry(GrpcClientProperties properties) {
-		return new NamedChannelRegistry(properties.getDefaultChannel(), properties.getChannels());
-	}
-
-	@Bean
 	@ConditionalOnMissingBean(ChannelCredentialsProvider.class)
-	NamedChannelCredentialsProvider channelCredentialsProvider(SslBundles bundles,
-			NamedChannelRegistry channelRegistry) {
-		return new NamedChannelCredentialsProvider(bundles, channelRegistry);
+	NamedChannelCredentialsProvider channelCredentialsProvider(SslBundles bundles, GrpcClientProperties properties) {
+		return new NamedChannelCredentialsProvider(bundles, properties);
 	}
 
 	@Bean
 	<T extends ManagedChannelBuilder<T>> GrpcChannelBuilderCustomizer<T> clientPropertiesChannelCustomizer(
-			NamedChannelRegistry channelRegistry) {
-		return new ClientPropertiesChannelBuilderCustomizer<>(channelRegistry);
+			GrpcClientProperties properties) {
+		return new ClientPropertiesChannelBuilderCustomizer<>(properties);
 	}
 
 	@ConditionalOnBean(CompressorRegistry.class)

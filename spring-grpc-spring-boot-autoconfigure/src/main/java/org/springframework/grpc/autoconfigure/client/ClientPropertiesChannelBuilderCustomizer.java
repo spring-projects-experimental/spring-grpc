@@ -22,9 +22,8 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.springframework.boot.context.properties.PropertyMapper;
+import org.springframework.grpc.autoconfigure.client.GrpcClientProperties.ChannelConfig;
 import org.springframework.grpc.client.GrpcChannelBuilderCustomizer;
-import org.springframework.grpc.client.NamedChannel;
-import org.springframework.grpc.client.NamedChannelRegistry;
 import org.springframework.util.unit.DataSize;
 
 import io.grpc.ManagedChannelBuilder;
@@ -40,18 +39,15 @@ import io.grpc.ManagedChannelBuilder;
 class ClientPropertiesChannelBuilderCustomizer<T extends ManagedChannelBuilder<T>>
 		implements GrpcChannelBuilderCustomizer<T> {
 
-	private final NamedChannelRegistry channelRegistry;
+	private final GrpcClientProperties properties;
 
-	ClientPropertiesChannelBuilderCustomizer(NamedChannelRegistry channelRegistry) {
-		this.channelRegistry = channelRegistry;
+	ClientPropertiesChannelBuilderCustomizer(GrpcClientProperties properties) {
+		this.properties = properties;
 	}
 
 	@Override
 	public void customize(String authority, T builder) {
-		NamedChannel channel = this.channelRegistry.getChannel(authority);
-		if (channel == null) {
-			return;
-		}
+		ChannelConfig channel = this.properties.getChannel(authority);
 		PropertyMapper mapper = PropertyMapper.get().alwaysApplyingWhenNonNull();
 		mapper.from(channel.getUserAgent()).to(builder::userAgent);
 		if (!authority.startsWith("unix:")) {
