@@ -1,8 +1,24 @@
 = What's new?
 
+:page-section-summary-toc: 1
+
+[[what-s-new-in-0-4-0-since-0-3-0]]
+== What's New in 0.4.0 Since 0.3.0
+
+This section covers the changes made from version 0.2.0 to version 0.3.0.
+
+=== Channel Factory
+The `GrpcChannelFactory` has a new interface and its methods now return a `Channel` (instead of a `ChannelBuilder`).
+The `createChannel()` method is overloaded with a new method that accepts a `ChannelBuilderOptions` which can be used to configure the channel before it is created.
+
+=== Client Side Observability
+A gRPC client will generate a new span for each RPC call. The span will be automatically closed when the call is completed.
+
+=== Security in Servlet Containers
+Spring Security works with gRPC servers running in servlet containers. You can use all your favourite Spring Security features to secure your gRPC services.
+
 [[what-s-new-in-0-3-0-since-0-2-0]]
 == What's New in 0.3.0 Since 0.2.0
-:page-section-summary-toc: 1
 
 This section covers the changes made from version 0.2.0 to version 0.3.0.
 
