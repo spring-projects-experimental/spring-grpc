@@ -35,4 +35,27 @@ public interface GrpcServiceDiscoverer {
 	 */
 	List<ServerServiceDefinition> findServices();
 
+	/**
+	 * Find gRPC service names.
+	 * @return list of service names - empty when no services available
+	 */
+	default List<String> listServiceNames() {
+		return findServices().stream()
+			.map(ServerServiceDefinition::getServiceDescriptor)
+			.map(descriptor -> descriptor.getName())
+			.toList();
+	}
+
+	/**
+	 * Find gRPC service.
+	 * @param name the service name
+	 * @return a service - null if no service has this name
+	 */
+	default ServerServiceDefinition findService(String name) {
+		return findServices().stream()
+			.filter(service -> service.getServiceDescriptor().getName().equals(name))
+			.findFirst()
+			.orElse(null);
+	}
+
 }

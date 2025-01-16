@@ -80,12 +80,12 @@ public class GrpcServerFactoryAutoConfiguration {
 		@Bean
 		public ServletRegistrationBean<GrpcServlet> grpcServlet(GrpcServerProperties properties,
 				GrpcServiceDiscoverer discoverer, ServerBuilderCustomizers serverBuilderCustomizers) {
-			List<ServerServiceDefinition> services = discoverer.findServices();
-			List<String> paths = services.stream()
-				.map(service -> "/" + service.getServiceDescriptor().getName() + "/*")
+			List<String> paths = discoverer.listServiceNames()
+				.stream()
+				.map(service -> "/" + service + "/*")
 				.collect(Collectors.toList());
 			ServletServerBuilder servletServerBuilder = new ServletServerBuilder();
-			services.forEach(servletServerBuilder::addService);
+			discoverer.findServices().forEach(servletServerBuilder::addService);
 			PropertyMapper mapper = PropertyMapper.get().alwaysApplyingWhenNonNull();
 			mapper.from(properties.getMaxInboundMessageSize())
 				.asInt(DataSize::toBytes)

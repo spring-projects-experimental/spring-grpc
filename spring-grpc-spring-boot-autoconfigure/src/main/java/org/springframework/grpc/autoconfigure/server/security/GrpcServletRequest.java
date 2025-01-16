@@ -107,11 +107,10 @@ public class GrpcServletRequest {
 		}
 
 		private Stream<String> getPatterns(GrpcServiceDiscoverer context) {
-			return context.findServices()
+			return context.listServiceNames()
 				.stream()
-				.filter(service -> !this.exclusions.stream()
-					.anyMatch(type -> type.equals(service.getServiceDescriptor().getName())))
-				.map(service -> "/" + service.getServiceDescriptor().getName() + "/**");
+				.filter(service -> !this.exclusions.stream().anyMatch(type -> type.equals(service)))
+				.map(service -> "/" + service + "/**");
 		}
 
 		@Override
