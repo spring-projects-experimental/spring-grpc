@@ -166,7 +166,7 @@ You can switch the in-process server off by setting `spring.grpc.in-process.enab
 
 == Security
 
-== Netty
+=== Netty
 
 The netty-based server supports TLS and mTLS out of the box.
 To configure the server you can configure an SSL Bundle in the `application.properties` or `application.yml` file.
@@ -185,7 +185,7 @@ Here we configure a bundle named "ssltest" that uses a JKS keystore, similar to 
 It is then applied to the gRPC server using the `spring.grpc.server.ssl.bundle` property.
 To use self-signed certificates, for testing purposes only, you also need to set `spring.grpc.server.ssl.secure=false`.
 
-== Servlet
+=== Servlet
 
 The servlet-based server supports any security configuration that the servlet container supports, including Spring Security.
 This means that you can easily implement your favourite authentication and authorization mechanisms.
