@@ -3,7 +3,13 @@
 
 This section offers jumping off points for how to get started using Spring gRPC. There is a simple sample project in the `samples` directory (e.g. https://github.com/spring-projects-experimental/spring-grpc/tree/main/samples/grpc-server[`grpc-server`]). You can run it with `mvn spring-boot:run` or `gradle bootRun`. You will see the following code in that sample.
 
-Want to get started? Let's speedrun a working service. Go to the [Spring Initializr](https://start.spring.io), select `gRPC`, `Web`, and `GraalVM`. Both Apache Maven and Gradle should work. Download the `.zip` file and unzip it. Open it in your IDE in the usual way. E.g. if you're using IntelliJ IDEA: `idea pom.xml`; or for VSCode `code .`. 
+Want to get started? Let's speedrun a working service.
+
+Go to the https://start.spring.io[Spring Initializr] and select the `gRPC` dependency.
+
+Generate the project and unzip the downloaded result.
+
+Open it in your IDE in the usual way. E.g. if you're using IntelliJ IDEA: `idea pom.xml`; or for VSCode `code .`.
 
 Define a `.proto` service definition file `src/main/proto/hello.proto` with the following contents:
 
