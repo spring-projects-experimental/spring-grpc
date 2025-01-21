@@ -29,14 +29,11 @@ dependencyManagement {
 }
 
 dependencies {
-    implementation 'org.springframework.grpc:spring-grpc-spring-boot-starter'
+    implementation ('org.springframework.grpc:spring-grpc-spring-boot-starter') {
+		exclude group: "io.grpc", module: "grpc-netty"
+	}
     implementation 'io.grpc:grpc-netty-shaded'
     implementation 'io.grpc:grpc-services'
-    modules {
-        module("io.grpc:grpc-netty") {
-            replacedBy("io.grpc:grpc-netty-shaded", "Use Netty shaded instead of regular Netty")
-        }
-    }
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.grpc:spring-grpc-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
