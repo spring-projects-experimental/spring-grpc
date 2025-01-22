@@ -19,14 +19,14 @@ import org.springframework.grpc.sample.proto.SimpleGrpc;
 import org.springframework.grpc.test.LocalGrpcPort;
 import org.springframework.test.annotation.DirtiesContext;
 
-@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, properties = "spring.grpc.server.reactive.enabled=false")
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 public class GrpcServerApplicationTests {
 
 	private static Log log = LogFactory.getLog(GrpcServerApplicationTests.class);
 
 	public static void main(String[] args) {
 		new SpringApplicationBuilder(GrpcServerApplication.class, ExtraConfiguration.class)
-			.run("--spring.grpc.server.reactive.enabled=false");
+			.run(args);
 	}
 
 	@Autowired
