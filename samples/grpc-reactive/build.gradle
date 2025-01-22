@@ -36,6 +36,7 @@ dependencies {
     implementation 'com.salesforce.servicelibs:reactor-grpc-stub:1.2.4'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.grpc:spring-grpc-test'
+    testImplementation 'io.projectreactor:reactor-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testRuntimeOnly "io.netty:netty-transport-native-epoll::linux-x86_64"
 }
