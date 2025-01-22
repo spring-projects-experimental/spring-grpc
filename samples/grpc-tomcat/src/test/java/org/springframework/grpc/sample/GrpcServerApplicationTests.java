@@ -2,6 +2,8 @@ package org.springframework.grpc.sample;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.Iterator;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.jupiter.api.Test;
@@ -41,6 +43,16 @@ public class GrpcServerApplicationTests {
 		log.info("Testing");
 		HelloReply response = stub.sayHello(HelloRequest.newBuilder().setName("Alien").build());
 		assertEquals("Hello ==> Alien", response.getMessage());
+	}
+
+	@Test
+	@DirtiesContext
+	void streamResponds() {
+		Iterator<HelloReply> response = stub.streamHello(HelloRequest.newBuilder().setName("Alien").build());
+		assertEquals("Hello(0) ==> Alien", response.next().getMessage());
+		while (response.hasNext()) {
+			log.info(response.next().getMessage());
+		}
 	}
 
 	@TestConfiguration
