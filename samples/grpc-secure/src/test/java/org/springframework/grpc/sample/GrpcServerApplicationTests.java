@@ -38,8 +38,7 @@ import io.grpc.StatusRuntimeException;
 public class GrpcServerApplicationTests {
 
 	public static void main(String[] args) {
-		new SpringApplicationBuilder(GrpcServerApplication.class, ExtraConfiguration.class)
-				.run(args);
+		new SpringApplicationBuilder(GrpcServerApplication.class, ExtraConfiguration.class).run(args);
 	}
 
 	@Autowired
@@ -115,7 +114,7 @@ public class GrpcServerApplicationTests {
 		@Lazy
 		SimpleGrpc.SimpleBlockingStub basic(GrpcChannelFactory channels) {
 			return SimpleGrpc.newBlockingStub(channels.createChannel("basic", ChannelBuilderOptions.defaults()
-					.withInterceptors(List.of(new BasicAuthenticationInterceptor("user", "user")))));
+				.withInterceptors(List.of(new BasicAuthenticationInterceptor("user", "user")))));
 		}
 
 		@Bean

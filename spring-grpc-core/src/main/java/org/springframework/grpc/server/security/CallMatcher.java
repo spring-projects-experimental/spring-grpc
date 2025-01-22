@@ -15,7 +15,7 @@
  */
 package org.springframework.grpc.server.security;
 
-public interface CallMatcher {
+interface CallMatcher {
 
 	CallMatcher ALL = (context) -> true;
 

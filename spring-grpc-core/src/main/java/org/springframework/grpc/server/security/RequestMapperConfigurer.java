@@ -32,8 +32,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.PatternMatchUtils;
 import org.springframework.util.function.SingletonSupplier;
 
-public class RequestMapperConfigurer
-		extends SecurityConfigurerAdapter<AuthenticationServerInterceptor, GrpcSecurity> {
+public class RequestMapperConfigurer extends SecurityConfigurerAdapter<AuthenticationServerInterceptor, GrpcSecurity> {
 
 	private List<AuthorizedCall> authorizedCalls = new ArrayList<>();
 
@@ -41,8 +40,7 @@ public class RequestMapperConfigurer
 
 	public RequestMapperConfigurer(ApplicationContext context) {
 		this.roleHierarchy = SingletonSupplier.of(() -> (context.getBeanNamesForType(RoleHierarchy.class).length > 0)
-				? context.getBean(RoleHierarchy.class)
-				: new NullRoleHierarchy());
+				? context.getBean(RoleHierarchy.class) : new NullRoleHierarchy());
 	}
 
 	@Override
@@ -66,14 +64,15 @@ public class RequestMapperConfigurer
 
 		private String[] patterns;
 
-		public MethodCallMatcher(String... patterns) {
+		MethodCallMatcher(String... patterns) {
 			this.patterns = patterns;
 		}
 
 		@Override
 		public boolean matches(CallContext context) {
-			return PatternMatchUtils.simpleMatch(patterns, context.method().getFullMethodName());
+			return PatternMatchUtils.simpleMatch(this.patterns, context.method().getFullMethodName());
 		}
+
 	}
 
 	public class AuthorizedCall {
@@ -114,14 +113,11 @@ public class RequestMapperConfigurer
 
 		public RequestMapperConfigurer access(AuthorizationManager<Object> manager) {
 			Assert.notNull(manager, "manager cannot be null");
-			this.authorizationManager = (this.not)
-					? AuthorizationManagers.not(manager)
-					: manager;
+			this.authorizationManager = (this.not) ? AuthorizationManagers.not(manager) : manager;
 			return RequestMapperConfigurer.this;
 		}
 
-		private AuthorityAuthorizationManager<Object> withRoleHierarchy(
-				AuthorityAuthorizationManager<Object> manager) {
+		private AuthorityAuthorizationManager<Object> withRoleHierarchy(AuthorityAuthorizationManager<Object> manager) {
 			manager.setRoleHierarchy(RequestMapperConfigurer.this.roleHierarchy.get());
 			return manager;
 		}

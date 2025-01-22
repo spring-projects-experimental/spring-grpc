@@ -19,6 +19,7 @@ import org.springframework.core.Ordered;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.AuthorityUtils;
@@ -33,12 +34,9 @@ import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
 
 /**
- * An interceptor that extracts the authentication credentials from the gRPC
- * request
- * headers and metadata, authenticates the user, and sets the authentication in
- * the
- * SecurityContext. This interceptor should be registered with the gRPC server
- * to handle
+ * An interceptor that extracts the authentication credentials from the gRPC request
+ * headers and metadata, authenticates the user, and sets the authentication in the
+ * SecurityContext. This interceptor should be registered with the gRPC server to handle
  * authentication.
  *
  * @author Dave Syer
@@ -49,7 +47,7 @@ public class AuthenticationServerInterceptor implements ServerInterceptor, Order
 
 	private final GrpcAuthenticationExtractor extractor;
 
-	private final AuthorizationManager<CallContext> authorizationManager;
+	private AuthorizationManager<CallContext> authorizationManager;
 
 	@Override
 	public int getOrder() {
@@ -68,42 +66,51 @@ public class AuthenticationServerInterceptor implements ServerInterceptor, Order
 			ServerCallHandler<ReqT, RespT> next) {
 		SecurityContext securityContext = SecurityContextHolder.getContext();
 		Authentication user = this.extractor.extract(headers, call.getAttributes());
-		Authentication authenticated;
 		if (user != null) {
-			authenticated = this.authenticationManager.authenticate(user);
-		} else {
-			authenticated = new AnonymousAuthenticationToken("anonymous", "anonymous",
-					AuthorityUtils.createAuthorityList("ROLE_ANONYMOUS"));
+			user = this.authenticationManager.authenticate(user);
+			securityContext.setAuthentication(user);
 		}
-		securityContext.setAuthentication(authenticated);
-		CallContext context = new CallContext(headers, call.getAttributes(), call.getMethodDescriptor());
-		if (this.authorizationManager != null && authenticated != null) {
-			return new AuthenticationListener<ReqT>(next.startCall(call, headers), this.authorizationManager, context,
-					authenticated);
+
+		if (this.authorizationManager != null) {
+			if (user == null) {
+				user = new AnonymousAuthenticationToken("anonymous", "anonymous",
+						AuthorityUtils.createAuthorityList("ROLE_ANONYMOUS"));
+			}
+			return new AuthenticatedListener<ReqT>(next.startCall(call, headers), this.authorizationManager,
+					new CallContext(headers, call.getAttributes(), call.getMethodDescriptor()), user);
 		}
-		return next.startCall(call, headers);
+		return new AuthenticatedListener<ReqT>(next.startCall(call, headers), null,
+				new CallContext(headers, call.getAttributes(), call.getMethodDescriptor()), user);
 	}
 
-	static class AuthenticationListener<ReqT> extends ForwardingServerCallListener<ReqT> {
+	static class AuthenticatedListener<ReqT> extends ForwardingServerCallListener<ReqT> {
 
 		private final Listener<ReqT> delegate;
-		private final AuthorizationManager<CallContext> authorizationManager;
+
 		private final CallContext context;
+
 		private final Authentication authentication;
 
-		AuthenticationListener(io.grpc.ServerCall.Listener<ReqT> delegate,
-				AuthorizationManager<CallContext> authorizationManager, CallContext context,
-				Authentication authenticated) {
+		private final AuthorizationManager<CallContext> authorizationManager;
+
+		AuthenticatedListener(io.grpc.ServerCall.Listener<ReqT> delegate,
+				AuthorizationManager<CallContext> authorizationManager, CallContext context, Authentication user) {
 			this.delegate = delegate;
 			this.authorizationManager = authorizationManager;
 			this.context = context;
-			this.authentication = authenticated;
+			this.authentication = user;
 		}
 
 		@Override
 		public void onReady() {
-			if (!this.authorizationManager.authorize(() -> authentication, this.context).isGranted()) {
-				throw new AccessDeniedException("not allowed");
+			if (this.authentication == null || !this.authentication.isAuthenticated()
+					|| this.authentication instanceof AnonymousAuthenticationToken) {
+				throw new BadCredentialsException("not authenticated");
+			}
+			else {
+				if (!this.authorizationManager.authorize(() -> this.authentication, this.context).isGranted()) {
+					throw new AccessDeniedException("not allowed");
+				}
 			}
 			super.onReady();
 		}

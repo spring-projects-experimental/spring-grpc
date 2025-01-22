@@ -1,7 +1,5 @@
 package org.springframework.grpc.sample;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.jupiter.api.Test;
@@ -16,7 +14,6 @@ import org.springframework.grpc.sample.proto.HelloReply;
 import org.springframework.grpc.sample.proto.HelloRequest;
 import org.springframework.grpc.sample.proto.ReactorSimpleGrpc;
 import org.springframework.grpc.sample.proto.ReactorSimpleGrpc.ReactorSimpleStub;
-import org.springframework.grpc.sample.proto.SimpleGrpc;
 import org.springframework.grpc.test.AutoConfigureInProcessTransport;
 import org.springframework.grpc.test.LocalGrpcPort;
 import org.springframework.test.annotation.DirtiesContext;

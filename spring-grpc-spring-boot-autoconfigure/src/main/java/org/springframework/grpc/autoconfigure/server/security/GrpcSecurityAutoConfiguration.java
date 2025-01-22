@@ -19,6 +19,7 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
@@ -27,10 +28,12 @@ import org.springframework.grpc.autoconfigure.server.exception.GrpcExceptionHand
 import org.springframework.grpc.server.GlobalServerInterceptor;
 import org.springframework.grpc.server.ServerBuilderCustomizer;
 import org.springframework.grpc.server.exception.GrpcExceptionHandler;
+import org.springframework.grpc.server.security.GrpcSecurity;
 import org.springframework.grpc.server.security.SecurityContextServerInterceptor;
 import org.springframework.grpc.server.security.SecurityGrpcExceptionHandler;
 import org.springframework.security.concurrent.DelegatingSecurityContextExecutor;
 import org.springframework.security.config.ObjectPostProcessor;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.web.SecurityFilterChain;
 
 import io.grpc.ServerBuilder;
@@ -50,10 +53,22 @@ public class GrpcSecurityAutoConfiguration {
 
 	}
 
+	@ConditionalOnBean(ObjectPostProcessor.class)
+	@Configuration(proxyBeanMethods = false)
+	@Conditional(GrpcServerFactoryAutoConfiguration.OnNativeGrpcServerCondition.class)
+	static class GrpcNativeSecurityConfigurerAutoConfiguration {
+
+		@Bean
+		public GrpcSecurity grpcSecurity(ObjectPostProcessor<Object> objectPostProcessor,
+				AuthenticationManagerBuilder authenticationManagerBuilder, ApplicationContext context) {
+			return new GrpcSecurity(objectPostProcessor, authenticationManagerBuilder, context);
+		}
+
+	}
+
 	@ConditionalOnBean(SecurityFilterChain.class)
 	@Configuration(proxyBeanMethods = false)
-	@Conditional(GrpcServerFactoryAutoConfiguration.OnGrpcServletCondition.class)
-	static class GrpcSecurityConfigurerAutoConfiguration {
+	static class GrpcServletSecurityConfigurerAutoConfiguration {
 
 		@Bean
 		@GlobalServerInterceptor
