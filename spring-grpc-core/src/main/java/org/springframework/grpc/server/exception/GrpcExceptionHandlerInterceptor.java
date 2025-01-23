@@ -62,8 +62,21 @@ public class GrpcExceptionHandlerInterceptor implements ServerInterceptor {
 	@Override
 	public <ReqT, RespT> Listener<ReqT> interceptCall(ServerCall<ReqT, RespT> call, Metadata headers,
 			ServerCallHandler<ReqT, RespT> next) {
-		return new ExceptionHandlerListener<>(next.startCall(call, headers), call,
-				new FallbackHandler(this.exceptionHandler));
+		Listener<ReqT> listener;
+		try {
+			listener = next.startCall(call, headers);
+		}
+		catch (Throwable t) {
+			call.close(this.exceptionHandler.handleException(t), headers(t));
+			listener = new Listener<ReqT>() {
+			};
+		}
+		return new ExceptionHandlerListener<>(listener, call, new FallbackHandler(this.exceptionHandler));
+	}
+
+	private static Metadata headers(Throwable t) {
+		Metadata result = Status.trailersFromThrowable(t);
+		return result != null ? result : new Metadata();
 	}
 
 	static class ExceptionHandlerListener<ReqT, RespT> extends SimpleForwardingServerCallListener<ReqT> {
@@ -107,11 +120,6 @@ public class GrpcExceptionHandlerInterceptor implements ServerInterceptor {
 			catch (Throwable t) {
 				this.call.close(this.exceptionHandler.handleException(t), headers(t));
 			}
-		}
-
-		private Metadata headers(Throwable t) {
-			Metadata result = Status.trailersFromThrowable(t);
-			return result != null ? result : new Metadata();
 		}
 
 	}

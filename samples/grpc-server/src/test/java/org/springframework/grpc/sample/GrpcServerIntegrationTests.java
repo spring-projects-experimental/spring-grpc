@@ -94,7 +94,46 @@ class GrpcServerIntegrationTests {
 	@Nested
 	@SpringBootTest
 	@AutoConfigureInProcessTransport
-	class ServerWithExceptionInInterceptor {
+	class ServerWithExceptionInInterceptorCall {
+
+		@Test
+		void specificErrorResponse(@Autowired GrpcChannelFactory channels) {
+			SimpleGrpc.SimpleBlockingStub client = SimpleGrpc.newBlockingStub(channels.createChannel("0.0.0.0:0"));
+			assertThat(assertThrows(StatusRuntimeException.class,
+					() -> client.sayHello(HelloRequest.newBuilder().setName("foo").build()))
+				.getStatus()
+				.getCode()).isEqualTo(Code.INVALID_ARGUMENT);
+		}
+
+		@TestConfiguration
+		static class TestConfig {
+
+			@Bean
+			@GlobalServerInterceptor
+			public ServerInterceptor exceptionInterceptor() {
+				return new CustomInterceptor();
+			}
+
+			static class CustomInterceptor implements ServerInterceptor {
+
+				@Override
+				public <ReqT, RespT> io.grpc.ServerCall.Listener<ReqT> interceptCall(
+						io.grpc.ServerCall<ReqT, RespT> call, io.grpc.Metadata headers,
+						io.grpc.ServerCallHandler<ReqT, RespT> next) {
+					throw new IllegalArgumentException("test");
+
+				}
+
+			}
+
+		}
+
+	}
+
+	@Nested
+	@SpringBootTest
+	@AutoConfigureInProcessTransport
+	class ServerWithExceptionInInterceptorListener {
 
 		@Test
 		void specificErrorResponse(@Autowired GrpcChannelFactory channels) {
