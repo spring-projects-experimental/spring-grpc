@@ -26,7 +26,6 @@ import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import io.grpc.ForwardingServerCallListener;
 import io.grpc.Metadata;
 import io.grpc.ServerCall;
 import io.grpc.ServerCall.Listener;
@@ -37,11 +36,11 @@ import io.grpc.ServerInterceptor;
  * An interceptor that extracts the authentication credentials from the gRPC request
  * headers and metadata, authenticates the user, and sets the authentication in the
  * SecurityContext. This interceptor should be registered with the gRPC server to handle
- * authentication.
+ * authentication and authorization for gRPC requests.
  *
  * @author Dave Syer
  */
-public class AuthenticationServerInterceptor implements ServerInterceptor, Ordered {
+public class AuthenticationProcessInterceptor implements ServerInterceptor, Ordered {
 
 	private final AuthenticationManager authenticationManager;
 
@@ -54,7 +53,7 @@ public class AuthenticationServerInterceptor implements ServerInterceptor, Order
 		return GrpcSecurity.CONTEXT_FILTER_ORDER - 10;
 	}
 
-	public AuthenticationServerInterceptor(AuthenticationManager authenticationManager,
+	public AuthenticationProcessInterceptor(AuthenticationManager authenticationManager,
 			GrpcAuthenticationExtractor extractor, AuthorizationManager<CallContext> authorizationManager) {
 		this.authenticationManager = authenticationManager;
 		this.extractor = extractor;
@@ -72,56 +71,26 @@ public class AuthenticationServerInterceptor implements ServerInterceptor, Order
 		}
 
 		if (this.authorizationManager != null) {
+			CallContext context = new CallContext(headers, call.getAttributes(), call.getMethodDescriptor());
 			if (user == null) {
+				// Maybe just throw BadCredentialsException (authentication manager would
+				// have to make the anonymous user)?
 				user = new AnonymousAuthenticationToken("anonymous", "anonymous",
 						AuthorityUtils.createAuthorityList("ROLE_ANONYMOUS"));
 			}
-			return new AuthenticatedListener<ReqT>(next.startCall(call, headers), this.authorizationManager,
-					new CallContext(headers, call.getAttributes(), call.getMethodDescriptor()), user);
-		}
-		return new AuthenticatedListener<ReqT>(next.startCall(call, headers), null,
-				new CallContext(headers, call.getAttributes(), call.getMethodDescriptor()), user);
-	}
-
-	static class AuthenticatedListener<ReqT> extends ForwardingServerCallListener<ReqT> {
-
-		private final Listener<ReqT> delegate;
-
-		private final CallContext context;
-
-		private final Authentication authentication;
-
-		private final AuthorizationManager<CallContext> authorizationManager;
-
-		AuthenticatedListener(io.grpc.ServerCall.Listener<ReqT> delegate,
-				AuthorizationManager<CallContext> authorizationManager, CallContext context, Authentication user) {
-			this.delegate = delegate;
-			this.authorizationManager = authorizationManager;
-			this.context = context;
-			this.authentication = user;
-		}
-
-		@Override
-		public void onReady() {
-			if (this.authentication == null || !this.authentication.isAuthenticated()) {
-				throw new BadCredentialsException("not authenticated");
-			}
-			else {
-				if (!this.authorizationManager.authorize(() -> this.authentication, this.context).isGranted()) {
-					if (this.authentication instanceof AnonymousAuthenticationToken) {
-						throw new BadCredentialsException("not authenticated");
-					}
-					throw new AccessDeniedException("not allowed");
+			Authentication authentication = user;
+			if (!this.authorizationManager.authorize(() -> authentication, context).isGranted()) {
+				if (user instanceof AnonymousAuthenticationToken) {
+					throw new BadCredentialsException("not authenticated");
 				}
+				throw new AccessDeniedException("not allowed");
 			}
-			super.onReady();
+		}
+		else if (user == null || !user.isAuthenticated()) {
+			throw new BadCredentialsException("not authenticated");
 		}
 
-		@Override
-		protected Listener<ReqT> delegate() {
-			return this.delegate;
-		}
-
+		return next.startCall(call, headers);
 	}
 
 }

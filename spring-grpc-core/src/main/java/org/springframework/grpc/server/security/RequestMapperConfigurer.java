@@ -35,7 +35,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.PatternMatchUtils;
 import org.springframework.util.function.SingletonSupplier;
 
-public class RequestMapperConfigurer extends SecurityConfigurerAdapter<AuthenticationServerInterceptor, GrpcSecurity> {
+public class RequestMapperConfigurer extends SecurityConfigurerAdapter<AuthenticationProcessInterceptor, GrpcSecurity> {
 
 	private List<AuthorizedCall> authorizedCalls = new ArrayList<>();
 
@@ -46,12 +46,12 @@ public class RequestMapperConfigurer extends SecurityConfigurerAdapter<Authentic
 	public RequestMapperConfigurer(ApplicationContext context) throws Exception {
 		if (context.getBeanNamesForType(AuthorizationEventPublisher.class).length > 0) {
 			this.publisher = context.getBean(AuthorizationEventPublisher.class);
-		} else {
+		}
+		else {
 			this.publisher = new SpringAuthorizationEventPublisher(context);
 		}
 		this.roleHierarchy = SingletonSupplier.of(() -> (context.getBeanNamesForType(RoleHierarchy.class).length > 0)
-				? context.getBean(RoleHierarchy.class)
-				: new NullRoleHierarchy());
+				? context.getBean(RoleHierarchy.class) : new NullRoleHierarchy());
 	}
 
 	@Override
@@ -150,6 +150,7 @@ public class RequestMapperConfigurer extends SecurityConfigurerAdapter<Authentic
 	public static class RequestMapperAuthorizationManager implements AuthorizationManager<CallContext> {
 
 		private final List<AuthorizedCall> authorizedCalls;
+
 		private final AuthorizationEventPublisher publisher;
 
 		public RequestMapperAuthorizationManager(List<AuthorizedCall> authorizedCalls,

@@ -24,8 +24,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 
-public final class PreAuthConfigurer<H extends SecurityBuilder<AuthenticationServerInterceptor>>
-		extends SecurityConfigurerAdapter<AuthenticationServerInterceptor, H> {
+public final class PreAuthConfigurer<H extends SecurityBuilder<AuthenticationProcessInterceptor>>
+		extends SecurityConfigurerAdapter<AuthenticationProcessInterceptor, H> {
 
 	private final ApplicationContext context;
 

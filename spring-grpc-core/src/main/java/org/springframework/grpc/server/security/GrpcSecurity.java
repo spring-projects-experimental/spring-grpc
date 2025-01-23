@@ -52,7 +52,7 @@ import io.micrometer.observation.ObservationRegistry;
  * @author Dave Syer
  */
 public final class GrpcSecurity
-		extends AbstractConfiguredSecurityBuilder<AuthenticationServerInterceptor, GrpcSecurity> {
+		extends AbstractConfiguredSecurityBuilder<AuthenticationProcessInterceptor, GrpcSecurity> {
 
 	/**
 	 * A constant key used for storing and retrieving the "Authorization" header from gRPC
@@ -100,7 +100,7 @@ public final class GrpcSecurity
 	}
 
 	@Override
-	protected AuthenticationServerInterceptor performBuild() throws Exception {
+	protected AuthenticationProcessInterceptor performBuild() throws Exception {
 		if (this.authenticationManager != null) {
 			setSharedObject(AuthenticationManager.class, this.authenticationManager);
 		}
@@ -115,7 +115,7 @@ public final class GrpcSecurity
 			}
 		}
 		this.authenticationExtractors.sort(AnnotationAwareOrderComparator.INSTANCE);
-		return new AuthenticationServerInterceptor(getSharedObject(AuthenticationManager.class),
+		return new AuthenticationProcessInterceptor(getSharedObject(AuthenticationManager.class),
 				new CompositeAuthenticationExtractor(this.authenticationExtractors), this.authorizationManager);
 	}
 
@@ -147,7 +147,7 @@ public final class GrpcSecurity
 	}
 
 	@SuppressWarnings({ "unchecked", "removal" })
-	private <C extends SecurityConfigurerAdapter<AuthenticationServerInterceptor, GrpcSecurity>> C getOrApply(
+	private <C extends SecurityConfigurerAdapter<AuthenticationProcessInterceptor, GrpcSecurity>> C getOrApply(
 			C configurer) throws Exception {
 		C existingConfig = (C) getConfigurer(configurer.getClass());
 		if (existingConfig != null) {

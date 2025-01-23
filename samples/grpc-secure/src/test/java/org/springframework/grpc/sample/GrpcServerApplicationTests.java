@@ -151,7 +151,7 @@ public class GrpcServerApplicationTests {
 		@Lazy
 		SimpleGrpc.SimpleBlockingStub basic(GrpcChannelFactory channels) {
 			return SimpleGrpc.newBlockingStub(channels.createChannel("basic", ChannelBuilderOptions.defaults()
-					.withInterceptors(List.of(new BasicAuthenticationInterceptor("user", "user")))));
+				.withInterceptors(List.of(new BasicAuthenticationInterceptor("user", "user")))));
 		}
 
 		@Bean

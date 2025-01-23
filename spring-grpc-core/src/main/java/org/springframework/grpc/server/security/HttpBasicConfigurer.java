@@ -22,8 +22,8 @@ import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
-public final class HttpBasicConfigurer<H extends SecurityBuilder<AuthenticationServerInterceptor>>
-		extends SecurityConfigurerAdapter<AuthenticationServerInterceptor, H> {
+public final class HttpBasicConfigurer<H extends SecurityBuilder<AuthenticationProcessInterceptor>>
+		extends SecurityConfigurerAdapter<AuthenticationProcessInterceptor, H> {
 
 	private final ApplicationContext context;
 
