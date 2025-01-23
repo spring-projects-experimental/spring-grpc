@@ -4,7 +4,10 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -30,6 +33,10 @@ import io.grpc.ForwardingClientCall.SimpleForwardingClientCall;
 import io.grpc.MethodDescriptor;
 import io.grpc.Status.Code;
 import io.grpc.StatusRuntimeException;
+import io.grpc.reflection.v1.ServerReflectionGrpc;
+import io.grpc.reflection.v1.ServerReflectionRequest;
+import io.grpc.reflection.v1.ServerReflectionResponse;
+import io.grpc.stub.StreamObserver;
 
 @SpringBootTest(properties = { "spring.grpc.server.port=0",
 		"spring.grpc.client.channels.stub.address=static://0.0.0.0:${local.grpc.port}",
@@ -44,6 +51,10 @@ public class GrpcServerApplicationTests {
 	@Autowired
 	@Qualifier("stub")
 	private SimpleGrpc.SimpleBlockingStub stub;
+
+	@Autowired
+	@Qualifier("reflect")
+	private ServerReflectionGrpc.ServerReflectionStub reflect;
 
 	@Autowired
 	@Qualifier("secure")
@@ -64,6 +75,32 @@ public class GrpcServerApplicationTests {
 		StatusRuntimeException exception = assertThrows(StatusRuntimeException.class,
 				() -> stub.sayHello(HelloRequest.newBuilder().setName("Alien").build()));
 		assertEquals(Code.UNAUTHENTICATED, exception.getStatus().getCode());
+	}
+
+	@Test
+	@DirtiesContext
+	void anonymous() throws Exception {
+		AtomicReference<ServerReflectionResponse> response = new AtomicReference<>();
+		AtomicBoolean error = new AtomicBoolean();
+		StreamObserver<ServerReflectionResponse> responses = new StreamObserver<ServerReflectionResponse>() {
+			@Override
+			public void onNext(ServerReflectionResponse value) {
+				response.set(value);
+			}
+
+			@Override
+			public void onError(Throwable t) {
+				error.set(true);
+			}
+
+			@Override
+			public void onCompleted() {
+			}
+		};
+		StreamObserver<ServerReflectionRequest> request = reflect.serverReflectionInfo(responses);
+		request.onNext(ServerReflectionRequest.newBuilder().setListServices("").build());
+		request.onCompleted();
+		Awaitility.await().until(() -> response.get() != null || error.get());
 	}
 
 	@Test
@@ -114,13 +151,19 @@ public class GrpcServerApplicationTests {
 		@Lazy
 		SimpleGrpc.SimpleBlockingStub basic(GrpcChannelFactory channels) {
 			return SimpleGrpc.newBlockingStub(channels.createChannel("basic", ChannelBuilderOptions.defaults()
-				.withInterceptors(List.of(new BasicAuthenticationInterceptor("user", "user")))));
+					.withInterceptors(List.of(new BasicAuthenticationInterceptor("user", "user")))));
 		}
 
 		@Bean
 		@Lazy
 		SimpleGrpc.SimpleBlockingStub stub(GrpcChannelFactory channels, @LocalGrpcPort int port) {
 			return SimpleGrpc.newBlockingStub(channels.createChannel("stub"));
+		}
+
+		@Bean
+		@Lazy
+		ServerReflectionGrpc.ServerReflectionStub reflect(GrpcChannelFactory channels, @LocalGrpcPort int port) {
+			return ServerReflectionGrpc.newStub(channels.createChannel("stub"));
 		}
 
 	}

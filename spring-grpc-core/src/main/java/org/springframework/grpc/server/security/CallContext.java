@@ -20,4 +20,9 @@ import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 
 public record CallContext(Metadata headers, Attributes attributes, MethodDescriptor<?, ?> method) {
+
+	@Override
+	public final String toString() {
+		return "CallContext:[" + this.method.getFullMethodName() + "]";
+	}
 }

@@ -44,8 +44,10 @@ public class GrpcServerApplication {
 				.hasAuthority("ROLE_ADMIN")
 				.methods("Simple/SayHello")
 				.hasAuthority("ROLE_USER")
+				.methods("grpc.*/*")
+				.permitAll()
 				.allRequests()
-				.permitAll())
+				.denyAll())
 			.httpBasic(withDefaults())
 			.preauth(withDefaults())
 			.authenticationExtractor((headers, attributes) -> {

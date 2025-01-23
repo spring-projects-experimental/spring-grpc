@@ -103,12 +103,14 @@ public class AuthenticationServerInterceptor implements ServerInterceptor, Order
 
 		@Override
 		public void onReady() {
-			if (this.authentication == null || !this.authentication.isAuthenticated()
-					|| this.authentication instanceof AnonymousAuthenticationToken) {
+			if (this.authentication == null || !this.authentication.isAuthenticated()) {
 				throw new BadCredentialsException("not authenticated");
 			}
 			else {
 				if (!this.authorizationManager.authorize(() -> this.authentication, this.context).isGranted()) {
+					if (this.authentication instanceof AnonymousAuthenticationToken) {
+						throw new BadCredentialsException("not authenticated");
+					}
 					throw new AccessDeniedException("not allowed");
 				}
 			}

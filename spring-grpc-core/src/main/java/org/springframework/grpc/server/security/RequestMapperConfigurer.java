@@ -22,10 +22,13 @@ import java.util.function.Supplier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.security.access.hierarchicalroles.NullRoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.authorization.AuthenticatedAuthorizationManager;
 import org.springframework.security.authorization.AuthorityAuthorizationManager;
 import org.springframework.security.authorization.AuthorizationDecision;
+import org.springframework.security.authorization.AuthorizationEventPublisher;
 import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.authorization.AuthorizationManagers;
+import org.springframework.security.authorization.SpringAuthorizationEventPublisher;
 import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
 import org.springframework.security.core.Authentication;
 import org.springframework.util.Assert;
@@ -38,14 +41,22 @@ public class RequestMapperConfigurer extends SecurityConfigurerAdapter<Authentic
 
 	private final Supplier<RoleHierarchy> roleHierarchy;
 
-	public RequestMapperConfigurer(ApplicationContext context) {
+	private final AuthorizationEventPublisher publisher;
+
+	public RequestMapperConfigurer(ApplicationContext context) throws Exception {
+		if (context.getBeanNamesForType(AuthorizationEventPublisher.class).length > 0) {
+			this.publisher = context.getBean(AuthorizationEventPublisher.class);
+		} else {
+			this.publisher = new SpringAuthorizationEventPublisher(context);
+		}
 		this.roleHierarchy = SingletonSupplier.of(() -> (context.getBeanNamesForType(RoleHierarchy.class).length > 0)
-				? context.getBean(RoleHierarchy.class) : new NullRoleHierarchy());
+				? context.getBean(RoleHierarchy.class)
+				: new NullRoleHierarchy());
 	}
 
 	@Override
 	public void configure(GrpcSecurity builder) throws Exception {
-		builder.authorizationManager(new RequestMapperAuthorizationManager(this.authorizedCalls));
+		builder.authorizationManager(new RequestMapperAuthorizationManager(this.authorizedCalls, this.publisher));
 	}
 
 	public AuthorizedCall allRequests() {
@@ -111,6 +122,18 @@ public class RequestMapperConfigurer extends SecurityConfigurerAdapter<Authentic
 			return access(withRoleHierarchy(AuthorityAuthorizationManager.hasAnyAuthority(authorities)));
 		}
 
+		public RequestMapperConfigurer authenticated() {
+			return access(AuthenticatedAuthorizationManager.authenticated());
+		}
+
+		public RequestMapperConfigurer fullyAuthenticated() {
+			return access(AuthenticatedAuthorizationManager.fullyAuthenticated());
+		}
+
+		public RequestMapperConfigurer anonymous() {
+			return access(AuthenticatedAuthorizationManager.anonymous());
+		}
+
 		public RequestMapperConfigurer access(AuthorizationManager<Object> manager) {
 			Assert.notNull(manager, "manager cannot be null");
 			this.authorizationManager = (this.not) ? AuthorizationManagers.not(manager) : manager;
@@ -127,20 +150,26 @@ public class RequestMapperConfigurer extends SecurityConfigurerAdapter<Authentic
 	public static class RequestMapperAuthorizationManager implements AuthorizationManager<CallContext> {
 
 		private final List<AuthorizedCall> authorizedCalls;
+		private final AuthorizationEventPublisher publisher;
 
-		public RequestMapperAuthorizationManager(List<AuthorizedCall> authorizedCalls) {
+		public RequestMapperAuthorizationManager(List<AuthorizedCall> authorizedCalls,
+				AuthorizationEventPublisher publisher) {
 			this.authorizedCalls = authorizedCalls;
+			this.publisher = publisher;
 		}
 
 		@SuppressWarnings("deprecation")
 		@Override
 		public AuthorizationDecision check(Supplier<Authentication> authentication, CallContext context) {
+			AuthorizationDecision result = new AuthorizationDecision(false);
 			for (AuthorizedCall authorizedCall : this.authorizedCalls) {
 				if (authorizedCall.matcher.matches(context)) {
-					return authorizedCall.authorizationManager.check(authentication, context);
+					result = authorizedCall.authorizationManager.check(authentication, context);
+					break;
 				}
 			}
-			return new AuthorizationDecision(false);
+			this.publisher.publishAuthorizationEvent(authentication, context, result);
+			return result;
 		}
 
 	}
