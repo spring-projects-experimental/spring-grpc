@@ -1,0 +1,2 @@
+org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer=\
+org.springframework.grpc.autoconfigure.server.security.GrpcDisableCsrfHttpConfigurer

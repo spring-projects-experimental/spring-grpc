@@ -199,7 +199,7 @@ Spring gRPC handles this for the default configuration.
 
 Spring gRPC will automatically configure the gRPC server interceptors, and https://docs.spring.io/spring-boot/reference/web/spring-security.html[Spring Boot will provide defaults] for an `AuthenticationManager` and a `UserDetailsService`.
 Spring Boot will also provide default configuration for an OAuth2 resource server, if you set the classpath up correctly (following the https://docs.spring.io/spring-boot/reference/web/spring-security.html#web.security.oauth2.server[Spring Boot documentation]) which will be used to validate the token.
-You will want to provide your own `SecurityFilterChain` because the one provided by Spring Boot will enable CSRF protection for all endpoints, which is not compatible with gRPC.
+You may still want to provide your own `SecurityFilterChain`, but you can use the defaults just to get started.
 Here's an example with HTTP Basic authentication:
 
 [source,java]
@@ -208,22 +208,10 @@ Here's an example with HTTP Basic authentication:
 public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 	return http.httpBasic(Customizer.withDefaults())
 		.authorizeHttpRequests((requests) -> requests.anyRequest().authenticated())
-		.csrf(csrf -> csrf.disable())
 		.build();
 }
 ----
 
-Disabling CSRF is fine if you have no other HTTP endpoints, but if you do you will need to be careful to disable CSRF protection for gRPC requests.
-To help you do that you can use a `GrpcServletRequest` to check if the request is a gRPC request and disable CSRF protection for it.
-Example:
-
-[source,java]
-----
-@Bean
-public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-	return http
-		... // configure endpoint paths and authentication patterns
-		.csrf(csrf -> csrf.ignoringRequestMatchers(GrpcServletRequest.all()))
-		.build();
-}
-----
+By default CSRF protection is automatically disabled for gRPC requests because it is incompatible with the protocol.
+You can switch off that behaviour and configure your own CSRF protection if you want to by explicitly setting `spring.grpc.security.csrf.enabled=true`.
+A servlet application that exposes gRPC endpoints on a different port (with `spring.grpc.server.servlet.enabled=false`) will also not have CSRF protection disabled by default.
