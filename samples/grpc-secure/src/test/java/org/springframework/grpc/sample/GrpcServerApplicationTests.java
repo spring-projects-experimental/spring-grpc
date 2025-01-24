@@ -25,12 +25,6 @@ import org.springframework.grpc.sample.proto.SimpleGrpc;
 import org.springframework.grpc.test.LocalGrpcPort;
 import org.springframework.test.annotation.DirtiesContext;
 
-import io.grpc.CallOptions;
-import io.grpc.Channel;
-import io.grpc.ClientCall;
-import io.grpc.ClientInterceptor;
-import io.grpc.ForwardingClientCall.SimpleForwardingClientCall;
-import io.grpc.MethodDescriptor;
 import io.grpc.Status.Code;
 import io.grpc.StatusRuntimeException;
 import io.grpc.reflection.v1.ServerReflectionGrpc;
@@ -39,9 +33,7 @@ import io.grpc.reflection.v1.ServerReflectionResponse;
 import io.grpc.stub.StreamObserver;
 
 @SpringBootTest(properties = { "spring.grpc.server.port=0",
-		"spring.grpc.client.channels.stub.address=static://0.0.0.0:${local.grpc.port}",
-		"spring.grpc.client.channels.basic.address=static://0.0.0.0:${local.grpc.port}",
-		"spring.grpc.client.channels.secure.address=static://0.0.0.0:${local.grpc.port}" })
+		"spring.grpc.client.channels.stub.address=static://0.0.0.0:${local.grpc.port}" })
 public class GrpcServerApplicationTests {
 
 	public static void main(String[] args) {
@@ -55,10 +47,6 @@ public class GrpcServerApplicationTests {
 	@Autowired
 	@Qualifier("reflect")
 	private ServerReflectionGrpc.ServerReflectionStub reflect;
-
-	@Autowired
-	@Qualifier("secure")
-	private SimpleGrpc.SimpleBlockingStub secure;
 
 	@Autowired
 	@Qualifier("basic")
@@ -107,14 +95,14 @@ public class GrpcServerApplicationTests {
 	@DirtiesContext
 	void unauthauthorized() {
 		StatusRuntimeException exception = assertThrows(StatusRuntimeException.class,
-				() -> secure.streamHello(HelloRequest.newBuilder().setName("Alien").build()).next());
+				() -> basic.streamHello(HelloRequest.newBuilder().setName("Alien").build()).next());
 		assertEquals(Code.PERMISSION_DENIED, exception.getStatus().getCode());
 	}
 
 	@Test
 	@DirtiesContext
 	void authenticated() {
-		HelloReply response = secure.sayHello(HelloRequest.newBuilder().setName("Alien").build());
+		HelloReply response = basic.sayHello(HelloRequest.newBuilder().setName("Alien").build());
 		assertEquals("Hello ==> Alien", response.getMessage());
 	}
 
@@ -130,27 +118,8 @@ public class GrpcServerApplicationTests {
 
 		@Bean
 		@Lazy
-		SimpleGrpc.SimpleBlockingStub secure(GrpcChannelFactory channels) {
-			return SimpleGrpc.newBlockingStub(channels.createChannel("secure",
-					ChannelBuilderOptions.defaults().withInterceptors(List.of(new ClientInterceptor() {
-						@Override
-						public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(MethodDescriptor<ReqT, RespT> method,
-								CallOptions callOptions, Channel next) {
-							return new SimpleForwardingClientCall<ReqT, RespT>(next.newCall(method, callOptions)) {
-								public void start(ClientCall.Listener<RespT> responseListener,
-										io.grpc.Metadata headers) {
-									headers.put(GrpcServerApplication.USER_KEY, "user");
-									super.start(responseListener, headers);
-								};
-							};
-						}
-					}))));
-		}
-
-		@Bean
-		@Lazy
 		SimpleGrpc.SimpleBlockingStub basic(GrpcChannelFactory channels) {
-			return SimpleGrpc.newBlockingStub(channels.createChannel("basic", ChannelBuilderOptions.defaults()
+			return SimpleGrpc.newBlockingStub(channels.createChannel("stub", ChannelBuilderOptions.defaults()
 				.withInterceptors(List.of(new BasicAuthenticationInterceptor("user", "user")))));
 		}
 

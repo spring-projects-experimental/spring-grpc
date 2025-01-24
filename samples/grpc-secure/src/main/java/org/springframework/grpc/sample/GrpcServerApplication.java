@@ -10,10 +10,8 @@ import org.springframework.grpc.server.GlobalServerInterceptor;
 import org.springframework.grpc.server.security.GrpcSecurity;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
-import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
-import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 
 import io.grpc.Metadata;
 import io.grpc.ServerInterceptor;
@@ -40,24 +38,13 @@ public class GrpcServerApplication {
 	@GlobalServerInterceptor
 	public ServerInterceptor securityInterceptor(GrpcSecurity security) throws Exception {
 		return security
-			.authorizeRequests(requests -> requests.methods("Simple/StreamHello")
-				.hasAuthority("ROLE_ADMIN")
-				.methods("Simple/SayHello")
-				.hasAuthority("ROLE_USER")
-				.methods("grpc.*/*")
-				.permitAll()
-				.allRequests()
-				.denyAll())
+			.authorizeRequests(requests -> requests
+				.methods("Simple/StreamHello").hasAuthority("ROLE_ADMIN")
+				.methods("Simple/SayHello").hasAuthority("ROLE_USER")
+				.methods("grpc.*/*").permitAll()
+				.allRequests().denyAll())
 			.httpBasic(withDefaults())
 			.preauth(withDefaults())
-			.authenticationExtractor((headers, attributes) -> {
-				String user = headers.get(USER_KEY);
-				if (user != null) {
-					return new PreAuthenticatedAuthenticationToken(user, "N/A",
-							AuthorityUtils.createAuthorityList("ROLE_" + user.toUpperCase()));
-				}
-				return null;
-			})
 			.build();
 
 	}
