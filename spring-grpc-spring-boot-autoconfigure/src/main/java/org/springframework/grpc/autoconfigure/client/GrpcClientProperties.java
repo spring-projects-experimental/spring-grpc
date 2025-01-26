@@ -260,7 +260,7 @@ public class GrpcClientProperties implements EnvironmentAware, VirtualTargets {
 
 		public void setMaxInboundMessageSize(final DataSize maxInboundMessageSize) {
 			this.setMaxInboundSize(maxInboundMessageSize, (s) -> this.maxInboundMessageSize = s,
-					"maxInboundMesssageSize");
+					"maxInboundMessageSize");
 		}
 
 		public DataSize getMaxInboundMetadataSize() {
