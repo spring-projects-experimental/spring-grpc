@@ -253,3 +253,28 @@ Channel basic(GrpcChannelFactory channels) {
 
 Usage of the bearer token interceptor is similar.
 You can look at the implementation of those interceptors to see how to create your own for custom headers.
+
+=== OAuth2 Clients
+
+Spring gRPC provides an autoconfigured OAuth2 client that can be used to provide authentication to your gRPC clients.
+It works the same as in any Spring Boot application, in that if you configure properties in `spring.security.oauth2.authorizationserver.client.*` you will be able to inject an `ClientRegistrationRepository` and use it to create an `OAuth2AuthorizedClient` for a given client registration.
+Here's an example showing how to plug the client registration into a `BearerTokenAuthenticationInterceptor` in the gRPC client:
+
+[source,java]
+----
+@Bean
+@Lazy
+SimpleGrpc.SimpleBlockingStub basic(GrpcChannelFactory channels, ClientRegistrationRepository registry) {
+	ClientRegistration reg = registry.findByRegistrationId("spring");
+	return SimpleGrpc.newBlockingStub(channels.createChannel("0.0.0.0:9090", ChannelBuilderOptions.defaults()
+		.withInterceptors(List.of(new BearerTokenAuthenticationInterceptor(() -> token(reg))))));
+}
+
+private String token(ClientRegistration reg) {
+	RestClientClientCredentialsTokenResponseClient creds = new RestClientClientCredentialsTokenResponseClient();
+	String token = creds.getTokenResponse(new OAuth2ClientCredentialsGrantRequest(reg))
+		.getAccessToken()
+		.getTokenValue();
+	return token;
+}
+----

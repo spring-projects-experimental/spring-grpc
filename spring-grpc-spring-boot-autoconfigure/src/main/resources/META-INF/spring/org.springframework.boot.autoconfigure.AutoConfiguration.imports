@@ -7,3 +7,5 @@ org.springframework.grpc.autoconfigure.server.GrpcServerObservationAutoConfigura
 org.springframework.grpc.autoconfigure.server.GrpcServerReflectionAutoConfiguration
 org.springframework.grpc.autoconfigure.server.exception.GrpcExceptionHandlerAutoConfiguration
 org.springframework.grpc.autoconfigure.server.security.GrpcSecurityAutoConfiguration
+org.springframework.grpc.autoconfigure.server.security.OAuth2ClientAutoConfiguration
+org.springframework.grpc.autoconfigure.server.security.OAuth2ResourceServerAutoConfiguration

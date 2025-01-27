@@ -5,7 +5,6 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.grpc.sample.proto.HelloReply;
 import org.springframework.grpc.sample.proto.HelloRequest;
 import org.springframework.grpc.sample.proto.SimpleGrpc;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import io.grpc.stub.StreamObserver;
@@ -16,15 +15,19 @@ public class GrpcServerService extends SimpleGrpc.SimpleImplBase {
 	private static Log log = LogFactory.getLog(GrpcServerService.class);
 
 	@Override
+	// @PreAuthorize("hasAuthority('ROLE_USER')")
 	public void sayHello(HelloRequest req, StreamObserver<HelloReply> responseObserver) {
 		log.info("Hello " + req.getName());
-		log.info("Security " + SecurityContextHolder.getContext().getAuthentication());
+		if (req.getName().startsWith("error")) {
+			throw new IllegalArgumentException("Bad name: " + req.getName());
+		}
 		HelloReply reply = HelloReply.newBuilder().setMessage("Hello ==> " + req.getName()).build();
 		responseObserver.onNext(reply);
 		responseObserver.onCompleted();
 	}
 
 	@Override
+	// @PreAuthorize("hasAuthority('ROLE_ADMIN')")
 	public void streamHello(HelloRequest req, StreamObserver<HelloReply> responseObserver) {
 		log.info("Hello " + req.getName());
 		int count = 0;

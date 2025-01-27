@@ -146,6 +146,12 @@ public final class GrpcSecurity
 		return this;
 	}
 
+	public GrpcSecurity oauth2ResourceServer(Customizer<OAuth2ResourceServerConfigurer> customizer) throws Exception {
+		customizer.customize(getOrApply(new OAuth2ResourceServerConfigurer(getContext())));
+		authenticationExtractor(new BearerTokenAuthenticationExtractor());
+		return this;
+	}
+
 	@SuppressWarnings({ "unchecked", "removal" })
 	private <C extends SecurityConfigurerAdapter<AuthenticationProcessInterceptor, GrpcSecurity>> C getOrApply(
 			C configurer) throws Exception {

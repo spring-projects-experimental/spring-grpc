@@ -7,14 +7,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.grpc.server.GlobalServerInterceptor;
+import org.springframework.grpc.server.security.AuthenticationProcessInterceptor;
 import org.springframework.grpc.server.security.GrpcSecurity;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
 import io.grpc.Metadata;
-import io.grpc.ServerInterceptor;
 
 @SpringBootApplication
 @EnableMethodSecurity
@@ -28,28 +26,19 @@ public class GrpcServerApplication {
 	}
 
 	@Bean
-	public InMemoryUserDetailsManager inMemoryUserDetailsManager() {
-		return new InMemoryUserDetailsManager(
-				User.withUsername("user").password("{noop}user").authorities("ROLE_USER").build(),
-				User.withUsername("admin").password("{noop}admin").authorities("ROLE_ADMIN").build());
-	}
-
-	@Bean
 	@GlobalServerInterceptor
-	public ServerInterceptor securityInterceptor(GrpcSecurity security) throws Exception {
-		return security
+	AuthenticationProcessInterceptor jwtSecurityFilterChain(GrpcSecurity grpc) throws Exception {
+		return grpc
 			.authorizeRequests(requests -> requests.methods("Simple/StreamHello")
-				.hasAuthority("ROLE_ADMIN")
+				.hasAuthority("SCOPE_profile")
 				.methods("Simple/SayHello")
-				.hasAuthority("ROLE_USER")
+				.authenticated()
 				.methods("grpc.*/*")
 				.permitAll()
 				.allRequests()
 				.denyAll())
-			.httpBasic(withDefaults())
-			.preauth(withDefaults())
+			.oauth2ResourceServer((resourceServer) -> resourceServer.jwt(withDefaults()))
 			.build();
-
 	}
 
 }

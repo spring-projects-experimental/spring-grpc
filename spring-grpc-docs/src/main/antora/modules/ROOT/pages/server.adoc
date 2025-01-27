@@ -185,6 +185,60 @@ Here we configure a bundle named "ssltest" that uses a JKS keystore, similar to 
 It is then applied to the gRPC server using the `spring.grpc.server.ssl.bundle` property.
 To use self-signed certificates, for testing purposes only, you also need to set `spring.grpc.server.ssl.secure=false`.
 
+=== Declarative Security with Spring Security
+
+If you want to enhance the security of your gRPC server, you can use Spring Security by employing similar mechanisms to those used for regular HTTP security.
+If Spring Security is on the classpath, some autoconfiguration will be automatically added to your project.
+By default, just https://docs.spring.io/spring-boot/reference/web/spring-security.html[like in a servlet application], you will get a `UserDetailsService` from Spring Boot and an `AuthenticationManager` that will authenticate requests using HTTP Basic authentication.
+Basic authentication is enabled by default, as well as "preauthentication" via mTLS.
+Preauthentication works by extracting a user details object from the client's TLS certificate, matching the principal name with the user in the `UserDetailsService` (just like in a normal web application).
+You can then use `@Preauthorize` on your `BindableService` beans to enforce authorization rules with roles (more precisely authorities in Spring Security terminology).
+
+You can change the defaults and add your own rules by configuring beans of type `UserDetailsService` and/or `AuthenticationServerInterceptor`.
+In this way you can move the authorization rules to a central place, and you can also add your own authentication mechanisms.
+The `AuthenticationServerInterceptor` can be created from a Spring Security configurer of type `GrpcSecurity`.
+Its usage will be familiar to anyone who has used Spring Security before.
+Here's an example:
+
+[source,java]
+----
+@Bean
+@GlobalServerInterceptor
+AuthenticationProcessInterceptor jwtSecurityFilterChain(GrpcSecurity grpc) throws Exception {
+	return grpc
+			.authorizeRequests(requests -> requests
+					.methods("Simple/StreamHello").hasAuthority("ROLE_ADMIN")
+					.methods("Simple/SayHello").hasAuthority("ROLE_USER")
+					.methods("grpc.*/*").permitAll()
+					.allRequests().denyAll())
+			.httpBasic(withDefaults())
+			.preauth(withDefaults())
+			.build();
+}
+----
+
+Here we configure a filter that allows access to one method only to admin users, and another to users with the "USER" role;
+access to all gRPC services (e.g. reflection and health indicators) is allowed to all; and all other requests are denied.
+We also enable HTTP Basic authentication and preauthentication (mTLS) (`withDefaults()` is a static import from the `Customizer` in Spring Security).
+
+=== OAuth2 Resource Server
+
+Similar to the way Spring Boot works https://docs.spring.io/spring-boot/reference/web/spring-security.html#web.security.oauth2.server[with normal web applications], if you have the `spring-security-oauth2-resource-server` dependency on the classpath, Spring gRPC will be able to automatically configure an OAuth2 resource server.
+There are 2 choices for the token types, just the same as in Spring Boot, and they are configured with the same application properties and optional custom beans.
+
+For JWT you need to set up either the JWK Set or OIDC Issuer URI.
+The JWK Set URI is set via `spring.security.oauth2.resourceserver.jwt.jwk-set-uri` (it's an endpoint in the authorization server).
+You also need to have the `spring-security-oauth2-jose` dependency on the classpath to handle the JWT decoding.
+
+For opaque tokens, it works exactly the same as with a regular web application, with the same application properties. E.g.
+
+[source,properties]
+----
+spring.security.oauth2.resourceserver.opaquetoken.introspection-uri=https://example.com/check-token
+spring.security.oauth2.resourceserver.opaquetoken.client-id=my-client-id
+spring.security.oauth2.resourceserver.opaquetoken.client-secret=my-client-secret
+----
+
 === Servlet
 
 The servlet-based server supports any security configuration that the servlet container supports, including Spring Security.
