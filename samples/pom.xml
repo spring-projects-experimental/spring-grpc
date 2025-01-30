@@ -17,6 +17,7 @@
 
 	<modules>
 		<module>grpc-server</module>
+		<module>grpc-client</module>
 		<module>grpc-secure</module>
 		<module>grpc-oauth2</module>
 		<module>grpc-reactive</module>

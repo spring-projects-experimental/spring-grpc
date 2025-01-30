@@ -10,9 +10,9 @@
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>org.springframework.grpc</groupId>
-	<artifactId>grpc-oauth2-sample</artifactId>
+	<artifactId>grpc-client-sample</artifactId>
 	<version>0.5.0-SNAPSHOT</version>
-	<name>Spring gRPC OAuth2 Server Sample</name>
+	<name>Spring gRPC Server Sample</name>
 	<description>Demo project for Spring gRPC</description>
 	<url />
 	<licenses>
@@ -29,9 +29,11 @@
 	</scm>
 	<properties>
 		<java.version>17</java.version>
-		<spring-javaformat-maven-plugin.version>0.0.43</spring-javaformat-maven-plugin.version>
+		<spring-javaformat-maven-plugin.version>0.0.39</spring-javaformat-maven-plugin.version>
 		<protobuf-java.version>3.25.5</protobuf-java.version>
-		<grpc.version>1.63.2</grpc.version>
+		<grpc.version>1.70.0</grpc.version>
+		<maven.version>3.9.4</maven.version>
+		<maven.resolver.version>1.9.18</maven.resolver.version>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
@@ -47,22 +49,9 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.grpc</groupId>
-			<artifactId>spring-grpc-spring-boot-starter</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>io.grpc</groupId>
-			<artifactId>grpc-services</artifactId>
+			<artifactId>spring-grpc-client-spring-boot-starter</artifactId>
 		</dependency>
 
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-oauth2-client</artifactId>
-			<scope>test</scope>
-		</dependency>
 		<dependency>
 			<groupId>org.springframework.grpc</groupId>
 			<artifactId>spring-grpc-test</artifactId>

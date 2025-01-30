@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -20,7 +19,8 @@ import com.example.demo.proto.HelloReply;
 import com.example.demo.proto.HelloRequest;
 import com.example.demo.proto.SimpleGrpc;
 
-@SpringBootTest(properties = { "spring.grpc.client.channels.test.address=static://localhost:0" })
+@SpringBootTest(properties = { "spring.grpc.server.port=0" })
+@DirtiesContext
 public class DemoApplicationTests {
 
 	private static Log log = LogFactory.getLog(DemoApplicationTests.class);
@@ -33,12 +33,10 @@ public class DemoApplicationTests {
 	private SimpleGrpc.SimpleBlockingStub stub;
 
 	@Test
-	@DirtiesContext
 	void contextLoads() {
 	}
 
 	@Test
-	@DirtiesContext
 	void serverResponds() {
 		log.info("Testing");
 		HelloReply response = stub.sayHello(HelloRequest.newBuilder().setName("Alien").build());

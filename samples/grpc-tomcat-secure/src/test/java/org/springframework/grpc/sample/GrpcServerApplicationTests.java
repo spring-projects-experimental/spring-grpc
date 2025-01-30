@@ -27,7 +27,8 @@ import org.springframework.test.annotation.DirtiesContext;
 import io.grpc.Status.Code;
 import io.grpc.StatusRuntimeException;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+		properties = "spring.grpc.client.default-channel.address=0.0.0.0:${local.server.port}")
 public class GrpcServerApplicationTests {
 
 	private static Log log = LogFactory.getLog(GrpcServerApplicationTests.class);
@@ -37,7 +38,7 @@ public class GrpcServerApplicationTests {
 	}
 
 	@Autowired
-	@Qualifier("stub")
+	@Qualifier("simpleBlockingStub")
 	private SimpleGrpc.SimpleBlockingStub stub;
 
 	@Autowired
@@ -71,14 +72,8 @@ public class GrpcServerApplicationTests {
 		@Bean
 		@Lazy
 		SimpleGrpc.SimpleBlockingStub basic(GrpcChannelFactory channels, @LocalServerPort int port) {
-			return SimpleGrpc.newBlockingStub(channels.createChannel("0.0.0.0:" + port, ChannelBuilderOptions.defaults()
+			return SimpleGrpc.newBlockingStub(channels.createChannel("default", ChannelBuilderOptions.defaults()
 				.withInterceptors(List.of(new BasicAuthenticationInterceptor("user", "user")))));
-		}
-
-		@Bean
-		@Lazy
-		SimpleGrpc.SimpleBlockingStub stub(GrpcChannelFactory channels, @LocalServerPort int port) {
-			return SimpleGrpc.newBlockingStub(channels.createChannel("0.0.0.0:" + port));
 		}
 
 	}

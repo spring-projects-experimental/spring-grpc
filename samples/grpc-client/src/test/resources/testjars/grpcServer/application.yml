@@ -1,0 +1,4 @@
+spring:
+  grpc:
+    server:
+      port: ${server.port}

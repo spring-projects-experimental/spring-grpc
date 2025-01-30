@@ -7,21 +7,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.grpc.client.GrpcChannelFactory;
+import org.springframework.grpc.client.EnableGrpcClients;
+import org.springframework.grpc.client.GrpcClient;
 import org.springframework.grpc.sample.proto.HelloReply;
 import org.springframework.grpc.sample.proto.HelloRequest;
 import org.springframework.grpc.sample.proto.ReactorSimpleGrpc;
 import org.springframework.grpc.sample.proto.ReactorSimpleGrpc.ReactorSimpleStub;
 import org.springframework.grpc.test.AutoConfigureInProcessTransport;
-import org.springframework.grpc.test.LocalGrpcPort;
 import org.springframework.test.annotation.DirtiesContext;
 
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 @SpringBootTest
+@DirtiesContext
 @AutoConfigureInProcessTransport
 public class GrpcServerApplicationTests {
 
@@ -35,12 +34,10 @@ public class GrpcServerApplicationTests {
 	private ReactorSimpleStub stub;
 
 	@Test
-	@DirtiesContext
 	void contextLoads() {
 	}
 
 	@Test
-	@DirtiesContext
 	void serverResponds() {
 		log.info("Testing");
 		Mono<HelloReply> reply = stub.sayHello(HelloRequest.newBuilder().setName("Alien").build());
@@ -50,13 +47,9 @@ public class GrpcServerApplicationTests {
 	}
 
 	@TestConfiguration
+	@EnableGrpcClients(@GrpcClient(target = "0.0.0.0:${local.grpc.port:9090}",
+			types = ReactorSimpleGrpc.ReactorSimpleStub.class))
 	static class ExtraConfiguration {
-
-		@Bean
-		@Lazy
-		ReactorSimpleStub stub(GrpcChannelFactory channels, @LocalGrpcPort int port) {
-			return ReactorSimpleGrpc.newReactorStub(channels.createChannel("0.0.0.0:" + port));
-		}
 
 	}
 

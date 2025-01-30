@@ -36,7 +36,7 @@ import io.grpc.ManagedChannelBuilder;
 @EnableConfigurationProperties(GrpcClientProperties.class)
 @Import({ GrpcCodecConfiguration.class, ClientInterceptorsConfiguration.class,
 		GrpcChannelFactoryConfigurations.ShadedNettyChannelFactoryConfiguration.class,
-		GrpcChannelFactoryConfigurations.NettyChannelFactoryConfiguration.class })
+		GrpcChannelFactoryConfigurations.NettyChannelFactoryConfiguration.class, ClientScanConfiguration.class })
 public class GrpcClientAutoConfiguration {
 
 	@Bean

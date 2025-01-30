@@ -15,14 +15,15 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Lazy;
+import org.springframework.grpc.client.BlockingStubFactory;
 import org.springframework.grpc.client.ChannelBuilderOptions;
-import org.springframework.grpc.client.GrpcChannelFactory;
+import org.springframework.grpc.client.EnableGrpcClients;
+import org.springframework.grpc.client.GrpcClient;
+import org.springframework.grpc.client.GrpcClientRegistryCustomizer;
 import org.springframework.grpc.client.security.BasicAuthenticationInterceptor;
 import org.springframework.grpc.sample.proto.HelloReply;
 import org.springframework.grpc.sample.proto.HelloRequest;
 import org.springframework.grpc.sample.proto.SimpleGrpc;
-import org.springframework.grpc.test.LocalGrpcPort;
 import org.springframework.test.annotation.DirtiesContext;
 
 import io.grpc.Status.Code;
@@ -32,8 +33,9 @@ import io.grpc.reflection.v1.ServerReflectionRequest;
 import io.grpc.reflection.v1.ServerReflectionResponse;
 import io.grpc.stub.StreamObserver;
 
-@SpringBootTest(properties = { "spring.grpc.server.port=0",
-		"spring.grpc.client.channels.stub.address=static://0.0.0.0:${local.grpc.port}" })
+@SpringBootTest(properties = { "debug=true", "spring.grpc.server.port=0",
+		"spring.grpc.client.default-channel.address=static://0.0.0.0:${local.grpc.port}" })
+@DirtiesContext
 public class GrpcServerApplicationTests {
 
 	public static void main(String[] args) {
@@ -41,24 +43,21 @@ public class GrpcServerApplicationTests {
 	}
 
 	@Autowired
-	@Qualifier("stub")
+	@Qualifier("unsecuredSimpleBlockingStub")
 	private SimpleGrpc.SimpleBlockingStub stub;
 
 	@Autowired
-	@Qualifier("reflect")
 	private ServerReflectionGrpc.ServerReflectionStub reflect;
 
 	@Autowired
-	@Qualifier("basic")
+	@Qualifier("simpleBlockingStub")
 	private SimpleGrpc.SimpleBlockingStub basic;
 
 	@Test
-	@DirtiesContext
 	void contextLoads() {
 	}
 
 	@Test
-	@DirtiesContext
 	void unauthenticated() {
 		StatusRuntimeException exception = assertThrows(StatusRuntimeException.class,
 				() -> stub.sayHello(HelloRequest.newBuilder().setName("Alien").build()));
@@ -66,7 +65,6 @@ public class GrpcServerApplicationTests {
 	}
 
 	@Test
-	@DirtiesContext
 	void anonymous() throws Exception {
 		AtomicReference<ServerReflectionResponse> response = new AtomicReference<>();
 		AtomicBoolean error = new AtomicBoolean();
@@ -92,7 +90,6 @@ public class GrpcServerApplicationTests {
 	}
 
 	@Test
-	@DirtiesContext
 	void unauthauthorized() {
 		StatusRuntimeException exception = assertThrows(StatusRuntimeException.class,
 				() -> basic.streamHello(HelloRequest.newBuilder().setName("Alien").build()).next());
@@ -100,39 +97,30 @@ public class GrpcServerApplicationTests {
 	}
 
 	@Test
-	@DirtiesContext
 	void authenticated() {
 		HelloReply response = basic.sayHello(HelloRequest.newBuilder().setName("Alien").build());
 		assertEquals("Hello ==> Alien", response.getMessage());
 	}
 
 	@Test
-	@DirtiesContext
 	void basic() {
 		HelloReply response = basic.sayHello(HelloRequest.newBuilder().setName("Alien").build());
 		assertEquals("Hello ==> Alien", response.getMessage());
 	}
 
 	@TestConfiguration
+	@EnableGrpcClients(@GrpcClient(target = "stub", prefix = "unsecured",
+			types = { SimpleGrpc.SimpleBlockingStub.class, ServerReflectionGrpc.ServerReflectionStub.class }))
 	static class ExtraConfiguration {
 
 		@Bean
-		@Lazy
-		SimpleGrpc.SimpleBlockingStub basic(GrpcChannelFactory channels) {
-			return SimpleGrpc.newBlockingStub(channels.createChannel("stub", ChannelBuilderOptions.defaults()
-				.withInterceptors(List.of(new BasicAuthenticationInterceptor("user", "user")))));
-		}
-
-		@Bean
-		@Lazy
-		SimpleGrpc.SimpleBlockingStub stub(GrpcChannelFactory channels, @LocalGrpcPort int port) {
-			return SimpleGrpc.newBlockingStub(channels.createChannel("stub"));
-		}
-
-		@Bean
-		@Lazy
-		ServerReflectionGrpc.ServerReflectionStub reflect(GrpcChannelFactory channels, @LocalGrpcPort int port) {
-			return ServerReflectionGrpc.newStub(channels.createChannel("stub"));
+		GrpcClientRegistryCustomizer basicStubs() {
+			return registry -> registry
+				.channel("stub",
+						ChannelBuilderOptions.defaults()
+							.withInterceptors(List.of(new BasicAuthenticationInterceptor("user", "user"))))
+				.scan(BlockingStubFactory.class)
+				.packageClasses(SimpleGrpc.class);
 		}
 
 	}
