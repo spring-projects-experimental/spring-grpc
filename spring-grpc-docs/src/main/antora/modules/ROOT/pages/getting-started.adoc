@@ -279,7 +279,7 @@ then in `application.properties`:
 spring.grpc.client.channels.local.address=0.0.0.0:9090
 ----
 
-There is a default named channel (named "default") that you can configure in the same way, and then it will be used by default if there is no channel with the name specified in the channel creation.
+There is a default named channel that you can configure in the same way via `spring.grpc.client.default-channel.*`. It will be used by default if there is no channel with the name specified in the channel creation.
 
 === Native Images
 
