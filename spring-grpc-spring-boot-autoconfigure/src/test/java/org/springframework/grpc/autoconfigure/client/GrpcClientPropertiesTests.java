@@ -27,7 +27,6 @@ import java.util.function.Function;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.boot.context.properties.source.MapConfigurationPropertySource;
 import org.springframework.grpc.autoconfigure.client.GrpcClientProperties.ChannelConfig;
@@ -213,8 +212,18 @@ class GrpcClientPropertiesTests {
 			defaultChannel.getSsl().setBundle("custom-bundle");
 			var properties = newProperties(defaultChannel, Map.of());
 			var newChannel = properties.getChannel("new-channel");
+			assertThat(newChannel).usingRecursiveComparison().isEqualTo(defaultChannel);
+			assertThat(properties).extracting("channels", InstanceOfAssertFactories.MAP).isEmpty();
+		}
+
+		@Test
+		void withUnknownNameReturnsNewChannelWithOwnAddress() {
+			var defaultChannel = new ChannelConfig();
+			defaultChannel.setAddress("static://my-server:9999");
+			var properties = newProperties(defaultChannel, Map.of());
+			var newChannel = properties.getChannel("other-server:8888");
 			assertThat(newChannel).usingRecursiveComparison().ignoringFields("address").isEqualTo(defaultChannel);
-			assertThat(newChannel).hasFieldOrPropertyWithValue("address", "static://new-channel");
+			assertThat(newChannel).hasFieldOrPropertyWithValue("address", "static://other-server:8888");
 			assertThat(properties).extracting("channels", InstanceOfAssertFactories.MAP).isEmpty();
 		}
 

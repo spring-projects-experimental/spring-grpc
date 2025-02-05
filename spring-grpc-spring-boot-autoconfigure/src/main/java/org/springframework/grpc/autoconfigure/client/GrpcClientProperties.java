@@ -83,7 +83,15 @@ public class GrpcClientProperties implements EnvironmentAware, VirtualTargets {
 		channel = this.defaultChannel.copy();
 		String address = name;
 		if (!name.contains(":/") && !name.startsWith("unix:")) {
-			address = "static://" + name;
+			if (name.contains(":")) {
+				address = "static://" + name;
+			}
+			else {
+				address = defaultChannel.getAddress();
+				if (!address.contains(":/")) {
+					address = "static://" + address;
+				}
+			}
 		}
 		channel.setAddress(address);
 		return channel;
