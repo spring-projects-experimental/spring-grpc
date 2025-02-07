@@ -70,6 +70,7 @@ public class GrpcExceptionHandlerInterceptor implements ServerInterceptor {
 			call.close(this.exceptionHandler.handleException(t), headers(t));
 			listener = new Listener<ReqT>() {
 			};
+			return listener;
 		}
 		return new ExceptionHandlerListener<>(listener, call, new FallbackHandler(this.exceptionHandler));
 	}
@@ -98,7 +99,7 @@ public class GrpcExceptionHandlerInterceptor implements ServerInterceptor {
 				super.onReady();
 			}
 			catch (Throwable t) {
-				this.call.close(this.exceptionHandler.handleException(t), headers(t));
+				handle(t);
 			}
 		}
 
@@ -108,7 +109,7 @@ public class GrpcExceptionHandlerInterceptor implements ServerInterceptor {
 				super.onMessage(message);
 			}
 			catch (Throwable t) {
-				this.call.close(this.exceptionHandler.handleException(t), headers(t));
+				handle(t);
 			}
 		}
 
@@ -118,7 +119,30 @@ public class GrpcExceptionHandlerInterceptor implements ServerInterceptor {
 				super.onHalfClose();
 			}
 			catch (Throwable t) {
-				this.call.close(this.exceptionHandler.handleException(t), headers(t));
+				handle(t);
+			}
+		}
+
+		private void handle(Throwable t) {
+			if (t instanceof IllegalStateException && t.getMessage().equals("call is closed")) {
+				// gRPC server thinks the call is already closed. It must be a race
+				// condition because you don't see it if you debug and set a breakpoint
+				// here.
+				return;
+			}
+			else {
+				Status status = Status.fromThrowable(t);
+				try {
+					status = this.exceptionHandler.handleException(t);
+				}
+				catch (Throwable e) {
+				}
+				try {
+					this.call.close(status, headers(t));
+				}
+				catch (Throwable e) {
+					throw new IllegalStateException("Failed to close the call", e);
+				}
 			}
 		}
 
