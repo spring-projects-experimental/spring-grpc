@@ -59,21 +59,15 @@ dependencies {
 == Servlet Server
 
 Any servlet container can be used to run a gRPC server.
-Spring gRPC includes autoconfiguration that configures the server to use the servlet container if it detects that it is in a web application, so all you have to do is include `spring-boot-starter-web` and the `grpc-servlet` dependnecy in your application.
+Spring gRPC includes autoconfiguration that configures the server to use the servlet container if it detects that it is in a web application.
+Spring gRPC also provides a convenience starter that includes the required dependencies (`spring-boot-starter-web` and the `grpc-servlet-jakarta`) for this scenario.
+So all you have to do is include the `spring-boot-starter-web` dependency as follows:
 
 [source,xml]
 ----
 <dependency>
-	<groupId>org.springframework.boot</groupId>
-	<artifactId>spring-boot-starter-web</artifactId>
-</dependency>
-<dependency>
 	<groupId>org.springframework.grpc</groupId>
-	<artifactId>spring-grpc-spring-boot-starter</artifactId>
-</dependency>
-<dependency>
-	<groupId>io.grpc</groupId>
-	<artifactId>grpc-servlet-jakarta</artifactId>
+	<artifactId>spring-grpc-server-web-spring-boot-starter</artifactId>
 </dependency>
 ----
 
@@ -82,9 +76,7 @@ For Gradle users
 [source,gradle]
 ----
 dependencies {
-    implementation "org.springframework.boot:spring-boot-starter-web"
-    implementation "org.springframework.grpc:spring-grpc-spring-boot-starter"
-    implementation "io.grpc:grpc-servlet-jakarta"
+    implementation "org.springframework.grpc:spring-grpc-server-web-spring-boot-starter"
 }
 ----
 
