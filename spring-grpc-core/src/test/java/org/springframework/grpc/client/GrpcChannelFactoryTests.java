@@ -26,11 +26,13 @@ import static org.mockito.Mockito.verify;
 
 import java.util.List;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 
 import io.grpc.ClientInterceptor;
+import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.netty.NettyChannelBuilder;
 
@@ -39,6 +41,15 @@ import io.grpc.netty.NettyChannelBuilder;
  */
 @SuppressWarnings({ "unchecked", "rawtypes" })
 class GrpcChannelFactoryTests {
+
+	ManagedChannel channel;
+
+	@AfterEach
+	void closeChannel() {
+		if (this.channel != null) {
+			this.channel.shutdownNow();
+		}
+	}
 
 	@Nested
 	class CreateChannelApiWithCustomizers {
@@ -50,7 +61,7 @@ class GrpcChannelFactoryTests {
 			var customizer2 = mock(GrpcChannelBuilderCustomizer.class);
 			var channelFactory = new DefaultGrpcChannelFactory(List.of(customizer1, customizer2), mock());
 			channelFactory.setVirtualTargets(path -> path);
-			var channel = channelFactory.createChannel(channelName);
+			channel = channelFactory.createChannel(channelName);
 			assertThat(channel).isNotNull();
 			var inOrder = inOrder(customizer1, customizer2);
 			inOrder.verify(customizer1).customize(anyString(), any(ManagedChannelBuilder.class));
@@ -63,7 +74,7 @@ class GrpcChannelFactoryTests {
 			var customizer1 = mock(GrpcChannelBuilderCustomizer.class);
 			var channelFactory = new DefaultGrpcChannelFactory(List.of(), mock());
 			channelFactory.setVirtualTargets(path -> path);
-			var channel = channelFactory.createChannel(channelName,
+			channel = channelFactory.createChannel(channelName,
 					ChannelBuilderOptions.defaults().withCustomizer(customizer1));
 			assertThat(channel).isNotNull();
 			verify(customizer1).customize(anyString(), any(ManagedChannelBuilder.class));
@@ -76,7 +87,7 @@ class GrpcChannelFactoryTests {
 			var customizer2 = mock(GrpcChannelBuilderCustomizer.class);
 			var channelFactory = new DefaultGrpcChannelFactory(List.of(customizer2), mock());
 			channelFactory.setVirtualTargets(path -> path);
-			var channel = channelFactory.createChannel(channelName,
+			channel = channelFactory.createChannel(channelName,
 					ChannelBuilderOptions.defaults().withCustomizer(customizer1));
 			assertThat(channel).isNotNull();
 			var inOrder = inOrder(customizer1, customizer2);
@@ -95,7 +106,7 @@ class GrpcChannelFactoryTests {
 			var channelName = "localhost";
 			var channelFactory = new DefaultGrpcChannelFactory(List.of(), configurer);
 			channelFactory.setVirtualTargets(path -> path);
-			var channel = channelFactory.createChannel(channelName);
+			channel = channelFactory.createChannel(channelName);
 			assertThat(channel).isNotNull();
 			verify(configurer).configureInterceptors(any(ManagedChannelBuilder.class),
 					assertArg((interceptors) -> assertThat(interceptors).isEmpty()), eq(false));
@@ -108,7 +119,7 @@ class GrpcChannelFactoryTests {
 			var channelFactory = new DefaultGrpcChannelFactory(List.of(), configurer);
 			channelFactory.setVirtualTargets(path -> path);
 			var interceptor = mock(ClientInterceptor.class);
-			var channel = channelFactory.createChannel(channelName,
+			channel = channelFactory.createChannel(channelName,
 					ChannelBuilderOptions.defaults()
 						.withInterceptors(List.of(interceptor))
 						.withInterceptorsMerge(true));
@@ -128,7 +139,7 @@ class GrpcChannelFactoryTests {
 			var customizer1 = mock(GrpcChannelBuilderCustomizer.class);
 			var channelFactory = new NettyGrpcChannelFactory(List.of(), mock());
 			channelFactory.setVirtualTargets(path -> path);
-			var channel = channelFactory.createChannel(channelName,
+			channel = channelFactory.createChannel(channelName,
 					ChannelBuilderOptions.defaults().withCustomizer(customizer1));
 			assertThat(channel).isNotNull();
 			verify(customizer1).customize(anyString(), ArgumentMatchers
@@ -141,7 +152,7 @@ class GrpcChannelFactoryTests {
 			var customizer1 = mock(GrpcChannelBuilderCustomizer.class);
 			var channelFactory = new ShadedNettyGrpcChannelFactory(List.of(), mock());
 			channelFactory.setVirtualTargets(path -> path);
-			var channel = channelFactory.createChannel(channelName,
+			channel = channelFactory.createChannel(channelName,
 					ChannelBuilderOptions.defaults().withCustomizer(customizer1));
 			assertThat(channel).isNotNull();
 			verify(customizer1).customize(anyString(), ArgumentMatchers.assertArg((builder) -> assertThat(builder)
