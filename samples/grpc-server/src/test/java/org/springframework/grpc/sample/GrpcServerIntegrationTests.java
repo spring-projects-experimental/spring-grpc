@@ -19,6 +19,8 @@ package org.springframework.grpc.sample;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThrows;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledOnOs;
@@ -137,20 +139,34 @@ class GrpcServerIntegrationTests {
 
 		@Test
 		void specificErrorResponse(@Autowired GrpcChannelFactory channels) {
+			TestConfig.reset();
 			SimpleGrpc.SimpleBlockingStub client = SimpleGrpc.newBlockingStub(channels.createChannel("0.0.0.0:0"));
 			assertThat(assertThrows(StatusRuntimeException.class,
 					() -> client.sayHello(HelloRequest.newBuilder().setName("foo").build()))
 				.getStatus()
 				.getCode()).isEqualTo(Code.INVALID_ARGUMENT);
+			assertThat(TestConfig.readyCount.get()).isEqualTo(1);
+			assertThat(TestConfig.callCount.get()).isEqualTo(0);
+			assertThat(TestConfig.messageCount.get()).isEqualTo(0);
 		}
 
 		@TestConfiguration
 		static class TestConfig {
 
+			static AtomicInteger callCount = new AtomicInteger();
+			static AtomicInteger messageCount = new AtomicInteger();
+			static AtomicInteger readyCount = new AtomicInteger();
+
 			@Bean
 			@GlobalServerInterceptor
 			public ServerInterceptor exceptionInterceptor() {
 				return new CustomInterceptor();
+			}
+
+			public static void reset() {
+				callCount.set(0);
+				messageCount.set(0);
+				readyCount.set(0);
 			}
 
 			static class CustomInterceptor implements ServerInterceptor {
@@ -174,7 +190,20 @@ class GrpcServerIntegrationTests {
 
 				@Override
 				public void onReady() {
+					readyCount.incrementAndGet();
 					throw new IllegalArgumentException("test");
+				}
+
+				@Override
+				public void onHalfClose() {
+					callCount.incrementAndGet();
+					super.onHalfClose();
+				}
+
+				@Override
+				public void onMessage(ReqT message) {
+					messageCount.incrementAndGet();
+					super.onMessage(message);
 				}
 
 				@Override

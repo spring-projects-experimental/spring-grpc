@@ -86,6 +86,8 @@ public class GrpcExceptionHandlerInterceptor implements ServerInterceptor {
 
 		private GrpcExceptionHandler exceptionHandler;
 
+		volatile private Throwable exception;
+
 		ExceptionHandlerListener(ServerCall.Listener<ReqT> delegate, ServerCall<ReqT, RespT> call,
 				GrpcExceptionHandler exceptionHandler) {
 			super(delegate);
@@ -95,6 +97,9 @@ public class GrpcExceptionHandlerInterceptor implements ServerInterceptor {
 
 		@Override
 		public void onReady() {
+			if (this.exception != null) {
+				return;
+			}
 			try {
 				super.onReady();
 			}
@@ -105,6 +110,9 @@ public class GrpcExceptionHandlerInterceptor implements ServerInterceptor {
 
 		@Override
 		public void onMessage(ReqT message) {
+			if (this.exception != null) {
+				return;
+			}
 			try {
 				super.onMessage(message);
 			}
@@ -115,6 +123,9 @@ public class GrpcExceptionHandlerInterceptor implements ServerInterceptor {
 
 		@Override
 		public void onHalfClose() {
+			if (this.exception != null) {
+				return;
+			}
 			try {
 				super.onHalfClose();
 			}
@@ -124,25 +135,18 @@ public class GrpcExceptionHandlerInterceptor implements ServerInterceptor {
 		}
 
 		private void handle(Throwable t) {
-			if (t instanceof IllegalStateException && t.getMessage().equals("call is closed")) {
-				// gRPC server thinks the call is already closed. It must be a race
-				// condition because you don't see it if you debug and set a breakpoint
-				// here.
-				return;
+			this.exception = t;
+			Status status = Status.fromThrowable(t);
+			try {
+				status = this.exceptionHandler.handleException(t);
 			}
-			else {
-				Status status = Status.fromThrowable(t);
-				try {
-					status = this.exceptionHandler.handleException(t);
-				}
-				catch (Throwable e) {
-				}
-				try {
-					this.call.close(status, headers(t));
-				}
-				catch (Throwable e) {
-					throw new IllegalStateException("Failed to close the call", e);
-				}
+			catch (Throwable e) {
+			}
+			try {
+				this.call.close(status, headers(t));
+			}
+			catch (Throwable e) {
+				throw new IllegalStateException("Failed to close the call", e);
 			}
 		}
 
