@@ -30,8 +30,8 @@ dependencyManagement {
 
 dependencies {
     implementation ('org.springframework.grpc:spring-grpc-spring-boot-starter') {
-		exclude group: "io.grpc", module: "grpc-netty"
-	}
+        exclude group: "io.grpc", module: "grpc-netty"
+    }
     implementation 'io.grpc:grpc-netty-shaded'
     implementation 'io.grpc:grpc-services'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
