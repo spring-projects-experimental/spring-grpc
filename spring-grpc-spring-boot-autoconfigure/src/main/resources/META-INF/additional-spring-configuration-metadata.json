@@ -2,6 +2,12 @@
   "groups": [],
   "properties": [
     {
+      "name": "spring.grpc.security.csrf.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether to enable CSRF protection on gRPC requests.",
+      "defaultValue": false
+    },
+    {
       "name": "spring.grpc.server.port",
       "defaultValue": "9090"
     },
@@ -15,6 +21,12 @@
       "name": "spring.grpc.server.exception-handling.enabled",
       "type": "java.lang.Boolean",
       "description": "Whether to enable user-defined global exception handling on the gRPC server.",
+      "defaultValue": true
+    },
+    {
+      "name": "spring.grpc.server.servlet.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether to use a servlet server in a servlet-based web application (set to false to force a native gRPC server).",
       "defaultValue": true
     },
     {
