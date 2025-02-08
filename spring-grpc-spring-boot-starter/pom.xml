@@ -10,33 +10,17 @@
 	</parent>
 	<artifactId>spring-grpc-spring-boot-starter</artifactId>
 	<packaging>jar</packaging>
-	<name>Spring gRPC Server Spring Boot Starter</name>
-	<description>Spring gRPC Server Spring Boot Starter</description>
+	<name>Spring gRPC Server and Client Spring Boot Starter</name>
+	<description>Spring gRPC Server and Client Spring Boot Starter</description>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.grpc</groupId>
-			<artifactId>spring-grpc-core</artifactId>
-			<version>${project.version}</version>
+			<artifactId>spring-grpc-client-spring-boot-starter</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.grpc</groupId>
-			<artifactId>spring-grpc-spring-boot-autoconfigure</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>io.grpc</groupId>
-			<artifactId>grpc-netty</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>io.grpc</groupId>
-			<artifactId>grpc-services</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter</artifactId>
-			<version>${spring-boot.version}</version>
+			<artifactId>spring-grpc-server-spring-boot-starter</artifactId>
 		</dependency>
 	</dependencies>
 
