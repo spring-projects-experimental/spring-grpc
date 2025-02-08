@@ -140,8 +140,6 @@ public class GrpcServerFactoryAutoConfiguration {
 		}
 
 		@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.REACTIVE)
-		@ConditionalOnProperty(prefix = "spring.grpc.server", name = "reactive.enabled", havingValue = "false",
-				matchIfMissing = false)
 		static class OnExplicitlyDisabledWebflux {
 
 		}
