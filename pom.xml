@@ -21,6 +21,7 @@
 		<module>spring-grpc-spring-boot-autoconfigure</module>
 		<module>spring-grpc-spring-boot-starter</module>
 		<module>spring-grpc-client-spring-boot-starter</module>
+		<module>spring-grpc-server-spring-boot-starter</module>
 		<module>spring-grpc-server-web-spring-boot-starter</module>
 		<module>samples</module>
 	</modules>
