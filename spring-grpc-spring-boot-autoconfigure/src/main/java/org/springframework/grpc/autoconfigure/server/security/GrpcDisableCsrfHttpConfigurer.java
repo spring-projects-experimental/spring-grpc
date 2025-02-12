@@ -25,8 +25,8 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
  * <p>
  * This configurer checks the application context to determine if CSRF protection should
  * be disabled for gRPC requests based on the property
- * {@code spring.grpc.security.csrf.enabled}. By default, CSRF protection is disabled
- * unless explicitly enabled in the application properties.
+ * {@code spring.grpc.server.security.csrf.enabled}. By default, CSRF protection is
+ * disabled unless explicitly enabled in the application properties.
  * </p>
  *
  * @see AbstractHttpConfigurer
@@ -45,7 +45,8 @@ public class GrpcDisableCsrfHttpConfigurer extends AbstractHttpConfigurer<GrpcDi
 
 	private boolean isServletEnabledAndCsrfDisabled(ApplicationContext context) {
 		return context.getEnvironment().getProperty("spring.grpc.server.servlet.enabled", Boolean.class, true)
-				&& !context.getEnvironment().getProperty("spring.grpc.security.csrf.enabled", Boolean.class, false);
+				&& !context.getEnvironment()
+					.getProperty("spring.grpc.server.security.csrf.enabled", Boolean.class, false);
 	}
 
 }

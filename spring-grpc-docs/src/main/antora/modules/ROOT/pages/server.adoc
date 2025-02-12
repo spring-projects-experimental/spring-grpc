@@ -266,8 +266,8 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
 }
 ----
 
-By default CSRF protection is automatically disabled for gRPC requests because it is incompatible with the protocol.
-You can switch off that behaviour and configure your own CSRF protection if you want to by explicitly setting `spring.grpc.security.csrf.enabled=true`.
+By default, CSRF protection is automatically disabled for gRPC requests because it is incompatible with the protocol.
+You can switch off that behaviour and configure your own CSRF protection if you want to by explicitly setting `spring.grpc.server.security.csrf.enabled=true`.
 A servlet application that exposes gRPC endpoints on a different port (with `spring.grpc.server.servlet.enabled=false`) will also not have CSRF protection disabled by default.
 
 === Securing Individual Methods
