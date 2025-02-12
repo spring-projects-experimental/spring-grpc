@@ -26,7 +26,7 @@
     {
       "name": "spring.grpc.server.servlet.enabled",
       "type": "java.lang.Boolean",
-      "description": "Whether to use a servlet server in a servlet-based web application (set to false to force a native gRPC server).",
+      "description": "Whether to use a servlet server in a servlet-based web application. When the value is false, a native gRPC server will be forced.",
       "defaultValue": true
     },
     {
