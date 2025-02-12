@@ -40,6 +40,8 @@
 |spring.grpc.server.observations.enabled | `+++true+++` | Whether to enable Observations on the server.
 |spring.grpc.server.port | `+++9090+++` | Server port to listen on. When the value is 0, a random available port is selected. The default is 9090.
 |spring.grpc.server.reflection.enabled | `+++true+++` | Whether to enable Reflection on the gRPC server.
+|spring.grpc.server.security.csrf.enabled | `+++false+++` | Whether to enable CSRF protection on gRPC requests.
+|spring.grpc.server.servlet.enabled | `+++true+++` | Whether to use a servlet server in a servlet-based web application. When the value is false, a native gRPC server will be forced.
 |spring.grpc.server.shutdown-grace-period | `+++30s+++` | Maximum time to wait for the server to gracefully shutdown. When the value is negative, the server waits forever. When the value is 0, the server will force shutdown immediately. The default is 30 seconds.
 |spring.grpc.server.ssl.bundle |  | SSL bundle name.
 |spring.grpc.server.ssl.client-auth | `+++none+++` | Client authentication mode.
