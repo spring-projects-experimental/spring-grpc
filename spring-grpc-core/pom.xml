@@ -11,7 +11,7 @@
 	<artifactId>spring-grpc-core</artifactId>
 	<packaging>jar</packaging>
 	<name>Spring gRPC Core</name>
-	<description>Core domgrpcn for gRPC programming</description>
+	<description>Core module for gRPC programming</description>
 	<url>https://github.com/spring-projects-experimental/spring-grpc</url>
 
 	<scm>
