@@ -21,6 +21,7 @@
 |spring.grpc.client.enabled | `+++true+++` | Whether to enable client autoconfiguration.
 |spring.grpc.client.observations.enabled | `+++true+++` | Whether to enable Observations on the client.
 |spring.grpc.server.address |  | The address to bind to. could be a host:port combination or a pseudo URL like static://host:port. Can not be set if host or port are set independently.
+|spring.grpc.server.enabled | `+++true+++` | Whether to enable server autoconfiguration.
 |spring.grpc.server.exception-handling.enabled | `+++true+++` | Whether to enable user-defined global exception handling on the gRPC server.
 |spring.grpc.server.health.actuator.enabled | `+++true+++` | Whether to adapt Actuator health indicators into gRPC health checks.
 |spring.grpc.server.health.actuator.health-indicator-paths |  | List of Actuator health indicator paths to adapt into gRPC health checks.

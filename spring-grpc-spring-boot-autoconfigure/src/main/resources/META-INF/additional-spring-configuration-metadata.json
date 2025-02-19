@@ -6,6 +6,12 @@
       "defaultValue": "9090"
     },
     {
+      "name": "spring.grpc.server.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether to enable server autoconfiguration.",
+      "defaultValue": true
+    },
+    {
       "name": "spring.grpc.server.reflection.enabled",
       "type": "java.lang.Boolean",
       "description": "Whether to enable Reflection on the gRPC server.",

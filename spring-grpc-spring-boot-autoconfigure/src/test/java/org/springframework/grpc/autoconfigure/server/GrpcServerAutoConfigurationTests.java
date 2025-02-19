@@ -105,6 +105,25 @@ class GrpcServerAutoConfigurationTests {
 	}
 
 	@Test
+	void whenServerEnabledPropertySetFalseThenAutoConfigurationIsSkipped() {
+		this.contextRunner()
+			.withPropertyValues("spring.grpc.server.enabled=false")
+			.run((context) -> assertThat(context).doesNotHaveBean(GrpcServerAutoConfiguration.class));
+	}
+
+	@Test
+	void whenServerEnabledPropertyNotSetThenAutoConfigurationIsNotSkipped() {
+		this.contextRunner().run((context) -> assertThat(context).hasSingleBean(GrpcServerAutoConfiguration.class));
+	}
+
+	@Test
+	void whenServerEnabledPropertySetTrueThenAutoConfigurationIsNotSkipped() {
+		this.contextRunner()
+			.withPropertyValues("spring.grpc.server.enabled=true")
+			.run((context) -> assertThat(context).hasSingleBean(GrpcServerAutoConfiguration.class));
+	}
+
+	@Test
 	void whenHasUserDefinedServerLifecycleDoesNotAutoConfigureBean() {
 		GrpcServerLifecycle customServerLifecycle = mock(GrpcServerLifecycle.class);
 		this.contextRunnerWithLifecyle()
