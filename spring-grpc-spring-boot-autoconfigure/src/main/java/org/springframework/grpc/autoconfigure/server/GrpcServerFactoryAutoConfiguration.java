@@ -54,7 +54,7 @@ import io.grpc.servlet.jakarta.ServletServerBuilder;
  */
 @AutoConfiguration
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
-@ConditionalOnClass(BindableService.class)
+@ConditionalOnGrpcServerEnabled
 @ConditionalOnBean(BindableService.class)
 public class GrpcServerFactoryAutoConfiguration {
 

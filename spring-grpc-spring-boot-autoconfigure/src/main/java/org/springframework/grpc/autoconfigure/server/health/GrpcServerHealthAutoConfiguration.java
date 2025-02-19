@@ -43,6 +43,7 @@ import org.springframework.context.annotation.ConditionContext;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.type.AnnotatedTypeMetadata;
+import org.springframework.grpc.autoconfigure.server.ConditionalOnGrpcServerEnabled;
 import org.springframework.grpc.autoconfigure.server.GrpcServerFactoryAutoConfiguration;
 import org.springframework.grpc.autoconfigure.server.GrpcServerProperties;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -57,6 +58,7 @@ import io.grpc.protobuf.services.HealthStatusManager;
  * @author Chris Bono
  */
 @AutoConfiguration(before = GrpcServerFactoryAutoConfiguration.class)
+@ConditionalOnGrpcServerEnabled
 @ConditionalOnClass(HealthStatusManager.class)
 @ConditionalOnProperty(name = "spring.grpc.server.health.enabled", havingValue = "true", matchIfMissing = true)
 public class GrpcServerHealthAutoConfiguration {

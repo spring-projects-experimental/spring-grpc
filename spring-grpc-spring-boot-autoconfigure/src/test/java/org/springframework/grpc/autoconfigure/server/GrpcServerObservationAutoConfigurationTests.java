@@ -79,12 +79,31 @@ class GrpcServerObservationAutoConfigurationTests {
 	}
 
 	@Test
+	void whenServerEnabledPropertySetFalseThenAutoConfigurationIsSkipped() {
+		this.validContextRunner()
+			.withPropertyValues("spring.grpc.server.enabled=false")
+			.run((context) -> assertThat(context).doesNotHaveBean(GrpcServerObservationAutoConfiguration.class));
+	}
+
+	@Test
+	void whenServerEnabledPropertyNotSetThenAutoConfigurationIsNotSkipped() {
+		this.validContextRunner()
+			.run((context) -> assertThat(context).hasSingleBean(GrpcServerObservationAutoConfiguration.class));
+	}
+
+	@Test
+	void whenServerEnabledPropertySetTrueThenAutoConfigurationIsNotSkipped() {
+		this.validContextRunner()
+			.withPropertyValues("spring.grpc.server.enabled=true")
+			.run((context) -> assertThat(context).hasSingleBean(GrpcServerObservationAutoConfiguration.class));
+	}
+
+	@Test
 	void whenAllConditionsAreMetThenInterceptorConfiguredAsExpected() {
-		this.validContextRunner().run((context) -> {
-			assertThat(context).hasSingleBean(ObservationGrpcServerInterceptor.class)
+		this.validContextRunner()
+			.run((context) -> assertThat(context).hasSingleBean(ObservationGrpcServerInterceptor.class)
 				.has(new Condition<>(beans -> beans.getBeansWithAnnotation(GlobalServerInterceptor.class).size() == 1,
-						"One global interceptor expected"));
-		});
+						"One global interceptor expected")));
 	}
 
 }

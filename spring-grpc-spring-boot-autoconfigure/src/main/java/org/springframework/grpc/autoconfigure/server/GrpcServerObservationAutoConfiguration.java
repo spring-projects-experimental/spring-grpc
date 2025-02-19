@@ -27,6 +27,7 @@ import io.micrometer.observation.ObservationRegistry;
 
 @AutoConfiguration(
 		afterName = "org.springframework.boot.actuate.autoconfigure.observation.ObservationAutoConfiguration")
+@ConditionalOnGrpcServerEnabled
 @ConditionalOnClass({ ObservationRegistry.class, ObservationGrpcServerInterceptor.class })
 @ConditionalOnBean(ObservationRegistry.class)
 @ConditionalOnProperty(name = "spring.grpc.server.observation.enabled", havingValue = "true", matchIfMissing = true)
