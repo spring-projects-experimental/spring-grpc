@@ -51,6 +51,7 @@ import io.grpc.CompressorRegistry;
 import io.grpc.DecompressorRegistry;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.netty.NettyChannelBuilder;
+import io.grpc.stub.AbstractStub;
 
 /**
  * Tests for {@link GrpcClientAutoConfiguration}.
@@ -63,6 +64,32 @@ class GrpcClientAutoConfigurationTests {
 	private ApplicationContextRunner contextRunner() {
 		return new ApplicationContextRunner()
 			.withConfiguration(AutoConfigurations.of(GrpcClientAutoConfiguration.class, SslAutoConfiguration.class));
+	}
+
+	@Test
+	void whenGrpcStubNotOnClasspathThenAutoConfigurationIsSkipped() {
+		this.contextRunner()
+			.withClassLoader(new FilteredClassLoader(AbstractStub.class))
+			.run((context) -> assertThat(context).doesNotHaveBean(GrpcClientAutoConfiguration.class));
+	}
+
+	@Test
+	void whenClientEnabledPropertySetFalseThenAutoConfigurationIsSkipped() {
+		this.contextRunner()
+			.withPropertyValues("spring.grpc.client.enabled=false")
+			.run((context) -> assertThat(context).doesNotHaveBean(GrpcClientAutoConfiguration.class));
+	}
+
+	@Test
+	void whenClientEnabledPropertyNotSetThenAutoConfigurationIsNotSkipped() {
+		this.contextRunner().run((context) -> assertThat(context).hasSingleBean(GrpcClientAutoConfiguration.class));
+	}
+
+	@Test
+	void whenClientEnabledPropertySetTrueThenAutoConfigurationIsNotSkipped() {
+		this.contextRunner()
+			.withPropertyValues("spring.grpc.client.enabled=true")
+			.run((context) -> assertThat(context).hasSingleBean(GrpcClientAutoConfiguration.class));
 	}
 
 	@Test

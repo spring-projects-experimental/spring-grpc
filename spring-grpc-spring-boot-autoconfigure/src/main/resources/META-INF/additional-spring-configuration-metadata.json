@@ -36,6 +36,12 @@
       "defaultValue": true
     },
     {
+      "name": "spring.grpc.client.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether to enable client autoconfiguration.",
+      "defaultValue": true
+    },
+    {
       "name": "spring.grpc.client.observations.enabled",
       "type": "java.lang.Boolean",
       "description": "Whether to enable Observations on the client.",
