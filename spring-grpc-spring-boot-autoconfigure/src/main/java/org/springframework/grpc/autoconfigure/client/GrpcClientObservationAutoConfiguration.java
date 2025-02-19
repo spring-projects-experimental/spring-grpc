@@ -26,6 +26,7 @@ import org.springframework.grpc.client.GlobalClientInterceptor;
 
 @AutoConfiguration(
 		afterName = "org.springframework.boot.actuate.autoconfigure.observation.ObservationAutoConfiguration")
+@ConditionalOnGrpcClientEnabled
 @ConditionalOnClass({ ObservationRegistry.class, ObservationGrpcClientInterceptor.class })
 @ConditionalOnBean(ObservationRegistry.class)
 @ConditionalOnProperty(name = "spring.grpc.client.observation.enabled", havingValue = "true", matchIfMissing = true)

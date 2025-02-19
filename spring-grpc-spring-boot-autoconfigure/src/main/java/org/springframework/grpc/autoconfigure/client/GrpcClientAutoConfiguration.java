@@ -32,6 +32,7 @@ import io.grpc.DecompressorRegistry;
 import io.grpc.ManagedChannelBuilder;
 
 @AutoConfiguration
+@ConditionalOnGrpcClientEnabled
 @EnableConfigurationProperties(GrpcClientProperties.class)
 @Import({ GrpcCodecConfiguration.class, ClientInterceptorsConfiguration.class,
 		GrpcChannelFactoryConfigurations.ShadedNettyChannelFactoryConfiguration.class,
