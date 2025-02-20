@@ -100,30 +100,6 @@
 				</configuration>
 			</plugin>
 			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>exec-maven-plugin</artifactId>
-				<version>${maven-exec-plugin.version}</version>
-				<executions>
-					<execution>
-						<id>generate-configprops</id>
-						<phase>package</phase>
-						<goals>
-							<goal>java</goal>
-						</goals>
-						<configuration>
-							<includeProjectDependencies>true</includeProjectDependencies>
-							<includePluginDependencies>false</includePluginDependencies>
-							<mainClass>
-								org.springframework.grpc.internal.ConfigurationPropertiesAsciidocGenerator</mainClass>
-							<arguments>
-								<argument>${configprops.path}</argument>
-								<argument>${configprops.inclusionPattern}</argument>
-							</arguments>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
 				<groupId>org.jruby.maven</groupId>
 				<artifactId>gem-maven-plugin</artifactId>
 				<version>${maven-gem-plugin.version}</version>
@@ -208,6 +184,43 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<profiles>
+		<profile>
+			<id>docs</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<version>${maven-exec-plugin.version}</version>
+						<executions>
+							<execution>
+								<id>generate-configprops</id>
+								<phase>process-resources</phase>
+								<goals>
+									<goal>java</goal>
+								</goals>
+								<configuration>
+									<includeProjectDependencies>true</includeProjectDependencies>
+									<includePluginDependencies>false</includePluginDependencies>
+									<mainClass>
+										org.springframework.grpc.internal.ConfigurationPropertiesAsciidocGenerator</mainClass>
+									<arguments>
+										<argument>${configprops.path}</argument>
+										<argument>${configprops.inclusionPattern}</argument>
+									</arguments>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 
 	<repositories>
 		<repository>
