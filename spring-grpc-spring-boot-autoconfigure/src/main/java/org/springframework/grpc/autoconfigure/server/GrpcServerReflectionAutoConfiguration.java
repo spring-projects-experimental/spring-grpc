@@ -19,6 +19,7 @@ import io.grpc.protobuf.services.ProtoReflectionServiceV1;
  * @author Haris Zujo
  */
 @AutoConfiguration(before = GrpcServerFactoryAutoConfiguration.class)
+@ConditionalOnGrpcServerEnabled
 @ConditionalOnClass(ProtoReflectionService.class)
 @ConditionalOnProperty(name = "spring.grpc.server.reflection.enabled", havingValue = "true", matchIfMissing = true)
 public class GrpcServerReflectionAutoConfiguration {

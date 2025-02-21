@@ -23,6 +23,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.grpc.autoconfigure.server.ConditionalOnGrpcServerEnabled;
 import org.springframework.grpc.autoconfigure.server.GrpcServerFactoryAutoConfiguration;
 import org.springframework.grpc.autoconfigure.server.exception.GrpcExceptionHandlerAutoConfiguration;
 import org.springframework.grpc.server.GlobalServerInterceptor;
@@ -40,6 +41,7 @@ import io.grpc.ServerBuilder;
 import io.grpc.internal.GrpcUtil;
 
 @ConditionalOnClass(ObjectPostProcessor.class)
+@ConditionalOnGrpcServerEnabled
 @AutoConfiguration(before = GrpcExceptionHandlerAutoConfiguration.class, after = SecurityAutoConfiguration.class)
 public class GrpcSecurityAutoConfiguration {
 

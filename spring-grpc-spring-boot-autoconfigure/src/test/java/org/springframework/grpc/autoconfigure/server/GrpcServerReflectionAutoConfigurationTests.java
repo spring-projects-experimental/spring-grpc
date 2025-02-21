@@ -36,4 +36,23 @@ public class GrpcServerReflectionAutoConfigurationTests {
 			.run((context) -> assertThat(context).doesNotHaveBean(BindableService.class));
 	}
 
+	@Test
+	void whenServerEnabledPropertySetFalseThenAutoConfigurationIsSkipped() {
+		this.contextRunner()
+			.withPropertyValues("spring.grpc.server.enabled=false")
+			.run((context) -> assertThat(context).doesNotHaveBean(BindableService.class));
+	}
+
+	@Test
+	void whenServerEnabledPropertyNotSetThenAutoConfigurationIsNotSkipped() {
+		this.contextRunner().run((context) -> assertThat(context).hasSingleBean(BindableService.class));
+	}
+
+	@Test
+	void whenServerEnabledPropertySetTrueThenAutoConfigurationIsNotSkipped() {
+		this.contextRunner()
+			.withPropertyValues("spring.grpc.server.enabled=true")
+			.run((context) -> assertThat(context).hasSingleBean(BindableService.class));
+	}
+
 }

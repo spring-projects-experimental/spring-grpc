@@ -16,6 +16,7 @@
 
 package org.springframework.grpc.autoconfigure.client;
 
+import io.grpc.stub.AbstractStub;
 import io.micrometer.core.instrument.binder.grpc.ObservationGrpcClientInterceptor;
 import io.micrometer.observation.ObservationRegistry;
 import org.junit.jupiter.api.Test;
@@ -72,6 +73,33 @@ class GrpcClientObservationAutoConfigurationTests {
 	void whenObservationPropertyDisabledThenAutoConfigIsSkipped() {
 		this.validContextRunner()
 			.withPropertyValues("spring.grpc.client.observation.enabled=false")
+			.run(context -> assertThat(context).doesNotHaveBean(GrpcClientObservationAutoConfiguration.class));
+	}
+
+	@Test
+	void whenClientEnabledPropertyNotSetThenAutoConfigNotSkipped() {
+		this.validContextRunner()
+			.run(context -> assertThat(context).hasSingleBean(GrpcClientObservationAutoConfiguration.class));
+	}
+
+	@Test
+	void whenClientEnabledPropertySetTrueThenAutoConfigIsNotSkipped() {
+		this.validContextRunner()
+			.withPropertyValues("spring.grpc.client.enabled=true")
+			.run(context -> assertThat(context).hasSingleBean(GrpcClientObservationAutoConfiguration.class));
+	}
+
+	@Test
+	void whenClientEnabledPropertySetFalseThenAutoConfigIsSkipped() {
+		this.validContextRunner()
+			.withPropertyValues("spring.grpc.client.enabled=false")
+			.run(context -> assertThat(context).doesNotHaveBean(GrpcClientObservationAutoConfiguration.class));
+	}
+
+	@Test
+	void whenGrpcStubNotOnClasspathThenAutoConfigIsSkipped() {
+		this.validContextRunner()
+			.withClassLoader(new FilteredClassLoader(AbstractStub.class))
 			.run(context -> assertThat(context).doesNotHaveBean(GrpcClientObservationAutoConfiguration.class));
 	}
 

@@ -15,8 +15,6 @@
  */
 package org.springframework.grpc.autoconfigure.server.exception;
 
-import java.util.stream.Collectors;
-
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -24,6 +22,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
+import org.springframework.grpc.autoconfigure.server.ConditionalOnGrpcServerEnabled;
 import org.springframework.grpc.server.GlobalServerInterceptor;
 import org.springframework.grpc.server.exception.CompositeGrpcExceptionHandler;
 import org.springframework.grpc.server.exception.GrpcExceptionHandler;
@@ -32,6 +31,7 @@ import org.springframework.grpc.server.exception.GrpcExceptionHandlerInterceptor
 import io.grpc.Grpc;
 
 @AutoConfiguration
+@ConditionalOnGrpcServerEnabled
 @ConditionalOnClass(Grpc.class)
 @ConditionalOnBean(GrpcExceptionHandler.class)
 @ConditionalOnMissingBean(GrpcExceptionHandlerInterceptor.class)
@@ -44,7 +44,7 @@ public class GrpcExceptionHandlerAutoConfiguration {
 	public GrpcExceptionHandlerInterceptor globalExceptionHandlerInterceptor(
 			ObjectProvider<GrpcExceptionHandler> exceptionHandler) {
 		return new GrpcExceptionHandlerInterceptor(new CompositeGrpcExceptionHandler(
-				exceptionHandler.orderedStream().collect(Collectors.toList()).toArray(new GrpcExceptionHandler[0])));
+				exceptionHandler.orderedStream().toArray(GrpcExceptionHandler[]::new)));
 	}
 
 }
