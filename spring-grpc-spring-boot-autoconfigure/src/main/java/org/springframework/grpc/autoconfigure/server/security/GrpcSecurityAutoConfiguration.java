@@ -69,6 +69,7 @@ public class GrpcSecurityAutoConfiguration {
 	}
 
 	@ConditionalOnBean(SecurityFilterChain.class)
+	@Conditional(GrpcServerFactoryAutoConfiguration.OnGrpcServletCondition.class)
 	@Configuration(proxyBeanMethods = false)
 	static class GrpcServletSecurityConfigurerAutoConfiguration {
 
