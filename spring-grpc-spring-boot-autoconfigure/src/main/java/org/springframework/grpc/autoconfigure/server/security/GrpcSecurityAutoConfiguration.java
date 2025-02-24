@@ -35,6 +35,7 @@ import org.springframework.grpc.server.security.SecurityGrpcExceptionHandler;
 import org.springframework.security.concurrent.DelegatingSecurityContextExecutor;
 import org.springframework.security.config.ObjectPostProcessor;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.web.SecurityFilterChain;
 
 import io.grpc.ServerBuilder;
@@ -62,7 +63,11 @@ public class GrpcSecurityAutoConfiguration {
 
 		@Bean
 		public GrpcSecurity grpcSecurity(ObjectPostProcessor<Object> objectPostProcessor,
-				AuthenticationManagerBuilder authenticationManagerBuilder, ApplicationContext context) {
+				AuthenticationConfiguration authenticationConfiguration, ApplicationContext context) throws Exception {
+			AuthenticationManagerBuilder authenticationManagerBuilder = authenticationConfiguration
+				.authenticationManagerBuilder(objectPostProcessor, context);
+			authenticationManagerBuilder
+				.parentAuthenticationManager(authenticationConfiguration.getAuthenticationManager());
 			return new GrpcSecurity(objectPostProcessor, authenticationManagerBuilder, context);
 		}
 

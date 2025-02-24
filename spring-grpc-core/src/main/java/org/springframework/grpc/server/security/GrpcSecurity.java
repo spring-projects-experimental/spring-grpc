@@ -106,7 +106,7 @@ public final class GrpcSecurity
 		}
 		else {
 			ObservationRegistry registry = getObservationRegistry();
-			AuthenticationManager manager = getAuthenticationRegistry().build();
+			AuthenticationManager manager = getAuthenticationManager();
 			if (!registry.isNoop() && manager != null) {
 				setSharedObject(AuthenticationManager.class, new ObservationAuthenticationManager(registry, manager));
 			}
@@ -117,6 +117,10 @@ public final class GrpcSecurity
 		this.authenticationExtractors.sort(AnnotationAwareOrderComparator.INSTANCE);
 		return new AuthenticationProcessInterceptor(getSharedObject(AuthenticationManager.class),
 				new CompositeAuthenticationExtractor(this.authenticationExtractors), this.authorizationManager);
+	}
+
+	private AuthenticationManager getAuthenticationManager() throws Exception {
+		return getAuthenticationRegistry().getOrBuild();
 	}
 
 	public GrpcSecurity authenticationProvider(AuthenticationProvider authenticationProvider) {

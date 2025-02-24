@@ -27,6 +27,7 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.grpc.autoconfigure.server.GrpcServerAutoConfiguration;
 import org.springframework.grpc.server.exception.GrpcExceptionHandler;
 import org.springframework.grpc.server.lifecycle.GrpcServerLifecycle;
+import org.springframework.grpc.server.security.AuthenticationProcessInterceptor;
 import org.springframework.grpc.server.security.SecurityGrpcExceptionHandler;
 import org.springframework.security.config.ObjectPostProcessor;
 
@@ -72,9 +73,10 @@ class GrpcSecurityAutoConfigurationTests {
 
 	@Test
 	void grpcSecurityAutoConfiguredAsExpected() {
-		this.contextRunner()
-			.run((context) -> assertThat(context).getBean(GrpcExceptionHandler.class)
-				.isInstanceOf(SecurityGrpcExceptionHandler.class));
+		this.contextRunner().run((context) -> {
+			assertThat(context).getBean(GrpcExceptionHandler.class).isInstanceOf(SecurityGrpcExceptionHandler.class);
+			assertThat(context).getBean(AuthenticationProcessInterceptor.class).isNull();
+		});
 	}
 
 }
