@@ -15,7 +15,6 @@ public class GrpcServerService extends SimpleGrpc.SimpleImplBase {
 	private static Log log = LogFactory.getLog(GrpcServerService.class);
 
 	@Override
-	// @PreAuthorize("hasAuthority('ROLE_USER')")
 	public void sayHello(HelloRequest req, StreamObserver<HelloReply> responseObserver) {
 		log.info("Hello " + req.getName());
 		if (req.getName().startsWith("error")) {
@@ -27,7 +26,6 @@ public class GrpcServerService extends SimpleGrpc.SimpleImplBase {
 	}
 
 	@Override
-	// @PreAuthorize("hasAuthority('ROLE_ADMIN')")
 	public void streamHello(HelloRequest req, StreamObserver<HelloReply> responseObserver) {
 		log.info("Hello " + req.getName());
 		int count = 0;

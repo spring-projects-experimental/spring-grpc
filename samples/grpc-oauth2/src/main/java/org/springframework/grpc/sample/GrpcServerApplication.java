@@ -10,12 +10,10 @@ import org.springframework.grpc.server.GlobalServerInterceptor;
 import org.springframework.grpc.server.security.AuthenticationProcessInterceptor;
 import org.springframework.grpc.server.security.GrpcSecurity;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 
 import io.grpc.Metadata;
 
 @SpringBootApplication
-@EnableMethodSecurity
 @Import(AuthenticationConfiguration.class)
 public class GrpcServerApplication {
 
