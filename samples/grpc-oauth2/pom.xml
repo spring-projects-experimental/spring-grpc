@@ -39,7 +39,7 @@
 		<dependencies>
 			<dependency>
 				<groupId>org.springframework.grpc</groupId>
-				<artifactId>spring-grpc-dependencies</artifactId>
+				<artifactId>spring-grpc-bom</artifactId>
 				<version>0.4.0-SNAPSHOT</version>
 				<type>pom</type>
 				<scope>import</scope>
