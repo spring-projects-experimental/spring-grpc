@@ -28,17 +28,13 @@ dependencyManagement {
 }
 
 dependencies {
-    implementation 'org.springframework.grpc:spring-grpc-spring-boot-starter'
-	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.grpc:spring-grpc-server-web-spring-boot-starter'
     implementation 'io.grpc:grpc-services'
-    compileOnly 'javax.annotation:javax.annotation-api:1.3.2'
-    implementation 'io.projectreactor:reactor-core'
-    implementation 'com.salesforce.servicelibs:reactor-grpc-stub:1.2.4'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.grpc:spring-grpc-test'
-    testImplementation 'io.projectreactor:reactor-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    testRuntimeOnly "io.netty:netty-transport-native-epoll::linux-x86_64"
 }
 
 test {
@@ -55,9 +51,6 @@ protobuf {
         grpc {
             artifact = "io.grpc:protoc-gen-grpc-java:${dependencyManagement.importedProperties['grpc.version']}"
         }
-        reactor {
-            artifact = "com.salesforce.servicelibs:reactor-grpc:1.2.4"
-        }
     }
     generateProtoTasks {
         all()*.plugins {
@@ -65,7 +58,6 @@ protobuf {
                 option 'jakarta_omit'
                 option '@generated=omit'
             }
-            reactor {}
         }
     }
 }

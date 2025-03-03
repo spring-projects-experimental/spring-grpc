@@ -1,0 +1,17 @@
+settingsEvaluated { settings ->
+	settings.pluginManagement {
+		repositories {
+			mavenCentral()
+			gradlePluginPortal()
+			maven { url "https://repo.spring.io/milestone" }
+			maven { url "https://repo.spring.io/snapshot" }
+		}
+		resolutionStrategy {
+			eachPlugin {
+				if (requested.id.id == "org.springframework.boot") {
+					useVersion("$rootProject.springBootVersion")
+				}
+			}
+		}
+	}
+}
