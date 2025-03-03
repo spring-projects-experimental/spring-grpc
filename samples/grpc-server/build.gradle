@@ -16,7 +16,6 @@ java {
 }
 
 repositories {
-    mavenLocal()
     mavenCentral()
     maven { url 'https://repo.spring.io/milestone' }
     maven { url 'https://repo.spring.io/snapshot' }
@@ -29,8 +28,8 @@ dependencyManagement {
 }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.grpc:spring-grpc-spring-boot-starter'
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'io.grpc:grpc-services'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.grpc:spring-grpc-test'
@@ -38,8 +37,10 @@ dependencies {
     testRuntimeOnly "io.netty:netty-transport-native-epoll::linux-x86_64"
 }
 
-tasks.named('test') {
-    useJUnitPlatform()
+test {
+	useJUnitPlatform()
+	testLogging.showStandardStreams = true
+	outputs.upToDateWhen { false }
 }
 
 protobuf {

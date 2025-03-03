@@ -1,0 +1,32 @@
+name: Check Samples (Spring Boot compatability)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check_samples:
+    name: Check Samples project
+    if: github.repository == 'spring-projects-experimental/spring-grpc'
+    strategy:
+      matrix:
+        include:
+          - javaVersion: 17
+            springBootVersion: "3.4.3"
+          - javaVersion: 17
+            springBootVersion: "3.5.0-SNAPSHOT"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: spring-io/spring-gradle-build-action@v2
+      - name: Check samples project
+        env:
+          BOOT_VERSION: ${{ matrix.springBootVersion }}
+          JAVA_VERSION: ${{ matrix.javaVersion }}
+        run: |
+          cd samples   
+          ./gradlew \
+            --init-script ./sample-apps-check-ci.gradle \
+            -PspringBootVersion="$BOOT_VERSION" \
+            -PtestToolchain="$JAVA_VERSION" \
+            --rerun-tasks --no-build-cache \
+            build
