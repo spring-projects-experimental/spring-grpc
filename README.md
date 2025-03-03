@@ -137,7 +137,7 @@ More details on what is going on in the next section.
 You should follow the steps in each of the following section according to your needs.
 
 **📌 NOTE**\
-Spring gRPC supports Spring Boot 3.4.x
+Spring gRPC supports Spring Boot 3.4.x and 3.5.x
 
 ### Add Milestone and Snapshot Repositories
 
