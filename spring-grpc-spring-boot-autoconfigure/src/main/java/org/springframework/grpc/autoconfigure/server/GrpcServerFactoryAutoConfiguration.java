@@ -18,6 +18,8 @@ package org.springframework.grpc.autoconfigure.server;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -75,6 +77,8 @@ public class GrpcServerFactoryAutoConfiguration {
 	@Conditional(OnGrpcServletCondition.class)
 	static class GrpcServletConfiguration {
 
+		private static Log logger = LogFactory.getLog(GrpcServletConfiguration.class);
+
 		@Bean
 		public ServletRegistrationBean<GrpcServlet> grpcServlet(GrpcServerProperties properties,
 				GrpcServiceDiscoverer discoverer, ServerBuilderCustomizers serverBuilderCustomizers) {
@@ -82,6 +86,9 @@ public class GrpcServerFactoryAutoConfiguration {
 				.stream()
 				.map(service -> "/" + service + "/*")
 				.collect(Collectors.toList());
+			if (logger.isInfoEnabled()) {
+				discoverer.listServiceNames().forEach(service -> logger.info("Registering gRPC service: " + service));
+			}
 			ServletServerBuilder servletServerBuilder = new ServletServerBuilder();
 			discoverer.findServices().forEach(servletServerBuilder::addService);
 			PropertyMapper mapper = PropertyMapper.get().alwaysApplyingWhenNonNull();
