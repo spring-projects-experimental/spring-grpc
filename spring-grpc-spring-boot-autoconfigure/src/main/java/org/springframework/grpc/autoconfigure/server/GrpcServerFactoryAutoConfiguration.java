@@ -75,7 +75,7 @@ public class GrpcServerFactoryAutoConfiguration {
 
 	@Configuration(proxyBeanMethods = false)
 	@Conditional(OnGrpcServletCondition.class)
-	static class GrpcServletConfiguration {
+	public static class GrpcServletConfiguration {
 
 		private static Log logger = LogFactory.getLog(GrpcServletConfiguration.class);
 

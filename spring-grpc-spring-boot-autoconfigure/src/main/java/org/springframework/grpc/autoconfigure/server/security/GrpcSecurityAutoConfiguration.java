@@ -23,6 +23,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.grpc.autoconfigure.server.ConditionalOnGrpcServerEnabled;
 import org.springframework.grpc.autoconfigure.server.GrpcServerFactoryAutoConfiguration;
 import org.springframework.grpc.autoconfigure.server.exception.GrpcExceptionHandlerAutoConfiguration;
@@ -44,52 +45,56 @@ import io.grpc.internal.GrpcUtil;
 @ConditionalOnClass(ObjectPostProcessor.class)
 @ConditionalOnGrpcServerEnabled
 @AutoConfiguration(before = GrpcExceptionHandlerAutoConfiguration.class, after = SecurityAutoConfiguration.class)
+
+@Import({ ExceptionHandlerAutoConfiguration.class, GrpcNativeSecurityConfigurerAutoConfiguration.class,
+		GrpcServletSecurityConfigurerAutoConfiguration.class })
 public class GrpcSecurityAutoConfiguration {
 
-	@Configuration(proxyBeanMethods = false)
-	static class ExceptionHandlerAutoConfiguration {
+}
 
-		@Bean
-		public GrpcExceptionHandler accessExceptionHandler() {
-			return new SecurityGrpcExceptionHandler();
-		}
+@Configuration(proxyBeanMethods = false)
+@Import(AuthenticationConfiguration.class)
+class ExceptionHandlerAutoConfiguration {
 
+	@Bean
+	public GrpcExceptionHandler accessExceptionHandler() {
+		return new SecurityGrpcExceptionHandler();
 	}
 
-	@ConditionalOnBean(ObjectPostProcessor.class)
-	@Configuration(proxyBeanMethods = false)
-	@Conditional(GrpcServerFactoryAutoConfiguration.OnNativeGrpcServerCondition.class)
-	static class GrpcNativeSecurityConfigurerAutoConfiguration {
+}
 
-		@Bean
-		public GrpcSecurity grpcSecurity(ObjectPostProcessor<Object> objectPostProcessor,
-				AuthenticationConfiguration authenticationConfiguration, ApplicationContext context) throws Exception {
-			AuthenticationManagerBuilder authenticationManagerBuilder = authenticationConfiguration
-				.authenticationManagerBuilder(objectPostProcessor, context);
-			authenticationManagerBuilder
-				.parentAuthenticationManager(authenticationConfiguration.getAuthenticationManager());
-			return new GrpcSecurity(objectPostProcessor, authenticationManagerBuilder, context);
-		}
+@ConditionalOnBean(ObjectPostProcessor.class)
+@Configuration(proxyBeanMethods = false)
+@Conditional(GrpcServerFactoryAutoConfiguration.OnNativeGrpcServerCondition.class)
+class GrpcNativeSecurityConfigurerAutoConfiguration {
 
+	@Bean
+	public GrpcSecurity grpcSecurity(ObjectPostProcessor<Object> objectPostProcessor,
+			AuthenticationConfiguration authenticationConfiguration, ApplicationContext context) throws Exception {
+		AuthenticationManagerBuilder authenticationManagerBuilder = authenticationConfiguration
+			.authenticationManagerBuilder(objectPostProcessor, context);
+		authenticationManagerBuilder
+			.parentAuthenticationManager(authenticationConfiguration.getAuthenticationManager());
+		return new GrpcSecurity(objectPostProcessor, authenticationManagerBuilder, context);
 	}
 
-	@ConditionalOnBean(SecurityFilterChain.class)
-	@Conditional(GrpcServerFactoryAutoConfiguration.OnGrpcServletCondition.class)
-	@Configuration(proxyBeanMethods = false)
-	static class GrpcServletSecurityConfigurerAutoConfiguration {
+}
 
-		@Bean
-		@GlobalServerInterceptor
-		public SecurityContextServerInterceptor securityContextInterceptor() {
-			return new SecurityContextServerInterceptor();
-		}
+@ConditionalOnBean(SecurityFilterChain.class)
+@Conditional(GrpcServerFactoryAutoConfiguration.OnGrpcServletCondition.class)
+@Configuration(proxyBeanMethods = false)
+class GrpcServletSecurityConfigurerAutoConfiguration {
 
-		@Bean
-		public <T extends ServerBuilder<T>> ServerBuilderCustomizer<T> securityContextExecutorCustomizer() {
-			return (serverBuilder) -> serverBuilder
-				.executor(new DelegatingSecurityContextExecutor(GrpcUtil.SHARED_CHANNEL_EXECUTOR.create()));
-		}
+	@Bean
+	@GlobalServerInterceptor
+	public SecurityContextServerInterceptor securityContextInterceptor() {
+		return new SecurityContextServerInterceptor();
+	}
 
+	@Bean
+	public <T extends ServerBuilder<T>> ServerBuilderCustomizer<T> securityContextExecutorCustomizer() {
+		return (serverBuilder) -> serverBuilder
+			.executor(new DelegatingSecurityContextExecutor(GrpcUtil.SHARED_CHANNEL_EXECUTOR.create()));
 	}
 
 }

@@ -18,18 +18,24 @@ package org.springframework.grpc.autoconfigure.server.security;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Arrays;
+
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
 import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLoggingListener;
+import org.springframework.boot.logging.LogLevel;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.grpc.autoconfigure.server.GrpcServerAutoConfiguration;
 import org.springframework.grpc.server.exception.GrpcExceptionHandler;
 import org.springframework.grpc.server.lifecycle.GrpcServerLifecycle;
 import org.springframework.grpc.server.security.AuthenticationProcessInterceptor;
+import org.springframework.grpc.server.security.GrpcSecurity;
 import org.springframework.grpc.server.security.SecurityGrpcExceptionHandler;
 import org.springframework.security.config.ObjectPostProcessor;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 
 /**
  * Tests for {@link GrpcServerAutoConfiguration}.
@@ -50,6 +56,17 @@ class GrpcSecurityAutoConfigurationTests {
 		this.contextRunner()
 			.withClassLoader(new FilteredClassLoader(ObjectPostProcessor.class))
 			.run((context) -> assertThat(context).doesNotHaveBean(GrpcSecurityAutoConfiguration.class));
+	}
+
+	@Test
+	void whenObjectPostProcessorPresentGrpcSecurityIsCreated() {
+		new ApplicationContextRunner()
+			.withInitializer(ConditionEvaluationReportLoggingListener.forLogLevel(LogLevel.INFO))
+			.withConfiguration(AutoConfigurations.of(GrpcSecurityAutoConfiguration.class))
+			.run((context) -> {
+				System.err.println(Arrays.asList(context.getBeanDefinitionNames()));
+				assertThat(context).hasSingleBean(GrpcSecurity.class);
+			});
 	}
 
 	@Test
@@ -77,6 +94,12 @@ class GrpcSecurityAutoConfigurationTests {
 			assertThat(context).getBean(GrpcExceptionHandler.class).isInstanceOf(SecurityGrpcExceptionHandler.class);
 			assertThat(context).getBean(AuthenticationProcessInterceptor.class).isNull();
 		});
+	}
+
+	@EnableMethodSecurity
+	@Configuration(proxyBeanMethods = false)
+	static class ExtraConfiguration {
+
 	}
 
 }

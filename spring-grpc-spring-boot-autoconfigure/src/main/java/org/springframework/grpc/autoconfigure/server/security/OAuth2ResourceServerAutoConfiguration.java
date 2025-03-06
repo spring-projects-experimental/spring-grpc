@@ -44,6 +44,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.grpc.autoconfigure.server.GrpcServerFactoryAutoConfiguration;
+import org.springframework.grpc.autoconfigure.server.GrpcServerFactoryAutoConfiguration.GrpcServletConfiguration;
 import org.springframework.grpc.server.GlobalServerInterceptor;
 import org.springframework.grpc.server.security.AuthenticationProcessInterceptor;
 import org.springframework.grpc.server.security.GrpcSecurity;
@@ -65,12 +67,17 @@ import org.springframework.security.oauth2.server.resource.introspection.OpaqueT
 import org.springframework.security.oauth2.server.resource.introspection.SpringOpaqueTokenIntrospector;
 import org.springframework.util.CollectionUtils;
 
+import io.grpc.BindableService;
+
 // All copied from Spring Boot (https://github.com/spring-projects/spring-boot/issues/43978), except the
 // 2 @Beans of type AuthenticationProcessInterceptor
 @AutoConfiguration(before = { GrpcSecurityAutoConfiguration.class, UserDetailsServiceAutoConfiguration.class },
-		after = org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration.class)
+		after = { GrpcServerFactoryAutoConfiguration.class,
+				org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration.class })
 @EnableConfigurationProperties(OAuth2ResourceServerProperties.class)
 @ConditionalOnClass(BearerTokenAuthenticationToken.class)
+@ConditionalOnMissingBean(GrpcServletConfiguration.class)
+@ConditionalOnBean(BindableService.class)
 @Import({ Oauth2ResourceServerConfiguration.JwtConfiguration.class,
 		Oauth2ResourceServerConfiguration.OpaqueTokenConfiguration.class })
 class OAuth2ResourceServerAutoConfiguration {
@@ -122,7 +129,8 @@ class OAuth2ResourceServerOpaqueTokenConfiguration {
 		@Bean
 		@ConditionalOnBean(OpaqueTokenIntrospector.class)
 		@GlobalServerInterceptor
-		AuthenticationProcessInterceptor opaqueTokenSecurityFilterChain(GrpcSecurity http) throws Exception {
+		AuthenticationProcessInterceptor opaqueTokenAuthenticationProcessInterceptor(GrpcSecurity http)
+				throws Exception {
 			http.authorizeRequests((requests) -> requests.allRequests().authenticated());
 			http.oauth2ResourceServer((resourceServer) -> resourceServer.opaqueToken(withDefaults()));
 			return http.build();
@@ -241,7 +249,7 @@ class OAuth2ResourceServerJwtConfiguration {
 		@Bean
 		@ConditionalOnBean(JwtDecoder.class)
 		@GlobalServerInterceptor
-		AuthenticationProcessInterceptor jwtSecurityFilterChain(GrpcSecurity http) throws Exception {
+		AuthenticationProcessInterceptor jwtAuthenticationProcessInterceptor(GrpcSecurity http) throws Exception {
 			http.authorizeRequests((requests) -> requests.allRequests().authenticated());
 			http.oauth2ResourceServer((resourceServer) -> resourceServer.jwt(withDefaults()));
 			return http.build();

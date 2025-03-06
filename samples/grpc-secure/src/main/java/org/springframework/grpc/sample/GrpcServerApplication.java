@@ -5,11 +5,8 @@ import static org.springframework.security.config.Customizer.withDefaults;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import;
 import org.springframework.grpc.server.GlobalServerInterceptor;
 import org.springframework.grpc.server.security.GrpcSecurity;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
@@ -17,8 +14,6 @@ import io.grpc.Metadata;
 import io.grpc.ServerInterceptor;
 
 @SpringBootApplication
-@EnableMethodSecurity
-@Import(AuthenticationConfiguration.class)
 public class GrpcServerApplication {
 
 	public static final Metadata.Key<String> USER_KEY = Metadata.Key.of("X-USER", Metadata.ASCII_STRING_MARSHALLER);
