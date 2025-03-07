@@ -180,10 +180,18 @@ repositories {
 
 ### Dependency Management
 
-The Spring gRPC Dependencies declares the recommended versions of all the dependencies used by a given release of Spring gRPC.
-Using the dependencies from your application’s build script avoids the need for you to specify and maintain the dependency versions yourself.
-Instead, the version you’re using determines the utilized dependency versions.
+The `spring-grpc-dependencies` artifact declares the recommended versions of the dependencies used by a given release of Spring gRPC, excluding dependencies already managed by Spring Boot dependency management.
+
+The `spring-grpc-build-dependencies` artifact declares the recommended versions of all the dependencies used by a given release of Spring gRPC, including dependencies already managed by Spring Boot dependency management.
+
+If you are running Spring gRPC in a Spring Boot application then use `spring-grpc-dependencies`, otherwise use `spring-grpc-build-dependencies`.
+
+Using one of these dependency modules avoids the need for you to specify and maintain the dependency versions yourself.
+Instead, the version of the dependency module you are using determines the utilized dependency versions.
 It also ensures that you’re using supported and tested versions of the dependencies by default, unless you choose to override them.
+
+**📌 NOTE**\
+The examples below assume you are running inside a Spring Boot application and therefore use `spring-grpc-dependencies`.
 
 If you’re a Maven user, you can use the dependencies by adding the following to your pom.xml file -
 
@@ -201,7 +209,7 @@ If you’re a Maven user, you can use the dependencies by adding the following t
 </dependencyManagement>
 ```
 
-Gradle users can also use the Spring gRPC Dependencies by leveraging Gradle (5.0+) native support for declaring dependency constraints using a Maven BOM.
+Gradle users can also use the dependencies by leveraging Gradle (5.0+) native support for declaring dependency constraints using a Maven BOM.
 This is implemented by adding a 'platform' dependency handler method to the dependencies section of your Gradle build script.
 As shown in the snippet below this can then be followed by version-less declarations of the Starter Dependencies for the one or more spring-grpc modules you wish to use, e.g. spring-grpc-openai.
 
