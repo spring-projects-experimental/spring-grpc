@@ -5,12 +5,12 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.springframework.grpc</groupId>
-	<artifactId>spring-grpc-dependencies</artifactId>
-	<version>0.5.0-SNAPSHOT</version>
+	<artifactId>spring-grpc-build-dependencies</artifactId>
+	<version>0.4.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
-	<name>Spring gRPC (Bill of Materials)</name>
-	<description>Bill of Materials for the Spring gRPC modules</description>
+	<name>Spring gRPC build dependencies</name>
+	<description>Dependencies for the Spring gRPC modules</description>
 
 	<url>https://github.com/spring-projects-experimental/spring-grpc</url>
 
@@ -49,11 +49,10 @@
 	</licenses>
 
 	<properties>
-		<grpc.version>1.70.0</grpc.version>
-		<protobuf-java.version>3.25.6</protobuf-java.version>
-		<google-common-protos.version>2.46.0</google-common-protos.version>
+		<spring-framework.version>6.2.3</spring-framework.version>
+		<spring-security.version>6.4.2</spring-security.version>
 		<micrometer.version>1.13.6</micrometer.version>
-		<reactor-grpc.version>1.2.4</reactor-grpc.version>
+		<netty.version>4.1.118.Final</netty.version>
 		<spring-javaformat-maven-plugin.version>0.0.43</spring-javaformat-maven-plugin.version>
 	</properties>
 
@@ -61,62 +60,31 @@
 		<dependencies>
 			<dependency>
 				<groupId>org.springframework.grpc</groupId>
-				<artifactId>spring-grpc-core</artifactId>
+				<artifactId>spring-grpc-dependencies</artifactId>
 				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.grpc</groupId>
-				<artifactId>spring-grpc-spring-boot-autoconfigure</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.grpc</groupId>
-				<artifactId>spring-grpc-spring-boot-starter</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.grpc</groupId>
-				<artifactId>spring-grpc-client-spring-boot-starter</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.grpc</groupId>
-				<artifactId>spring-grpc-server-spring-boot-starter</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.grpc</groupId>
-				<artifactId>spring-grpc-server-web-spring-boot-starter</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.grpc</groupId>
-				<artifactId>spring-grpc-test</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>io.grpc</groupId>
-				<artifactId>grpc-bom</artifactId>
-				<version>${grpc.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
 			<dependency>
-				<groupId>com.google.protobuf</groupId>
-				<artifactId>protobuf-bom</artifactId>
-				<version>${protobuf-java.version}</version>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-framework-bom</artifactId>
+				<version>${spring-framework.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
 			<dependency>
-				<groupId>com.google.protobuf</groupId>
-				<artifactId>protoc</artifactId>
-				<version>${protobuf-java.version}</version>
+				<groupId>org.springframework.security</groupId>
+				<artifactId>spring-security-bom</artifactId>
+				<version>${spring-security.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
 			</dependency>
 			<dependency>
-				<groupId>com.google.api.grpc</groupId>
-				<artifactId>proto-google-common-protos</artifactId>
-				<version>${google-common-protos.version}</version>
+				<groupId>io.netty</groupId>
+				<artifactId>netty-bom</artifactId>
+				<version>${netty.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
