@@ -57,6 +57,8 @@
 		<google-common-protos.version>2.46.0</google-common-protos.version>
 		<micrometer.version>1.13.6</micrometer.version>
 		<reactor-grpc.version>1.2.4</reactor-grpc.version>
+		<spring-javaformat-maven-plugin.version>0.0.43</spring-javaformat-maven-plugin.version>
+		<disable.format.checks>false</disable.format.checks>
 	</properties>
 
 	<dependencyManagement>
@@ -156,6 +158,28 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>io.spring.javaformat</groupId>
+				<artifactId>spring-javaformat-maven-plugin</artifactId>
+				<version>${spring-javaformat-maven-plugin.version}</version>
+				<executions>
+					<execution>
+						<phase>validate</phase>
+						<inherited>true</inherited>
+						<configuration>
+							<skip>${disable.format.checks}</skip>
+						</configuration>
+						<goals>
+							<goal>validate</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
 
 	<profiles>
 		<profile>
