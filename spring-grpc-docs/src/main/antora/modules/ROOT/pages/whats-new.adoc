@@ -3,9 +3,9 @@
 :page-section-summary-toc: 1
 
 [[what-s-new-in-0-4-0-since-0-3-0]]
-== What's New in 0.5.0 Since 0.3.0
+== What's New in 0.6.0-SNAPSHOT Since 0.3.0
 
-This section covers the changes made from version 0.3.0 to version 0.5.0.
+This section covers the changes made from version 0.3.0 to version 0.6.0-SNAPSHOT.
 
 === Fine-grained starter modules
 The following fine-grained Spring Boot starter modules have been added:
