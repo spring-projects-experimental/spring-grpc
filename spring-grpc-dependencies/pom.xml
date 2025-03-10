@@ -118,6 +118,11 @@
 				<artifactId>proto-google-common-protos</artifactId>
 				<version>${google-common-protos.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>com.salesforce.servicelibs</groupId>
+				<artifactId>reactor-grpc-stub</artifactId>
+				<version>${reactor-grpc.version}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
