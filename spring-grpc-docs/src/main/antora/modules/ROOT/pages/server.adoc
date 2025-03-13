@@ -177,7 +177,7 @@ Here we configure a bundle named "ssltest" that uses a JKS keystore, similar to 
 It is then applied to the gRPC server using the `spring.grpc.server.ssl.bundle` property.
 To use self-signed certificates, for testing purposes only, you also need to set `spring.grpc.server.ssl.secure=false`.
 
-=== Declarative Security with Spring Security
+==== Declarative Security with Spring Security
 
 If you want to enhance the security of your gRPC server, you can use Spring Security by employing similar mechanisms to those used for regular HTTP security.
 If Spring Security is on the classpath, some autoconfiguration will be automatically added to your project.
@@ -213,7 +213,7 @@ Here we configure a filter that allows access to one method only to admin users,
 access to all gRPC services (e.g. reflection and health indicators) is allowed to all; and all other requests are denied.
 We also enable HTTP Basic authentication and preauthentication (mTLS) (`withDefaults()` is a static import from the `Customizer` in Spring Security).
 
-=== OAuth2 Resource Server
+==== OAuth2 Resource Server
 
 Similar to the way Spring Boot works https://docs.spring.io/spring-boot/reference/web/spring-security.html#web.security.oauth2.server[with normal web applications], if you have the `spring-security-oauth2-resource-server` dependency on the classpath, Spring gRPC will be able to automatically configure an OAuth2 resource server.
 There are 2 choices for the token types, just the same as in Spring Boot, and they are configured with the same application properties and optional custom beans.
@@ -262,7 +262,7 @@ By default, CSRF protection is automatically disabled for gRPC requests because 
 You can switch off that behaviour and configure your own CSRF protection if you want to by explicitly setting `spring.grpc.server.security.csrf.enabled=true`.
 A servlet application that exposes gRPC endpoints on a different port (with `spring.grpc.server.servlet.enabled=false`) will also not have CSRF protection disabled by default.
 
-=== Securing Individual Methods
+==== Securing Individual Methods
 
 Individual gRPC methods can be secured by adding `@PreAuthorize` to the method definition.
 Or you can use the knowledge that the HTTP endpoint is `<service>/<method>` to configure the security using the usual `HttpSecurity` configuration.
