@@ -29,8 +29,7 @@ public class DefaultDeadlineSetupTests {
 
 	@Nested
 	@SpringBootTest(properties = { "spring.grpc.client.default-channel.address=static://0.0.0.0:${local.grpc.port}",
-			"spring.grpc.client.default-channel.default-deadline=1s",
-			"spring.main.allow-bean-definition-overriding=true" })
+			"spring.grpc.client.default-channel.default-deadline=1s" })
 	@DirtiesContext
 	@EnabledIf("serverJarAvailable")
 	class Deadline {
@@ -59,7 +58,7 @@ public class DefaultDeadlineSetupTests {
 
 			@Bean
 			@Primary
-			public CommandLineRunner runner(SimpleGrpc.SimpleBlockingStub stub) {
+			public CommandLineRunner otherRunner(SimpleGrpc.SimpleBlockingStub stub) {
 				return args -> {
 					var rs = stub.streamHello(HelloRequest.newBuilder().setName("Deadline").build());
 					Assertions.assertNotNull(rs);
@@ -78,8 +77,7 @@ public class DefaultDeadlineSetupTests {
 
 	@Nested
 	@SpringBootTest(properties = { "spring.grpc.client.default-channel.address=static://0.0.0.0:${local.grpc.port}",
-			"spring.grpc.client.default-channel.default-deadline=1s",
-			"spring.main.allow-bean-definition-overriding=true" })
+			"spring.grpc.client.default-channel.default-deadline=1s" })
 	@DirtiesContext
 	@EnabledIf("serverJarAvailable")
 	class WithoutDeadline {
@@ -108,7 +106,7 @@ public class DefaultDeadlineSetupTests {
 
 			@Bean
 			@Primary
-			public CommandLineRunner runner(SimpleGrpc.SimpleBlockingStub stub) {
+			public CommandLineRunner otherRunner(SimpleGrpc.SimpleBlockingStub stub) {
 				return args -> {
 					var rs = stub.sayHello(HelloRequest.newBuilder().setName("WithoutDeadline").build());
 					Assertions.assertNotNull(rs);
