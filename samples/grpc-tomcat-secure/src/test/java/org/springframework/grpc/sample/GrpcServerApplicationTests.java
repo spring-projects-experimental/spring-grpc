@@ -18,7 +18,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.grpc.client.ChannelBuilderOptions;
 import org.springframework.grpc.client.GrpcChannelFactory;
-import org.springframework.grpc.client.security.BasicAuthenticationInterceptor;
+import org.springframework.grpc.client.interceptor.security.BasicAuthenticationInterceptor;
 import org.springframework.grpc.sample.proto.HelloReply;
 import org.springframework.grpc.sample.proto.HelloRequest;
 import org.springframework.grpc.sample.proto.SimpleGrpc;

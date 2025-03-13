@@ -208,6 +208,7 @@ class GrpcClientPropertiesTests {
 			defaultChannel.setMaxInboundMessageSize(DataSize.ofMegabytes(100));
 			defaultChannel.setMaxInboundMetadataSize(DataSize.ofMegabytes(200));
 			defaultChannel.setUserAgent("me");
+			defaultChannel.setDefaultDeadline(Duration.ofMinutes(1));
 			defaultChannel.getSsl().setEnabled(true);
 			defaultChannel.getSsl().setBundle("custom-bundle");
 			var properties = newProperties(defaultChannel, Map.of());

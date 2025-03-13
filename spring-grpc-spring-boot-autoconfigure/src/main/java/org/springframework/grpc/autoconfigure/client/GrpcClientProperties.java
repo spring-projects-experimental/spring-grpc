@@ -308,6 +308,19 @@ public class GrpcClientProperties implements EnvironmentAware, VirtualTargets {
 		}
 
 		/**
+		 * The default deadline for RPCs performed on this channel.
+		 */
+		private Duration defaultDeadline = null;
+
+		public Duration getDefaultDeadline() {
+			return defaultDeadline;
+		}
+
+		public void setDefaultDeadline(final Duration defaultDeadline) {
+			this.defaultDeadline = defaultDeadline;
+		}
+
+		/**
 		 * Provide a copy of the channel instance.
 		 * @return a copy of the channel instance.
 		 */
@@ -324,6 +337,7 @@ public class GrpcClientProperties implements EnvironmentAware, VirtualTargets {
 			copy.maxInboundMessageSize = this.maxInboundMessageSize;
 			copy.maxInboundMetadataSize = this.maxInboundMetadataSize;
 			copy.userAgent = this.userAgent;
+			copy.defaultDeadline = this.defaultDeadline;
 			copy.health.copyValuesFrom(this.getHealth());
 			copy.ssl.copyValuesFrom(this.getSsl());
 			return copy;

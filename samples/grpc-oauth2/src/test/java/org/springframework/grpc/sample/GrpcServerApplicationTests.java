@@ -24,7 +24,7 @@ import org.springframework.grpc.client.ChannelBuilderOptions;
 import org.springframework.grpc.client.EnableGrpcClients;
 import org.springframework.grpc.client.GrpcClient;
 import org.springframework.grpc.client.GrpcClientRegistryCustomizer;
-import org.springframework.grpc.client.security.BearerTokenAuthenticationInterceptor;
+import org.springframework.grpc.client.interceptor.security.BearerTokenAuthenticationInterceptor;
 import org.springframework.grpc.sample.proto.HelloReply;
 import org.springframework.grpc.sample.proto.HelloRequest;
 import org.springframework.grpc.sample.proto.SimpleGrpc;
