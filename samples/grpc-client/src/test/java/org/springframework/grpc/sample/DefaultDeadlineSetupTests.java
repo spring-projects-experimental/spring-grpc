@@ -1,8 +1,10 @@
 package org.springframework.grpc.sample;
 
-import io.grpc.Status;
-import io.grpc.StatusRuntimeException;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import java.io.File;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -16,14 +18,12 @@ import org.springframework.experimental.boot.server.exec.CommonsExecWebServerFac
 import org.springframework.experimental.boot.server.exec.MavenClasspathEntry;
 import org.springframework.experimental.boot.test.context.DynamicProperty;
 import org.springframework.experimental.boot.test.context.EnableDynamicProperty;
-import org.springframework.grpc.client.EnableGrpcClients;
-import org.springframework.grpc.client.GrpcClient;
 import org.springframework.grpc.sample.proto.HelloRequest;
 import org.springframework.grpc.sample.proto.SimpleGrpc;
 import org.springframework.test.annotation.DirtiesContext;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 
 public class DefaultDeadlineSetupTests {
 
@@ -44,7 +44,6 @@ public class DefaultDeadlineSetupTests {
 			// Real test case in ExtraConfiguration#runner(SimpleGrpc.SimpleBlockingStub)}
 		}
 
-		@EnableGrpcClients(@GrpcClient(types = SimpleGrpc.SimpleBlockingStub.class))
 		@TestConfiguration
 		@EnableDynamicProperty
 		static class ExtraConfiguration {
@@ -94,7 +93,6 @@ public class DefaultDeadlineSetupTests {
 			// Real test case in ExtraConfiguration#runner(SimpleGrpc.SimpleBlockingStub)}
 		}
 
-		@EnableGrpcClients(@GrpcClient(types = SimpleGrpc.SimpleBlockingStub.class))
 		@TestConfiguration
 		@EnableDynamicProperty
 		static class ExtraConfiguration {
