@@ -141,6 +141,11 @@
 			<artifactId>spring-security-web</artifactId>
 			<optional>true</optional>
 		</dependency>
+		<dependency>
+			<groupId>io.projectreactor</groupId>
+			<artifactId>reactor-core</artifactId>
+			<optional>true</optional>
+		</dependency>
 		<!-- test dependencies -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
