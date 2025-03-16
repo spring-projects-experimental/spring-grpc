@@ -310,7 +310,7 @@ The rest is the configuration of the SSL bundle itself, in this case using JKS e
 === HTTP Headers
 
 Spring gRPC provides a couple of interceptor that can be used to provide security to your gRPC clients.
-There is one for Basic HHTP authentication and one for OAuth2 (bearer tokens).
+There is one for Basic HTTP authentication and one for OAuth2 (bearer tokens).
 Here's an example of creating a channel that uses Basic HTTP authentication:
 
 [source,java]
