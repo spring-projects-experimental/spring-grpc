@@ -8,7 +8,7 @@ The `Server` is the gRPC server that listens for incoming requests and routes th
 == Create a gRPC Service
 
 To create a gRPC server, you need to provide one or more beans of type `BindableService`.
-There are some `BindableServices` available off the shelf that you could include in your application (an example is the reflection service from the `grpc-services` artifact which allows clients to browse the metadata of your services and download the Portobuf files). 
+There are some `BindableServices` available off the shelf that you could include in your application (an example is the reflection service from the `grpc-services` artifact which allows clients to browse the metadata of your services and download the Protobuf files).
 Very commonly, you will create your own `BindableService` by extending the generated service implementation from your Protobuf file.
 The easiest way to activate it is to simply add a Spring `@Service` annotation to the implementation class and have it picked up by the `@ComponentScan` in your Spring Boot application.
 

@@ -94,7 +94,7 @@ The prefix `secure` is used as a bean definition name prefix, so the resulting b
 This feature is useful when you want to have multiple instances of the same stub class with different configurations.
 
 N.B. The `ClientRegistrationRepository` in the example is injected via an `ObjectProvider` which is not called directly to avoid early instantiation.
-The customizer has to run very early in the application lifecycle, so you always want to follow this pattern if you need to inject depdendencies to build the channel options.
+The customizer has to run very early in the application lifecycle, so you always want to follow this pattern if you need to inject dependencies to build the channel options.
 
 == Create a Client Manually
 
@@ -310,7 +310,7 @@ The rest is the configuration of the SSL bundle itself, in this case using JKS e
 === HTTP Headers
 
 Spring gRPC provides a couple of interceptor that can be used to provide security to your gRPC clients.
-There is one for Basic HHTP authentication and one for OAuth2 (bearer tokens).
+There is one for Basic HTTP authentication and one for OAuth2 (bearer tokens).
 Here's an example of creating a channel that uses Basic HTTP authentication:
 
 [source,java]

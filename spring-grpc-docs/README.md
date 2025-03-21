@@ -2,7 +2,7 @@
 
 ## README
 
-The top level README and CONTRIBUTING guidleines documentation are generated from sources in this module on `mvn package` using [`asciidoctor-reducer`](https://github.com/asciidoctor/asciidoctor-reducer) and [`downdoc`](https://github.com/opendevise/downdoc).
+The top level README and CONTRIBUTING guidelines documentation are generated from sources in this module on `mvn package` using [`asciidoctor-reducer`](https://github.com/asciidoctor/asciidoctor-reducer) and [`downdoc`](https://github.com/opendevise/downdoc).
 
 ## Configuration Properties
 The Spring gRPC configuration properties are automatically documented as follows:
