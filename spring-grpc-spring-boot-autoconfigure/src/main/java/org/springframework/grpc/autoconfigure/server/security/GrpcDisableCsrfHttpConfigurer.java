@@ -16,8 +16,13 @@
 package org.springframework.grpc.autoconfigure.server.security;
 
 import org.springframework.context.ApplicationContext;
+import org.springframework.grpc.server.service.GrpcServiceDiscoverer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
+import org.springframework.security.web.csrf.CsrfFilter;
+import org.springframework.security.web.util.matcher.AndRequestMatcher;
+import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 
 /**
  * A custom {@link AbstractHttpConfigurer} that disables CSRF protection for gRPC
@@ -38,9 +43,20 @@ public class GrpcDisableCsrfHttpConfigurer extends AbstractHttpConfigurer<GrpcDi
 	@Override
 	public void init(HttpSecurity http) throws Exception {
 		ApplicationContext context = http.getSharedObject(ApplicationContext.class);
-		if (context != null && isServletEnabledAndCsrfDisabled(context)) {
-			http.csrf(csrf -> csrf.ignoringRequestMatchers(GrpcServletRequest.all()));
+		if (context != null && context.getBeanNamesForType(GrpcServiceDiscoverer.class).length == 1
+				&& isServletEnabledAndCsrfDisabled(context) && isCsrfConfigurerPresent(http)) {
+			http.csrf(this::disable);
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private boolean isCsrfConfigurerPresent(HttpSecurity http) {
+		return http.getConfigurer(CsrfConfigurer.class) != null;
+	}
+
+	private void disable(CsrfConfigurer<HttpSecurity> csrf) {
+		csrf.requireCsrfProtectionMatcher(new AndRequestMatcher(CsrfFilter.DEFAULT_CSRF_MATCHER,
+				new NegatedRequestMatcher(GrpcServletRequest.all())));
 	}
 
 	private boolean isServletEnabledAndCsrfDisabled(ApplicationContext context) {

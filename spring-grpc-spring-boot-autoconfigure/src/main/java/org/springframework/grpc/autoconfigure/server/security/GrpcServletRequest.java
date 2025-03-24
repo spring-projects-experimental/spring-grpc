@@ -28,6 +28,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.util.Assert;
+import org.springframework.web.context.WebApplicationContext;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -100,6 +101,11 @@ public class GrpcServletRequest {
 		protected void initialized(Supplier<GrpcServiceDiscoverer> context) {
 			List<RequestMatcher> matchers = getDelegateMatchers(context.get()).toList();
 			this.delegate = matchers.isEmpty() ? request -> false : new OrRequestMatcher(matchers);
+		}
+
+		@Override
+		protected boolean ignoreApplicationContext(WebApplicationContext context) {
+			return context.getBeanNamesForType(GrpcServiceDiscoverer.class).length != 1;
 		}
 
 		private Stream<RequestMatcher> getDelegateMatchers(GrpcServiceDiscoverer context) {

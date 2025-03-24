@@ -67,6 +67,22 @@ public class GrpcServletRequestTests {
 		assertThat(matcher.matches(request)).isFalse();
 	};
 
+	@Test
+	void noServices() {
+		GrpcServletRequestMatcher matcher = GrpcServletRequest.all();
+		MockHttpServletRequest request = mockRequestNoServices("/my-service/Method");
+		assertThat(matcher.matches(request)).isFalse();
+	};
+
+	private MockHttpServletRequest mockRequestNoServices(String path) {
+		MockServletContext servletContext = new MockServletContext();
+		servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE,
+				new StaticWebApplicationContext());
+		MockHttpServletRequest request = new MockHttpServletRequest(servletContext);
+		request.setPathInfo(path);
+		return request;
+	}
+
 	private MockHttpServletRequest mockRequest(String path) {
 		MockServletContext servletContext = new MockServletContext();
 		servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, this.context);
