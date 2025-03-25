@@ -21,7 +21,6 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -52,63 +51,66 @@ public class ReactiveStubBeanDefinitionRegistrar implements ImportBeanDefinition
 			return;
 		}
 		registry.registerBeanDefinition(ReactiveStubBeanFactoryPostProcessor.BEAN_NAME,
-				BeanDefinitionBuilder.genericBeanDefinition(ReactiveStubBeanFactoryPostProcessor.class).getBeanDefinition());
+				BeanDefinitionBuilder.genericBeanDefinition(ReactiveStubBeanFactoryPostProcessor.class)
+					.getBeanDefinition());
 	}
 
-}
+	static class ReactiveStubBeanFactoryPostProcessor
+			implements BeanFactoryPostProcessor, MethodReplacer, ApplicationContextAware {
 
-class ReactiveStubBeanFactoryPostProcessor implements BeanFactoryPostProcessor, MethodReplacer, ApplicationContextAware {
+		/**
+		 * Bean name for this post processor in the application context.
+		 */
+		public static final String BEAN_NAME = ReactiveStubBeanFactoryPostProcessor.class.getName();
 
-	/**
-	 * Bean name for this post processor in the application context.
-	 */
-	public static final String BEAN_NAME = ReactiveStubBeanFactoryPostProcessor.class.getName();
+		private CompositeGrpcExceptionHandler handler;
 
-	private CompositeGrpcExceptionHandler handler;
+		private ApplicationContext context;
 
-	private ApplicationContext context;
-	
-	@Override
-	public void setApplicationContext(ApplicationContext context) throws BeansException {
-		this.context = context;
-	}
-
-	private Throwable onErrorMap(Throwable throwable) {
-		if (this.handler == null) {
-			GrpcExceptionHandler[] handlers = this.context.getAutowireCapableBeanFactory()
-				.getBeanProvider(GrpcExceptionHandler.class)
-				.orderedStream()
-				.toArray(GrpcExceptionHandler[]::new);
-			this.handler = new CompositeGrpcExceptionHandler(handlers);
+		@Override
+		public void setApplicationContext(ApplicationContext context) throws BeansException {
+			this.context = context;
 		}
-		Status status = handler.handleException(throwable);
-		return status != null ? new StatusException(status) : throwable;
-	}
 
-	@Override
-	public void postProcessBeanFactory(ConfigurableListableBeanFactory factory) {
-		if (this.context.getBeanNamesForType(GrpcExceptionHandler.class).length == 0) {
-			return;
+		private Throwable onErrorMap(Throwable throwable) {
+			if (this.handler == null) {
+				GrpcExceptionHandler[] handlers = this.context.getAutowireCapableBeanFactory()
+					.getBeanProvider(GrpcExceptionHandler.class)
+					.orderedStream()
+					.toArray(GrpcExceptionHandler[]::new);
+				this.handler = new CompositeGrpcExceptionHandler(handlers);
+			}
+			Status status = this.handler.handleException(throwable);
+			return status != null ? new StatusException(status) : throwable;
 		}
-		for (String name : factory.getBeanNamesForType(BindableService.class)) {
-			BeanDefinition service = factory.getBeanDefinition(name);
-			Class<?> type = factory.getType(name);
-			if (type != null && ReflectionUtils.findMethod(type, "onErrorMap", Throwable.class) != null) {
-				if (service instanceof AbstractBeanDefinition root) {
-					ReplaceOverride override = new ReplaceOverride("onErrorMap", BEAN_NAME);
-					// You need this in an AOT build (but the interceptor still isn't used
-					// at runtime with AOT
-					// https://github.com/spring-projects/spring-framework/issues/34642)
-					override.addTypeIdentifier("Throwable");
-					root.getMethodOverrides().addOverride(override);
+
+		@Override
+		public void postProcessBeanFactory(ConfigurableListableBeanFactory factory) {
+			if (this.context.getBeanNamesForType(GrpcExceptionHandler.class).length == 0) {
+				return;
+			}
+			for (String name : factory.getBeanNamesForType(BindableService.class)) {
+				BeanDefinition service = factory.getBeanDefinition(name);
+				Class<?> type = factory.getType(name);
+				if (type != null && ReflectionUtils.findMethod(type, "onErrorMap", Throwable.class) != null) {
+					if (service instanceof AbstractBeanDefinition root) {
+						ReplaceOverride override = new ReplaceOverride("onErrorMap", BEAN_NAME);
+						// You need this in an AOT build (but the interceptor still isn't
+						// used
+						// at runtime with AOT
+						// https://github.com/spring-projects/spring-framework/issues/34642)
+						override.addTypeIdentifier("Throwable");
+						root.getMethodOverrides().addOverride(override);
+					}
 				}
 			}
 		}
-	}
 
-	@Override
-	public Object reimplement(Object obj, Method method, Object[] args) throws Throwable {
-		return onErrorMap((Throwable) args[0]);
+		@Override
+		public Object reimplement(Object obj, Method method, Object[] args) throws Throwable {
+			return onErrorMap((Throwable) args[0]);
+		}
+
 	}
 
 }

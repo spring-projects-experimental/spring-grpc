@@ -19,15 +19,18 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.grpc.autoconfigure.common.codec.GrpcCodecConfiguration;
 import org.springframework.grpc.server.GrpcServerFactory;
 import org.springframework.grpc.server.ServerBuilderCustomizer;
+import org.springframework.grpc.server.exception.ReactiveStubBeanDefinitionRegistrar;
 import org.springframework.grpc.server.lifecycle.GrpcServerLifecycle;
 import org.springframework.grpc.server.service.DefaultGrpcServiceConfigurer;
 import org.springframework.grpc.server.service.DefaultGrpcServiceDiscoverer;
@@ -98,6 +101,13 @@ public class GrpcServerAutoConfiguration {
 	<T extends ServerBuilder<T>> ServerBuilderCustomizer<T> decompressionServerConfigurer(
 			DecompressorRegistry registry) {
 		return builder -> builder.decompressorRegistry(registry);
+	}
+
+	@ConditionalOnClass(name = "com.salesforce.reactivegrpc.common.Function")
+	@Configuration
+	@Import(ReactiveStubBeanDefinitionRegistrar.class)
+	static class ReactiveStubConfiguration {
+
 	}
 
 }

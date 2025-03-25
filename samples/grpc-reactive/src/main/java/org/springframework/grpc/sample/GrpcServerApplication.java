@@ -5,14 +5,11 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import;
 import org.springframework.grpc.server.exception.GrpcExceptionHandler;
-import org.springframework.grpc.server.exception.ReactiveStubBeanDefinitionRegistrar;
 
 import io.grpc.Status;
 
 @SpringBootApplication
-@Import(ReactiveStubBeanDefinitionRegistrar.class)
 public class GrpcServerApplication {
 
 	private static Log log = LogFactory.getLog(GrpcServerApplication.class);
