@@ -47,8 +47,7 @@ public class GrpcServerApplicationTests {
 	}
 
 	@TestConfiguration
-	@EnableGrpcClients(@GrpcClient(target = "0.0.0.0:${local.grpc.port:9090}",
-			types = ReactorSimpleGrpc.ReactorSimpleStub.class))
+	@EnableGrpcClients(@GrpcClient(types = ReactorSimpleGrpc.ReactorSimpleStub.class))
 	static class ExtraConfiguration {
 
 	}
