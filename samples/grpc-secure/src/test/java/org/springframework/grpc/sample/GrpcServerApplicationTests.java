@@ -17,7 +17,6 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.grpc.client.BlockingStubFactory;
 import org.springframework.grpc.client.ChannelBuilderOptions;
-import org.springframework.grpc.client.EnableGrpcClients;
 import org.springframework.grpc.client.GrpcClient;
 import org.springframework.grpc.client.GrpcClientRegistryCustomizer;
 import org.springframework.grpc.client.interceptor.security.BasicAuthenticationInterceptor;
@@ -109,8 +108,8 @@ public class GrpcServerApplicationTests {
 	}
 
 	@TestConfiguration
-	@EnableGrpcClients(@GrpcClient(target = "stub", prefix = "unsecured",
-			types = { SimpleGrpc.SimpleBlockingStub.class, ServerReflectionGrpc.ServerReflectionStub.class }))
+	@GrpcClient(target = "stub", prefix = "unsecured",
+			types = { SimpleGrpc.SimpleBlockingStub.class, ServerReflectionGrpc.ServerReflectionStub.class })
 	static class ExtraConfiguration {
 
 		@Bean

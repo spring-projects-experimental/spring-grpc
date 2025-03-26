@@ -44,7 +44,7 @@ public class ReactiveStubBeanDefinitionRegistrarTests {
 		registry.registerSingleton("exceptionHandler", GrpcExceptionHandler.class);
 		registrar.registerBeanDefinitions(metadata, registry);
 		processor = (ReactiveStubBeanDefinitionRegistrar.ReactiveStubBeanFactoryPostProcessor) registry
-				.getBean(BEAN_NAME);
+			.getBean(BEAN_NAME);
 		processor.setApplicationContext(registry);
 	}
 

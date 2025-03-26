@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.grpc.client.EnableGrpcClients;
 import org.springframework.grpc.client.GrpcClient;
 import org.springframework.grpc.sample.proto.HelloReply;
 import org.springframework.grpc.sample.proto.HelloRequest;
@@ -47,7 +46,7 @@ public class GrpcServerApplicationTests {
 	}
 
 	@TestConfiguration
-	@EnableGrpcClients(@GrpcClient(types = ReactorSimpleGrpc.ReactorSimpleStub.class))
+	@GrpcClient(types = ReactorSimpleGrpc.ReactorSimpleStub.class)
 	static class ExtraConfiguration {
 
 	}
