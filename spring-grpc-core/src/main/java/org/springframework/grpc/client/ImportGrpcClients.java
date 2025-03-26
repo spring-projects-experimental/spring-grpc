@@ -85,6 +85,9 @@ public @interface ImportGrpcClients {
 	@Target(ElementType.TYPE)
 	@Retention(RetentionPolicy.RUNTIME)
 	@Documented
+	// In case there is more than one @ImportGrpcClients annotation we need to
+	// import here as well:
+	@Import(GrpcClientConfiguration.class)
 	@interface Container {
 
 		ImportGrpcClients[] value() default {};

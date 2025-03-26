@@ -108,8 +108,8 @@ public class GrpcServerApplicationTests {
 	}
 
 	@TestConfiguration
-	@ImportGrpcClients(target = "stub", prefix = "unsecured",
-			types = { SimpleGrpc.SimpleBlockingStub.class, ServerReflectionGrpc.ServerReflectionStub.class })
+	@ImportGrpcClients(target = "stub", prefix = "unsecured", types = { SimpleGrpc.SimpleBlockingStub.class })
+	@ImportGrpcClients(target = "default", types = { ServerReflectionGrpc.ServerReflectionStub.class })
 	static class ExtraConfiguration {
 
 		@Bean
