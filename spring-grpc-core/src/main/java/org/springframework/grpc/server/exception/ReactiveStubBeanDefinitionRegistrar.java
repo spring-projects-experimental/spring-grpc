@@ -92,13 +92,14 @@ public class ReactiveStubBeanDefinitionRegistrar implements ImportBeanDefinition
 			for (String name : factory.getBeanNamesForType(BindableService.class)) {
 				BeanDefinition service = factory.getBeanDefinition(name);
 				Class<?> type = factory.getType(name);
-				if (type != null && ReflectionUtils.findMethod(type, "onErrorMap", Throwable.class) != null) {
-					if (service instanceof AbstractBeanDefinition root) {
+				if (type != null) {
+					Method method = ReflectionUtils.findMethod(type, "onErrorMap", Throwable.class);
+					if (method != null && method.getDeclaringClass() != type
+							&& service instanceof AbstractBeanDefinition root) {
 						ReplaceOverride override = new ReplaceOverride("onErrorMap", BEAN_NAME);
-						// You need this in an AOT build (but the interceptor still isn't
-						// used
-						// at runtime with AOT
-						// https://github.com/spring-projects/spring-framework/issues/34642)
+						// You need this in an AOT build (but the interceptor still
+						// isn't used at runtime with AOT
+						// spring-projects/spring-framework#34642)
 						override.addTypeIdentifier("Throwable");
 						root.getMethodOverrides().addOverride(override);
 					}
