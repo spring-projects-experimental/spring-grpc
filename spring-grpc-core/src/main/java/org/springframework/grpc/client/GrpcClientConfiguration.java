@@ -29,8 +29,8 @@ public class GrpcClientConfiguration implements ImportBeanDefinitionRegistrar {
 
 	@Override
 	public void registerBeanDefinitions(AnnotationMetadata meta, BeanDefinitionRegistry registry) {
-		Set<AnnotationAttributes> attrs = meta.getMergedRepeatableAnnotationAttributes(GrpcClient.class,
-				GrpcClient.Container.class, false);
+		Set<AnnotationAttributes> attrs = meta.getMergedRepeatableAnnotationAttributes(ImportGrpcClients.class,
+				ImportGrpcClients.Container.class, false);
 		for (AnnotationAttributes attr : attrs) {
 			register(registry, meta, attr, meta.getClassName() + ".");
 		}

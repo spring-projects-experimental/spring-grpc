@@ -21,7 +21,7 @@ import org.springframework.experimental.boot.server.exec.MavenClasspathEntry;
 import org.springframework.experimental.boot.test.context.EnableDynamicProperty;
 import org.springframework.experimental.boot.test.context.OAuth2ClientProviderIssuerUri;
 import org.springframework.grpc.client.ChannelBuilderOptions;
-import org.springframework.grpc.client.GrpcClient;
+import org.springframework.grpc.client.ImportGrpcClients;
 import org.springframework.grpc.client.GrpcClientRegistryCustomizer;
 import org.springframework.grpc.client.interceptor.security.BearerTokenAuthenticationInterceptor;
 import org.springframework.grpc.sample.proto.HelloReply;
@@ -113,7 +113,7 @@ public class GrpcServerApplicationTests {
 
 	@TestConfiguration(proxyBeanMethods = false)
 	@EnableDynamicProperty
-	@GrpcClient(target = "stub",
+	@ImportGrpcClients(target = "stub",
 			types = { SimpleGrpc.SimpleBlockingStub.class, ServerReflectionGrpc.ServerReflectionStub.class })
 	static class ExtraConfiguration {
 

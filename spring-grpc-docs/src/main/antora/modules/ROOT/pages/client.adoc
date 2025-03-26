@@ -35,7 +35,7 @@ Spring gRPC will scan the application packages for gRPC stubs and automatically 
 
 === Package Scanning
 
-The `@GrpcClient` annotation can be used to control the scan for gRPC stub implementations.
+The `@ImportGrpcClients` annotation can be used to control the scan for gRPC stub implementations.
 To scan a package you can specify the `basePackages` or `basePackageClasses` attribute.
 Then elsewhere in the application you can `@Autowired` the generated gRPC stubs (the blocking sub-type by default).
 You can change the factory used to create the stubs from `BlockingStubFactory` by setting the `factory` attribute.
@@ -46,7 +46,7 @@ The default behaviour in a Spring Boot application is equivalent to the followin
 [source,java]
 ----
 // This is the default behaviour, so not necessary to add this annotation unless you change its attributes
-@EnableGrpcClients(@GrpcClient(basePackageClasses = MyApplication.class))
+@ImportGrpcClients(basePackageClasses = MyApplication.class)
 @SpringBootApplication
 class MyApplication {
 	// ...
@@ -58,8 +58,8 @@ The customizer has full control over the scanning and registration of the gRPC c
 
 === Register Individual Stub Types
 
-The `@GrpcClient` has a `types` attribute if you want to register specific stub types instead of scanning a package.
-A `GrpcClientRegistryCustomizer` can also be used to control the registration of the gRPC clients in the application context, and the API is flexible enough to allow you to add your own behaviour that would not be possible with just the `@GrpcClient` annotation.
+The `@ImportGrpcClients` has a `types` attribute if you want to register specific stub types instead of scanning a package.
+A `GrpcClientRegistryCustomizer` can also be used to control the registration of the gRPC clients in the application context, and the API is flexible enough to allow you to add your own behaviour that would not be possible with just the `@ImportGrpcClients` annotation.
 For example, to add just one client stub using the default channel:
 
 [source,java]
@@ -98,7 +98,7 @@ The customizer has to run very early in the application lifecycle, so you always
 
 == Create a Client Manually
 
-Instead of using the `@GrpcClient` or `GrpcClientRegistry` features, we can create a client `@Bean` manually.
+Instead of using the `@ImportGrpcClients` or `GrpcClientRegistry` features, we can create a client `@Bean` manually.
 The most common usage of a channel is to create a client that binds to a service.
 For example:
 

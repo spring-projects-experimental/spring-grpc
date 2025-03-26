@@ -37,8 +37,8 @@ import io.grpc.stub.AbstractStub;
 @Target(ElementType.TYPE)
 @Documented
 @Import(GrpcClientConfiguration.class)
-@Repeatable(GrpcClient.Container.class)
-public @interface GrpcClient {
+@Repeatable(ImportGrpcClients.Container.class)
+public @interface ImportGrpcClients {
 
 	/**
 	 * The name or base URL of the gRPC server to connect to. If not specified, the client
@@ -87,7 +87,7 @@ public @interface GrpcClient {
 	@Documented
 	@interface Container {
 
-		GrpcClient[] value() default {};
+		ImportGrpcClients[] value() default {};
 
 	}
 
