@@ -4,15 +4,15 @@
 For further reference, please consider the following sections:
 
 * [Official Apache Maven documentation](https://maven.apache.org/guides/index.html)
-* [Spring Boot Maven Plugin Reference Guide](https://docs.spring.io/spring-boot/3.4.3/maven-plugin)
-* [Create an OCI image](https://docs.spring.io/spring-boot/3.4.3/maven-plugin/build-image.html)
-* [GraalVM Native Image Support](https://docs.spring.io/spring-boot/3.4.3/reference/packaging/native-image/introducing-graalvm-native-images.html)
+* [Spring Boot Maven Plugin Reference Guide](https://docs.spring.io/spring-boot/3.4.4/maven-plugin)
+* [Create an OCI image](https://docs.spring.io/spring-boot/3.4.4/maven-plugin/build-image.html)
+* [GraalVM Native Image Support](https://docs.spring.io/spring-boot/3.4.4/reference/packaging/native-image/introducing-graalvm-native-images.html)
 * [Spring gRPC [Experimental]](https://docs.spring.io/spring-grpc/reference/index.html)
 
 ### Additional Links
 These additional references should also help you:
 
-* [Configure AOT settings in Build Plugin](https://docs.spring.io/spring-boot/3.4.3/how-to/aot.html)
+* [Configure AOT settings in Build Plugin](https://docs.spring.io/spring-boot/3.4.4/how-to/aot.html)
 * [Various sample apps using Spring gRPC](https://github.com/spring-projects-experimental/spring-grpc/tree/main/samples)
 
 ## GraalVM Native Support
