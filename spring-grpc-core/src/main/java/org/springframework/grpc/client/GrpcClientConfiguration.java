@@ -18,6 +18,7 @@ package org.springframework.grpc.client;
 import java.util.Set;
 
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.ConstructorArgumentValues;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
@@ -59,8 +60,14 @@ public class GrpcClientConfiguration implements ImportBeanDefinitionRegistrar {
 		RootBeanDefinition beanDef = new RootBeanDefinition(SimpleGrpcClientRegistryCustomizer.class);
 		beanDef.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
 		String name = target;
-		beanDef.setInstanceSupplier(() -> new SimpleGrpcClientRegistryCustomizer(name, prefix, types, factory,
-				basePackageClasses, basePackages));
+		beanDef.setBeanClass(SimpleGrpcClientRegistryCustomizer.class);
+		ConstructorArgumentValues values = beanDef.getConstructorArgumentValues();
+		values.addGenericArgumentValue(name);
+		values.addGenericArgumentValue(prefix);
+		values.addGenericArgumentValue(types);
+		values.addGenericArgumentValue(factory);
+		values.addGenericArgumentValue(basePackageClasses);
+		values.addGenericArgumentValue(basePackages);
 		registry.registerBeanDefinition(stem + target, beanDef);
 	}
 
