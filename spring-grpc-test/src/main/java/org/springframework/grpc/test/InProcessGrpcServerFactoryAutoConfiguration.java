@@ -20,7 +20,6 @@ import java.util.List;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnNotWebApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
@@ -37,7 +36,6 @@ import io.grpc.inprocess.InProcessServerBuilder;
 @AutoConfiguration(before = { GrpcServerFactoryAutoConfiguration.class, GrpcClientAutoConfiguration.class })
 @ConditionalOnProperty(prefix = "spring.grpc.inprocess", name = "enabled", havingValue = "true")
 @ConditionalOnClass(BindableService.class)
-@ConditionalOnNotWebApplication
 @Import(ClientInterceptorsConfiguration.class)
 public class InProcessGrpcServerFactoryAutoConfiguration {
 
