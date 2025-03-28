@@ -49,8 +49,8 @@
 	</licenses>
 
 	<properties>
-		<spring-framework.version>6.2.3</spring-framework.version>
-		<spring-security.version>6.4.2</spring-security.version>
+		<spring-framework.version>6.2.5</spring-framework.version>
+		<spring-security.version>6.4.4</spring-security.version>
 		<micrometer.version>1.13.6</micrometer.version>
 		<netty.version>4.1.118.Final</netty.version>
 		<spring-javaformat-maven-plugin.version>0.0.43</spring-javaformat-maven-plugin.version>
