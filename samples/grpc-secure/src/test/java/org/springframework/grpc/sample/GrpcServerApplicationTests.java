@@ -107,7 +107,7 @@ public class GrpcServerApplicationTests {
 		assertEquals("Hello ==> Alien", response.getMessage());
 	}
 
-	@TestConfiguration
+	@TestConfiguration(proxyBeanMethods = false)
 	@ImportGrpcClients(target = "stub", prefix = "unsecured", types = { SimpleGrpc.SimpleBlockingStub.class })
 	@ImportGrpcClients(target = "default", types = { ServerReflectionGrpc.ServerReflectionStub.class })
 	static class ExtraConfiguration {
