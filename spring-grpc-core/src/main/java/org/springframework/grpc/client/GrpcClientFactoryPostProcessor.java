@@ -19,41 +19,44 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 
-public class GrpcClientRegistryPostProcessor implements BeanDefinitionRegistryPostProcessor, ApplicationContextAware {
+import io.grpc.stub.AbstractStub;
 
-	private GenericApplicationContext context;
+/**
+ * Post processor for {@link GrpcClientFactory} that applies the customizers and provides
+ * a factory for client instances at runtime.
+ *
+ * @author Dave Syer
+ */
+public class GrpcClientFactoryPostProcessor implements ApplicationContextAware {
+
+	private ApplicationContext context;
 
 	private boolean initialized = false;
 
-	private GrpcClientRegistry registry;
+	private GrpcClientFactory registry;
 
-	private void initialize(GenericApplicationContext context) {
-		if (this.initialized) {
+	private void initialize(ApplicationContext context) {
+		if (this.initialized || this.context == null) {
 			return;
 		}
 		this.initialized = true;
-		this.registry = new GrpcClientRegistry(context);
-		if (context.getBeanNamesForType(GrpcClientRegistryCustomizer.class).length > 0) {
-			List<GrpcClientRegistryCustomizer> values = new ArrayList<>(
-					context.getBeansOfType(GrpcClientRegistryCustomizer.class).values());
+		this.registry = new GrpcClientFactory(context);
+		if (context.getBeanNamesForType(GrpcClientFactoryCustomizer.class).length > 0) {
+			List<GrpcClientFactoryCustomizer> values = new ArrayList<>(
+					context.getBeansOfType(GrpcClientFactoryCustomizer.class).values());
 			AnnotationAwareOrderComparator.sort(values);
 			values.forEach(customizer -> customizer.customize(this.registry));
 		}
-		this.registry.close();
 	}
 
-	@Override
-	public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
-		if (this.context != null) {
-			initialize(this.context);
-		}
+	<T extends AbstractStub<T>> T getClient(String target, Class<T> type, Class<?> factory) {
+		initialize(this.context);
+		return this.registry.getClient(target, (Class<T>) type, factory);
 	}
 
 	@Override

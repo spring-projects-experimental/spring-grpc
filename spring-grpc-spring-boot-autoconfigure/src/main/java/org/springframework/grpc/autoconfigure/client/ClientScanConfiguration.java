@@ -18,38 +18,69 @@ package org.springframework.grpc.autoconfigure.client;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.boot.autoconfigure.AutoConfigurationPackages;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.bind.Binder;
-import org.springframework.context.annotation.Bean;
+import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.env.Environment;
+import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.grpc.autoconfigure.client.ClientScanConfiguration.DefaultGrpcClientRegistrations;
 import org.springframework.grpc.autoconfigure.client.GrpcClientProperties.ChannelConfig;
+import org.springframework.grpc.client.AbstractGrpcClientRegistrar;
 import org.springframework.grpc.client.BlockingStubFactory;
+import org.springframework.grpc.client.GrpcClientFactory;
+import org.springframework.grpc.client.GrpcClientFactory.GrpcClientRegistrationSpec;
+import org.springframework.grpc.client.GrpcClientFactoryPostProcessor;
 import org.springframework.grpc.client.ImportGrpcClients;
-import org.springframework.grpc.client.GrpcClientRegistryCustomizer;
-import org.springframework.grpc.client.GrpcClientRegistryPostProcessor;
 
 @Configuration(proxyBeanMethods = false)
-@ConditionalOnMissingBean(GrpcClientRegistryPostProcessor.class)
+@ConditionalOnMissingBean(GrpcClientFactoryPostProcessor.class)
 @ImportGrpcClients
+@Import(DefaultGrpcClientRegistrations.class)
 public class ClientScanConfiguration {
 
-	@Bean
-	public GrpcClientRegistryCustomizer defaultGrpcClientRegistryCustomizer(BeanFactory beanFactory,
-			Environment environment) {
-		List<String> packages = new ArrayList<>();
-		if (AutoConfigurationPackages.has(beanFactory)) {
-			packages.addAll(AutoConfigurationPackages.get(beanFactory));
+	static class DefaultGrpcClientRegistrations extends AbstractGrpcClientRegistrar
+			implements EnvironmentAware, BeanFactoryAware {
+
+		private Environment environment;
+
+		private BeanFactory beanFactory;
+
+		@Override
+		public void setEnvironment(Environment environment) {
+			this.environment = environment;
 		}
-		Binder binder = Binder.get(environment);
-		boolean hasDefaultChannel = binder.bind("spring.grpc.client.default-channel", ChannelConfig.class).isBound();
-		return registry -> {
+
+		@Override
+		public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+			this.beanFactory = beanFactory;
+		}
+
+		@Override
+		protected GrpcClientRegistrationSpec[] collect(AnnotationMetadata meta) {
+			Binder binder = Binder.get(environment);
+			boolean hasDefaultChannel = binder.bind("spring.grpc.client.default-channel", ChannelConfig.class)
+				.isBound();
 			if (hasDefaultChannel) {
-				registry.channel("default").scan(BlockingStubFactory.class).packages(packages.toArray(new String[0]));
+				List<String> packages = new ArrayList<>();
+				if (AutoConfigurationPackages.has(beanFactory)) {
+					packages.addAll(AutoConfigurationPackages.get(beanFactory));
+				}
+				// TODO: change global default factory type in properties maybe?
+				return new GrpcClientRegistrationSpec[] { GrpcClientRegistrationSpec.of("default")
+					.factory(BlockingStubFactory.class)
+					.packages(packages.toArray(new String[0])) };
 			}
-		};
+			return new GrpcClientRegistrationSpec[0];
+		}
+
 	}
 
 }

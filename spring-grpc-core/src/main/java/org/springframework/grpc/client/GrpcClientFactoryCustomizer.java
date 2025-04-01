@@ -20,15 +20,15 @@ import org.springframework.context.ApplicationContext;
 
 /**
  * Callback interface that can be implemented by beans wishing to customize the
- * {@link GrpcClientRegistry} before it is used. The registry is used by the application
+ * {@link GrpcClientFactory} before it is used. The registry is used by the application
  * context very early in its lifecycle, so customizers should not refer directly to other
  * beans. It is better to use a lazy lookup via the {@link ApplicationContext} or an
  * {@link ObjectProvider}
  *
  * @author Dave Syer
  */
-public interface GrpcClientRegistryCustomizer {
+public interface GrpcClientFactoryCustomizer {
 
-	void customize(GrpcClientRegistry registry);
+	void customize(GrpcClientFactory registry);
 
 }

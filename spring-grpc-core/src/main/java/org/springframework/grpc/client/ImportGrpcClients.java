@@ -29,14 +29,14 @@ import io.grpc.stub.AbstractStub;
 /**
  * Annotation to create gRPC client beans. If you want more control over the creation of
  * the clients, or you don't want to use the annotation, you can use a bean of type
- * {@link GrpcClientRegistryCustomizer} instead.
+ * {@link GrpcClientFactoryCustomizer} instead.
  *
  * @author Dave Syer
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
-@Import(GrpcClientConfiguration.class)
+@Import(AnnotationGrpcClientRegistrar.class)
 @Repeatable(ImportGrpcClients.Container.class)
 public @interface ImportGrpcClients {
 
@@ -67,7 +67,7 @@ public @interface ImportGrpcClients {
 	 * basePackageClasses or basePackages) and you need to customize the stub creation.
 	 * @return the factory type, default is {@link BlockingStubFactory}
 	 */
-	Class<? extends StubFactory<?>> factory() default BlockingStubFactory.class;
+	Class<? extends StubFactory<?>> factory() default UnspecifiedStubFactory.class;
 
 	/**
 	 * The base package classes to scan for annotated components. If not specified,
@@ -87,7 +87,7 @@ public @interface ImportGrpcClients {
 	@Documented
 	// In case there is more than one @ImportGrpcClients annotation we need to
 	// import here as well:
-	@Import(GrpcClientConfiguration.class)
+	@Import(AnnotationGrpcClientRegistrar.class)
 	@interface Container {
 
 		ImportGrpcClients[] value() default {};

@@ -15,10 +15,9 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.grpc.client.BlockingStubFactory;
 import org.springframework.grpc.client.ChannelBuilderOptions;
+import org.springframework.grpc.client.GrpcClientFactoryCustomizer;
 import org.springframework.grpc.client.ImportGrpcClients;
-import org.springframework.grpc.client.GrpcClientRegistryCustomizer;
 import org.springframework.grpc.client.interceptor.security.BasicAuthenticationInterceptor;
 import org.springframework.grpc.sample.proto.HelloReply;
 import org.springframework.grpc.sample.proto.HelloRequest;
@@ -109,17 +108,14 @@ public class GrpcServerApplicationTests {
 
 	@TestConfiguration(proxyBeanMethods = false)
 	@ImportGrpcClients(target = "stub", prefix = "unsecured", types = { SimpleGrpc.SimpleBlockingStub.class })
+	@ImportGrpcClients(target = "secure", types = { SimpleGrpc.SimpleBlockingStub.class })
 	@ImportGrpcClients(target = "default", types = { ServerReflectionGrpc.ServerReflectionStub.class })
 	static class ExtraConfiguration {
 
 		@Bean
-		GrpcClientRegistryCustomizer basicStubs() {
-			return registry -> registry
-				.channel("stub",
-						ChannelBuilderOptions.defaults()
-							.withInterceptors(List.of(new BasicAuthenticationInterceptor("user", "user"))))
-				.scan(BlockingStubFactory.class)
-				.packageClasses(SimpleGrpc.class);
+		GrpcClientFactoryCustomizer basicStubs() {
+			return registry -> registry.channel("secure", ChannelBuilderOptions.defaults()
+				.withInterceptors(List.of(new BasicAuthenticationInterceptor("user", "user"))));
 		}
 
 	}

@@ -22,7 +22,7 @@ import org.springframework.experimental.boot.test.context.EnableDynamicProperty;
 import org.springframework.experimental.boot.test.context.OAuth2ClientProviderIssuerUri;
 import org.springframework.grpc.client.ChannelBuilderOptions;
 import org.springframework.grpc.client.ImportGrpcClients;
-import org.springframework.grpc.client.GrpcClientRegistryCustomizer;
+import org.springframework.grpc.client.GrpcClientFactoryCustomizer;
 import org.springframework.grpc.client.interceptor.security.BearerTokenAuthenticationInterceptor;
 import org.springframework.grpc.sample.proto.HelloReply;
 import org.springframework.grpc.sample.proto.HelloRequest;
@@ -41,7 +41,7 @@ import io.grpc.reflection.v1.ServerReflectionResponse;
 import io.grpc.stub.StreamObserver;
 
 @SpringBootTest(properties = { "spring.grpc.server.port=0",
-		"spring.grpc.client.channels.stub.address=static://0.0.0.0:${local.grpc.port}" })
+		"spring.grpc.client.default-channel.address=static://0.0.0.0:${local.grpc.port}" })
 @DirtiesContext
 public class GrpcServerApplicationTests {
 
@@ -115,6 +115,7 @@ public class GrpcServerApplicationTests {
 	@EnableDynamicProperty
 	@ImportGrpcClients(target = "stub",
 			types = { SimpleGrpc.SimpleBlockingStub.class, ServerReflectionGrpc.ServerReflectionStub.class })
+	@ImportGrpcClients(target = "secure", prefix = "secure", types = { SimpleGrpc.SimpleBlockingStub.class })
 	static class ExtraConfiguration {
 
 		private String token;
@@ -129,13 +130,9 @@ public class GrpcServerApplicationTests {
 		}
 
 		@Bean
-		GrpcClientRegistryCustomizer stubs(ObjectProvider<ClientRegistrationRepository> context) {
-			return registry -> registry
-				.channel("stub",
-						ChannelBuilderOptions.defaults()
-							.withInterceptors(List.of(new BearerTokenAuthenticationInterceptor(() -> token(context)))))
-				.prefix("secure")
-				.register(SimpleGrpc.SimpleBlockingStub.class);
+		GrpcClientFactoryCustomizer stubs(ObjectProvider<ClientRegistrationRepository> context) {
+			return registry -> registry.channel("secure", ChannelBuilderOptions.defaults()
+				.withInterceptors(List.of(new BearerTokenAuthenticationInterceptor(() -> token(context)))));
 		}
 
 		private String token(ObjectProvider<ClientRegistrationRepository> context) {

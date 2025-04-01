@@ -39,7 +39,7 @@ The `@ImportGrpcClients` annotation can be used to control the scan for gRPC stu
 To scan a package you can specify the `basePackages` or `basePackageClasses` attribute.
 Then elsewhere in the application you can `@Autowired` the generated gRPC stubs (the blocking sub-type by default).
 You can change the factory used to create the stubs from `BlockingStubFactory` by setting the `factory` attribute.
-There are standard factories pre-registered for common stub types, and if you want to register additional factories you can use a `GrpcClientRegistryCustomizer` (see below for details).
+There are standard factories pre-registered for common stub types, and if you want to register additional factories you can use a `GrpcClientFactoryCustomizer` (see below for details).
 
 The default behaviour in a Spring Boot application is equivalent to the following configuration on your `@SpringBootApplication` class:
 
@@ -53,52 +53,41 @@ class MyApplication {
 }
 ----
 
-You can enhance and modify the configuration by providing `spring.grpc.client.*` application properties or by defining your own `GrpcClientRegistryCustomizer` beans.
+You can enhance and modify the configuration by providing `spring.grpc.client.*` application properties or by defining your own `GrpcClientFactoryCustomizer` beans.
 The customizer has full control over the scanning and registration of the gRPC clients, including for example the ability to change the base type of the stubs that are registered.
-
-=== Register Individual Stub Types
-
-The `@ImportGrpcClients` has a `types` attribute if you want to register specific stub types instead of scanning a package.
-A `GrpcClientRegistryCustomizer` can also be used to control the registration of the gRPC clients in the application context, and the API is flexible enough to allow you to add your own behaviour that would not be possible with just the `@ImportGrpcClients` annotation.
-For example, to add just one client stub using the default channel:
-
-[source,java]
-----
-@Bean
-GrpcClientRegistryCustomizer stubs() {
-	return registry -> registry
-		.register(SimpleGrpc.SimpleBlockingStub.class);
-}
-----
 
 === More Complex Examples
 
-A `GrpcClientRegistryCustomizer` can also control the creation of the channels and add custom behaviour to stubs (individually or via a scan).
-For example, to add a custom security interceptor to only clients:
+A `GrpcClientFactoryCustomizer` can also control the creation of the channels and add custom behaviour to stubs (individually or via a scan).
+For example, to add a custom security interceptor to only clients using the "stub" channel:
 
 [source,java]
 ----
-@Bean
-GrpcClientRegistryCustomizer stubs(ObjectProvider<ClientRegistrationRepository> context) {
-	return registry -> registry
-		.channel("stub",
-				ChannelBuilderOptions.defaults()
-					.withInterceptors(List.of(new BearerTokenAuthenticationInterceptor(() -> token(context)))))
-		.prefix("secure")
-		.register(SimpleGrpc.SimpleBlockingStub.class);
+@ImportGrpcClients(basePackageClasses = MyApplication.class)
+@Configuration
+class ExtraConfiguration {
+
+	@Bean
+	GrpcClientFactoryCustomizer stubs() {
+		return registry -> registry
+			.channel("stub",
+					ChannelBuilderOptions.defaults()
+						.withInterceptors(List.of(new BearerTokenAuthenticationInterceptor(() -> token(context)))));
+	}
+
 }
 ----
 
 In this example, instead of scanning for all stubs, we register a specific stub class `SimpleGrpc.SimpleBlockingStub` with the channel named `stub`.
 The prefix `secure` is used as a bean definition name prefix, so the resulting bean definition in this case is "secureSimpleBlockingStub".
 This feature is useful when you want to have multiple instances of the same stub class with different configurations.
-
-N.B. The `ClientRegistrationRepository` in the example is injected via an `ObjectProvider` which is not called directly to avoid early instantiation.
-The customizer has to run very early in the application lifecycle, so you always want to follow this pattern if you need to inject dependencies to build the channel options.
+The configuration of the individual client specs is done completely separately from the channel factory configuration.
+This is an important distinction because, although they might be related, the two things happen at very different times in the application lifecycle.
+In particular it is futile to try to inject other beans into `MyClientRegistrar` because the beans are not available yet - its role is to define a set of bean definitions to be created later.
 
 == Create a Client Manually
 
-Instead of using the `@ImportGrpcClients` or `GrpcClientRegistry` features, we can create a client `@Bean` manually.
+Instead of using the `@ImportGrpcClients` or `GrpcClientFactory` features, we can create a client `@Bean` manually.
 The most common usage of a channel is to create a client that binds to a service.
 For example:
 
@@ -220,7 +209,7 @@ For example:
 spring.grpc.client.channels.local.address=0.0.0.0:${local.grpc.port}
 ----
 
-You can't use `@LocalGrpcPort` in a `GrpcClientRegistryCustomizer` because it is not available until the server starts.
+You can't use `@LocalGrpcPort` in a `GrpcClientFactoryCustomizer` because it is not available until the server starts.
 You can lazily resolve `local.grpc.port` in the customizer by using the `Environment` when the channel is created, either directly via its API or through placeholders like in the properties file example above.
 
 [[client-interceptor]]
