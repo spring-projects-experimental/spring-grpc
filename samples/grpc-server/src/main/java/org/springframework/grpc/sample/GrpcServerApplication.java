@@ -18,7 +18,7 @@ public class GrpcServerApplication {
 	public GrpcExceptionHandler globalInterceptor() {
 		return exception -> {
 			if (exception instanceof IllegalArgumentException) {
-				return Status.INVALID_ARGUMENT.withDescription(exception.getMessage());
+				return Status.INVALID_ARGUMENT.withDescription(exception.getMessage()).asException();
 			}
 			return null;
 		};

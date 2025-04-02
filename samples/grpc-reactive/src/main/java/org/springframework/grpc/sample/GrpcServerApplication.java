@@ -23,9 +23,9 @@ public class GrpcServerApplication {
 		return ex -> {
 			if (ex instanceof IllegalArgumentException) {
 				log.error("Error in grpc exception", ex);
-				return Status.INVALID_ARGUMENT.withDescription(ex.getMessage());
+				return Status.INVALID_ARGUMENT.withDescription(ex.getMessage()).asException();
 			}
-			return Status.INTERNAL.withCause(ex).withDescription(ex.getMessage());
+			return Status.INTERNAL.withCause(ex).withDescription(ex.getMessage()).asException();
 		};
 	}
 

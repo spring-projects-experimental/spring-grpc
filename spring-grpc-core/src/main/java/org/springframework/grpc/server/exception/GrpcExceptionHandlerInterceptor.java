@@ -25,6 +25,7 @@ import io.grpc.ServerCall.Listener;
 import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
 import io.grpc.Status;
+import io.grpc.StatusException;
 
 /**
  * A gRPC {@link ServerInterceptor} that handles exceptions thrown during the processing
@@ -67,7 +68,7 @@ public class GrpcExceptionHandlerInterceptor implements ServerInterceptor {
 			listener = next.startCall(call, headers);
 		}
 		catch (Throwable t) {
-			call.close(this.exceptionHandler.handleException(t), headers(t));
+			call.close(this.exceptionHandler.handleException(t).getStatus(), headers(t));
 			listener = new Listener<ReqT>() {
 			};
 			return listener;
@@ -136,14 +137,14 @@ public class GrpcExceptionHandlerInterceptor implements ServerInterceptor {
 
 		private void handle(Throwable t) {
 			this.exception = t;
-			Status status = Status.fromThrowable(t);
+			StatusException status = Status.fromThrowable(t).asException();
 			try {
 				status = this.exceptionHandler.handleException(t);
 			}
 			catch (Throwable e) {
 			}
 			try {
-				this.call.close(status, headers(t));
+				this.call.close(status.getStatus(), headers(t));
 			}
 			catch (Throwable e) {
 				throw new IllegalStateException("Failed to close the call", e);
@@ -161,9 +162,9 @@ public class GrpcExceptionHandlerInterceptor implements ServerInterceptor {
 		}
 
 		@Override
-		public Status handleException(Throwable exception) {
-			Status status = this.exceptionHandler.handleException(exception);
-			return status != null ? status : Status.fromThrowable(exception);
+		public StatusException handleException(Throwable exception) {
+			StatusException status = this.exceptionHandler.handleException(exception);
+			return status != null ? status : Status.fromThrowable(exception).asException();
 		}
 
 	}

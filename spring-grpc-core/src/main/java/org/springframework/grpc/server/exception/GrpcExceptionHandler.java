@@ -15,7 +15,7 @@
  */
 package org.springframework.grpc.server.exception;
 
-import io.grpc.Status;
+import io.grpc.StatusException;
 
 /**
  * Defines an exception handler for handling exceptions that occur during gRPC server-side
@@ -32,6 +32,6 @@ public interface GrpcExceptionHandler {
 	 * @return the status to return to the client, or {@code null} if the exception cannot
 	 * be classified
 	 */
-	Status handleException(Throwable exception);
+	StatusException handleException(Throwable exception);
 
 }

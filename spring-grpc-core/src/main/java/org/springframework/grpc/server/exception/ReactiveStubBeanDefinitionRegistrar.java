@@ -33,7 +33,6 @@ import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.util.ReflectionUtils;
 
 import io.grpc.BindableService;
-import io.grpc.Status;
 import io.grpc.StatusException;
 
 /**
@@ -80,8 +79,8 @@ public class ReactiveStubBeanDefinitionRegistrar implements ImportBeanDefinition
 					.toArray(GrpcExceptionHandler[]::new);
 				this.handler = new CompositeGrpcExceptionHandler(handlers);
 			}
-			Status status = this.handler.handleException(throwable);
-			return status != null ? new StatusException(status) : throwable;
+			StatusException status = this.handler.handleException(throwable);
+			return status != null ? status : throwable;
 		}
 
 		@Override

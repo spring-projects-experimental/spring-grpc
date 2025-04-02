@@ -23,24 +23,25 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 
 import io.grpc.Status;
+import io.grpc.StatusException;
 
 public class SecurityGrpcExceptionHandler implements GrpcExceptionHandler {
 
 	private static final Log logger = LogFactory.getLog(SecurityGrpcExceptionHandler.class);
 
 	@Override
-	public Status handleException(Throwable exception) {
+	public StatusException handleException(Throwable exception) {
 		if (exception instanceof AuthenticationException) {
 			if (logger.isDebugEnabled()) {
 				logger.error("Failed to authenticate", exception);
 			}
-			return Status.UNAUTHENTICATED.withDescription(exception.getMessage());
+			return Status.UNAUTHENTICATED.withDescription(exception.getMessage()).asException();
 		}
 		if (exception instanceof AccessDeniedException) {
 			if (logger.isDebugEnabled()) {
 				logger.error("Failed to authorize", exception);
 			}
-			return Status.PERMISSION_DENIED.withDescription(exception.getMessage());
+			return Status.PERMISSION_DENIED.withDescription(exception.getMessage()).asException();
 		}
 		return null;
 	}
