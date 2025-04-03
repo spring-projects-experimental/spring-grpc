@@ -49,6 +49,7 @@ import org.springframework.grpc.autoconfigure.server.GrpcServerFactoryAutoConfig
 import org.springframework.grpc.server.GlobalServerInterceptor;
 import org.springframework.grpc.server.security.AuthenticationProcessInterceptor;
 import org.springframework.grpc.server.security.GrpcSecurity;
+import org.springframework.security.config.ObjectPostProcessor;
 import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
 import org.springframework.security.oauth2.core.OAuth2TokenValidator;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
@@ -75,7 +76,7 @@ import io.grpc.BindableService;
 		after = { GrpcServerFactoryAutoConfiguration.class,
 				org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration.class })
 @EnableConfigurationProperties(OAuth2ResourceServerProperties.class)
-@ConditionalOnClass(BearerTokenAuthenticationToken.class)
+@ConditionalOnClass({ BearerTokenAuthenticationToken.class, ObjectPostProcessor.class })
 @ConditionalOnMissingBean(GrpcServletConfiguration.class)
 @ConditionalOnBean(BindableService.class)
 @Import({ Oauth2ResourceServerConfiguration.JwtConfiguration.class,

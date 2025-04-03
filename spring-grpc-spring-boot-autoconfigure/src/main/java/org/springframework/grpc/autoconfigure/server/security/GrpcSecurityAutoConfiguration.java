@@ -45,7 +45,6 @@ import io.grpc.internal.GrpcUtil;
 @ConditionalOnClass(ObjectPostProcessor.class)
 @ConditionalOnGrpcServerEnabled
 @AutoConfiguration(before = GrpcExceptionHandlerAutoConfiguration.class, after = SecurityAutoConfiguration.class)
-
 @Import({ ExceptionHandlerAutoConfiguration.class, GrpcNativeSecurityConfigurerAutoConfiguration.class,
 		GrpcServletSecurityConfigurerAutoConfiguration.class })
 public class GrpcSecurityAutoConfiguration {
