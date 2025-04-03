@@ -142,10 +142,11 @@ public final class ChannelBuilderOptions {
 	 * @return a new immutable options instance populated with the specified
 	 * {@code customizer} and the settings of this current options instance.
 	 */
+	@SuppressWarnings("unchecked")
 	public <T extends ManagedChannelBuilder<T>> ChannelBuilderOptions withCustomizer(
 			GrpcChannelBuilderCustomizer<T> customizer) {
 		return new ChannelBuilderOptions(this.interceptors, this.mergeWithGlobalInterceptors, this.shutdownGracePeriod,
-				customizer);
+				this.customizer.then(customizer));
 	}
 
 }

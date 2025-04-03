@@ -17,6 +17,7 @@ package org.springframework.grpc.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 import java.time.Duration;
@@ -26,6 +27,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import io.grpc.ClientInterceptor;
+import io.grpc.ManagedChannelBuilder;
 import io.grpc.netty.NettyChannelBuilder;
 
 /**
@@ -56,7 +58,18 @@ class ChannelBuilderOptionsTests {
 		assertThat(options.interceptors()).containsExactly(interceptor1, interceptor2);
 		assertThat(options.mergeWithGlobalInterceptors()).isTrue();
 		assertThat(options.shutdownGracePeriod()).isEqualTo(Duration.ofMinutes(1));
-		assertThat(options.customizer()).isSameAs(customizer);
+		assertThat(options.customizer()).isNotEqualTo(GrpcChannelBuilderCustomizer.defaults());
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@Test
+	void customizerApplied() {
+		ManagedChannelBuilder builder = mock();
+		GrpcChannelBuilderCustomizer customizer = mock();
+		var options = ChannelBuilderOptions.defaults().withCustomizer(customizer);
+		var applied = options.<ManagedChannelBuilder>customizer();
+		applied.customize("localhost", builder);
+		verify(customizer).customize("localhost", builder);
 	}
 
 	@Test

@@ -37,6 +37,13 @@ public interface GrpcChannelBuilderCustomizer<T extends ManagedChannelBuilder<T>
 	 */
 	void customize(String authority, T builder);
 
+	default GrpcChannelBuilderCustomizer<T> then(GrpcChannelBuilderCustomizer<T> other) {
+		return (authority, builder) -> {
+			customize(authority, builder);
+			other.customize(authority, builder);
+		};
+	}
+
 	/**
 	 * Used to indicate no customizations should be made to the builder.
 	 * @param <T> type of channel builder
