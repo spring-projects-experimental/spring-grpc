@@ -87,6 +87,11 @@ Clients can connect to the server using that path, which is what any gRPC client
 The gRPC server has fewer configuration options when running in a servlet container, as the servlet container is responsible for the network layer.
 You can still add `ServerBuilderCustomizer` beans to customize the server as it is built, but some features common in the "native" builders are not available and may throw exceptions at runtime.
 
+== Native gRPC Server inside a Servlet Container
+The native gRPC server (with netty etc.) will run happily inside a web application, listening on a different port.
+If you want to do that in any Spring Boot application, it should be sufficient *not* to include the `grpc-servlet-jakarta` dependency on your classpath.
+This dependency is only provided by the `spring-grpc-server-web-spring-boot-starter` (or if you include it explicitly yourself), but if you need to be explicit you can set `spring.grpc.server.servlet.enabled=false` in your application configuration.
+
 [[server-interceptor]]
 == Server Interceptors
 
