@@ -362,7 +362,7 @@ public class GrpcServerProperties {
 		private ClientAuth clientAuth = ClientAuth.NONE;
 
 		/**
-		 * SSL bundle name.
+		 * SSL bundle name. Should match a bundle configured in spring.ssl.bundle.
 		 */
 		private String bundle;
 
