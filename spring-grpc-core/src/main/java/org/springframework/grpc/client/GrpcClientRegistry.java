@@ -56,6 +56,7 @@ public class GrpcClientRegistry {
 	public GrpcClientRegistry(GenericApplicationContext context) {
 		this.context = context;
 		stubs(new BlockingStubFactory());
+		stubs(new BlockingV2StubFactory());
 		stubs(new FutureStubFactory());
 		stubs(new ReactorStubFactory());
 		stubs(new SimpleStubFactory());
