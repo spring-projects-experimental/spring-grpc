@@ -2,10 +2,28 @@
 
 :page-section-summary-toc: 1
 
-[[what-s-new-in-0-4-0-since-0-3-0]]
-== What's New in 0.6.0-SNAPSHOT Since 0.3.0
+[[what-s-new-in-0-6-0-since-0-5-0]]
+== What's New in 0.6.0 Since 0.5.0
 
-This section covers the changes made from version 0.3.0 to version 0.6.0-SNAPSHOT.
+This section covers the changes made from version 0.5.0 to version 0.6.0.
+
+=== Renamed Client Autowired Annotations
+The old `@GrpcClient` annotation has been renamed to `@ImportGrpcClients` to better reflect its purpose, and to be more consistent with changes in the Spring framework.
+The customizer that is applied to generated gRPC clients is now a `GrpcClientFactoryCustomizer` - it's main use is to modify the channel that a client is created with beyond the limits of what can be configured with `spring.grpc.client.*` properties.
+
+[[what-s-new-in-0-5-0-since-0-4-0]]
+== What's New in 0.5.0 Since 0.4.0
+
+This section covers the changes made from version 0.4.0 to version 0.5.0.
+
+=== Automatic Configuration of gRPC Clients
+The `@EnableGrpcClients` and nested `@GrpcClient` annotations can now be used to automatically configure gRPC clients.
+Each `@GrpcClient` can be used to enumerate the stub types explicitly, or to scan a base package for stubs.
+
+[[what-s-new-in-0-4-0-since-0-3-0]]
+== What's New in 0.4.0 Since 0.3.0
+
+This section covers the changes made from version 0.3.0 to version 0.4.0.
 
 === Fine-grained starter modules
 The following fine-grained Spring Boot starter modules have been added:
