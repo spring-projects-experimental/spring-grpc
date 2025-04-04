@@ -38,7 +38,9 @@ import org.mockito.stubbing.Answer;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.ssl.SslAutoConfiguration;
 import org.springframework.boot.test.context.FilteredClassLoader;
+import org.springframework.boot.test.context.runner.AbstractApplicationContextRunner;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -74,9 +76,14 @@ class GrpcServerAutoConfigurationTests {
 		when(service.bindService()).thenReturn(serviceDefinition);
 	}
 
-	private ApplicationContextRunner contextRunner() {
+	private AbstractApplicationContextRunner<?, ?, ?> contextRunner() {
 		// NOTE: we use noop server lifecycle to avoid startup
-		return new ApplicationContextRunner()
+		ApplicationContextRunner runner = new ApplicationContextRunner();
+		return contextRunner(runner);
+	}
+
+	private AbstractApplicationContextRunner<?, ?, ?> contextRunner(AbstractApplicationContextRunner<?, ?, ?> runner) {
+		return runner
 			.withConfiguration(AutoConfigurations.of(GrpcServerAutoConfiguration.class,
 					GrpcServerFactoryAutoConfiguration.class, SslAutoConfiguration.class))
 			.withBean("noopServerLifecycle", GrpcServerLifecycle.class, Mockito::mock)
@@ -219,6 +226,12 @@ class GrpcServerAutoConfigurationTests {
 	}
 
 	@Test
+	void serverFactoryAutoConfiguredWhenServletDisabled() {
+		serverFactoryAutoConfiguredAsExpected(this.contextRunner(new WebApplicationContextRunner())
+			.withPropertyValues("spring.grpc.server.servlet.enabled=false"), GrpcServerFactory.class);
+	}
+
+	@Test
 	void nettyServerFactoryAutoConfiguredAsExpected() {
 		serverFactoryAutoConfiguredAsExpected(this.contextRunner()
 			.withClassLoader(new FilteredClassLoader(io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder.class)),
@@ -233,7 +246,7 @@ class GrpcServerAutoConfigurationTests {
 			.run((context) -> assertThat(context).doesNotHaveBean(GrpcServerFactory.class));
 	}
 
-	private void serverFactoryAutoConfiguredAsExpected(ApplicationContextRunner contextRunner,
+	private void serverFactoryAutoConfiguredAsExpected(AbstractApplicationContextRunner<?, ?, ?> contextRunner,
 			Class<?> expectedServerFactoryType) {
 		contextRunner.withPropertyValues("spring.grpc.server.host=myhost", "spring.grpc.server.port=6160")
 			.run((context) -> assertThat(context).getBean(GrpcServerFactory.class)
