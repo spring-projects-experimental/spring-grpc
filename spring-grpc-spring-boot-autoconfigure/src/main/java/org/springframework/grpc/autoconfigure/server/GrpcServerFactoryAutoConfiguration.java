@@ -27,6 +27,7 @@ import org.springframework.boot.autoconfigure.condition.AllNestedConditions;
 import org.springframework.boot.autoconfigure.condition.AnyNestedCondition;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnNotWebApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -139,7 +140,13 @@ public class GrpcServerFactoryAutoConfiguration {
 
 		}
 
+		@ConditionalOnMissingClass("io.grpc.servlet.jakarta.GrpcServlet")
+		static class OnGrpcServletClass {
+
+		}
+
 		@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
+		@ConditionalOnClass(GrpcServlet.class)
 		@ConditionalOnProperty(prefix = "spring.grpc.server", name = "servlet.enabled", havingValue = "false",
 				matchIfMissing = false)
 		static class OnExplicitlyDisabledServlet {

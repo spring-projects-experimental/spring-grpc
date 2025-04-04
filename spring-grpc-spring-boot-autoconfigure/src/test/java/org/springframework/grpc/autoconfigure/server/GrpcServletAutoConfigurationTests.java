@@ -25,6 +25,7 @@ import static org.mockito.Mockito.when;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.autoconfigure.ssl.SslAutoConfiguration;
 import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
@@ -52,9 +53,8 @@ class GrpcServletAutoConfigurationTests {
 		ServerServiceDefinition serviceDefinition = ServerServiceDefinition.builder("my-service").build();
 		when(service.bindService()).thenReturn(serviceDefinition);
 		// NOTE: we use noop server lifecycle to avoid startup
-		return new WebApplicationContextRunner()
-			.withConfiguration(
-					AutoConfigurations.of(GrpcServerAutoConfiguration.class, GrpcServerFactoryAutoConfiguration.class))
+		return new WebApplicationContextRunner().withConfiguration(AutoConfigurations.of(SslAutoConfiguration.class,
+				GrpcServerAutoConfiguration.class, GrpcServerFactoryAutoConfiguration.class))
 			.withBean(BindableService.class, () -> service);
 	}
 
