@@ -35,7 +35,7 @@ import io.grpc.StatusException;
  * {@link GrpcExceptionHandler}.
  *
  * <p>
- * A fallback mechanism is used to return UNONOWN in case the {@link GrpcExceptionHandler}
+ * A fallback mechanism is used to return UNKNOWN in case the {@link GrpcExceptionHandler}
  * returns a null.
  *
  * @author Dave Syer
