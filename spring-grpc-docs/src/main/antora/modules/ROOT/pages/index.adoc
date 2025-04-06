@@ -8,4 +8,4 @@ Subsequent sections delve into each component and common use cases with a code-f
 
 The xref:server.adoc[server section] provides a high-level overview of gRPC servers and their representation in Spring gRPC.
 
-The xref:server.adoc[client section] does the same for gRPC clients. A gRPC application can be a client and a server at the same time.
+The xref:client.adoc[client section] does the same for gRPC clients. A gRPC application can be a client and a server at the same time.
