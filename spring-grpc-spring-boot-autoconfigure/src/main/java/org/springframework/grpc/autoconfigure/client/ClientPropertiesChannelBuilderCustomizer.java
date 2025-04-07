@@ -53,7 +53,7 @@ class ClientPropertiesChannelBuilderCustomizer<T extends ManagedChannelBuilder<T
 			mapper.from(channel.getDefaultLoadBalancingPolicy()).to(builder::defaultLoadBalancingPolicy);
 		}
 		mapper.from(channel.getMaxInboundMessageSize()).asInt(DataSize::toBytes).to(builder::maxInboundMessageSize);
-		mapper.from(channel.getMaxInboundMetadataSize()).asInt(DataSize::toBytes).to(builder::maxInboundMessageSize);
+		mapper.from(channel.getMaxInboundMetadataSize()).asInt(DataSize::toBytes).to(builder::maxInboundMetadataSize);
 		mapper.from(channel.getKeepAliveTime()).to(durationProperty(builder::keepAliveTime));
 		mapper.from(channel.getKeepAliveTimeout()).to(durationProperty(builder::keepAliveTimeout));
 		mapper.from(channel.getIdleTimeout()).to(durationProperty(builder::idleTimeout));
