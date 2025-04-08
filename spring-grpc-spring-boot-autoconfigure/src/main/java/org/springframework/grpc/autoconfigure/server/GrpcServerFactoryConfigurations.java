@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2024 the original author or authors.
+ * Copyright 2024-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,7 +64,6 @@ class GrpcServerFactoryConfigurations {
 				keyManager = bundle.getManagers().getKeyManagerFactory();
 				trustManager = properties.getSsl().isSecure() ? bundle.getManagers().getTrustManagerFactory()
 						: io.grpc.netty.shaded.io.netty.handler.ssl.util.InsecureTrustManagerFactory.INSTANCE;
-				trustManager = bundle.getManagers().getTrustManagerFactory();
 			}
 			ShadedNettyGrpcServerFactory factory = new ShadedNettyGrpcServerFactory(properties.getAddress(),
 					builderCustomizers, keyManager, trustManager, properties.getSsl().getClientAuth());
