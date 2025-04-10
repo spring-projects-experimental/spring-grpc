@@ -30,6 +30,6 @@ The following fine-grained Spring Boot starter modules have been added:
 
 - `spring-grpc-client-spring-boot-starter` provides Netty gRPC client
 - `spring-grpc-server-spring-boot-starter` provides Netty gRPC server
-- `spring-grpc-server-spring-boot-starter` provides Servlet gRPC server
+- `spring-grpc-server-web-spring-boot-starter` provides Servlet gRPC server
 
 The current coarse-grained starter `spring-grpc-spring-boot-starter` still provides Netty gRPC server and client.
