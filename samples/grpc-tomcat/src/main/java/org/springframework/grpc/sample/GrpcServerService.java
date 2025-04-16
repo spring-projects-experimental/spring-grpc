@@ -2,6 +2,7 @@ package org.springframework.grpc.sample;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.grpc.sample.proto.HelloReply;
 import org.springframework.grpc.sample.proto.HelloRequest;
 import org.springframework.grpc.sample.proto.SimpleGrpc;
@@ -13,6 +14,9 @@ import io.grpc.stub.StreamObserver;
 public class GrpcServerService extends SimpleGrpc.SimpleImplBase {
 
 	private static Log log = LogFactory.getLog(GrpcServerService.class);
+
+	@Value("${stream.count:10}")
+	int COUNT = 0;
 
 	@Override
 	public void sayHello(HelloRequest req, StreamObserver<HelloReply> responseObserver) {
@@ -26,7 +30,7 @@ public class GrpcServerService extends SimpleGrpc.SimpleImplBase {
 	public void streamHello(HelloRequest req, StreamObserver<HelloReply> responseObserver) {
 		log.info("Hello " + req.getName());
 		int count = 0;
-		while (count < 10) {
+		while (count < COUNT) {
 			HelloReply reply = HelloReply.newBuilder().setMessage("Hello(" + count + ") ==> " + req.getName()).build();
 			responseObserver.onNext(reply);
 			count++;
