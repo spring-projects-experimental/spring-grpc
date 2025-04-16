@@ -49,9 +49,9 @@
 	</licenses>
 
 	<properties>
-		<grpc.version>1.70.0</grpc.version>
-		<protobuf-java.version>3.25.6</protobuf-java.version>
-		<google-common-protos.version>2.46.0</google-common-protos.version>
+		<grpc.version>1.72.0</grpc.version>
+		<protobuf-java.version>4.30.2</protobuf-java.version>
+		<google-common-protos.version>2.54.1</google-common-protos.version>
 		<micrometer.version>1.13.6</micrometer.version>
 		<reactor-grpc.version>1.2.4</reactor-grpc.version>
 		<spring-javaformat-maven-plugin.version>0.0.43</spring-javaformat-maven-plugin.version>
