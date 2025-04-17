@@ -7,7 +7,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 
 import io.grpc.BindableService;
-import io.grpc.protobuf.services.ProtoReflectionService;
 import io.grpc.protobuf.services.ProtoReflectionServiceV1;
 
 /**
@@ -20,7 +19,7 @@ import io.grpc.protobuf.services.ProtoReflectionServiceV1;
  */
 @AutoConfiguration(before = GrpcServerFactoryAutoConfiguration.class)
 @ConditionalOnGrpcServerEnabled
-@ConditionalOnClass(ProtoReflectionService.class)
+@ConditionalOnClass(ProtoReflectionServiceV1.class)
 @ConditionalOnProperty(name = "spring.grpc.server.reflection.enabled", havingValue = "true", matchIfMissing = true)
 public class GrpcServerReflectionAutoConfiguration {
 
