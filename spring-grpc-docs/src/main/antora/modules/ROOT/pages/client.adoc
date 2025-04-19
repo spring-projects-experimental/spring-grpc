@@ -200,7 +200,7 @@ SimpleGrpc.SimpleBlockingStub stub(GrpcChannelFactory channels, @LocalGrpcPort i
 }
 ----
 
-The channel can be configured via `application.properties` as well, by using the ``${local.grpc.port}` property placeholder.
+The channel can be configured via `application.properties` as well, by using the `${local.grpc.port}` property placeholder.
 The `@Bean` where you create the stub must still be `@Lazy` for the same reason as above.
 For example:
 
