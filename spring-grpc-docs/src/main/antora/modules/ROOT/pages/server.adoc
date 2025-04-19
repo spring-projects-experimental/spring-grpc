@@ -157,7 +157,7 @@ A `GrpcExceptionHandler` can be used to handle exceptions of a specific type, re
 
 == Testing
 
-If you include `spring-grpc-test` in your project, your gRPC server in a `@SpringBootTest` can be started in-process (i.e. not listening on a network port) by enabling the in-process server
+If you include `spring-grpc-test` in your project, your gRPC server in a `@SpringBootTest` can be started in-process (i.e. not listening on a network port) by enabling the in-process server.
 All clients that connect to any server via the autoconfigured `GrpcChannelFactory` will be able to connect to it.
 You can switch the in-process server on by setting `spring.grpc.inprocess.enabled` to `true` or by adding the `@AutoConfigureInProcessTransport` annotation to your `@SpringBootTest` class.
 
