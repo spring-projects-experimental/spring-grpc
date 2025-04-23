@@ -10,7 +10,7 @@ on:
 jobs:
   build_and_verify:
     name: Build and Verify
-    if: github.repository == 'spring-projects-experimental/spring-grpc'
+    if: github.repository == 'spring-projects/spring-grpc'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

@@ -12,16 +12,16 @@
 	<name>Spring gRPC build dependencies</name>
 	<description>Dependencies for the Spring gRPC modules</description>
 
-	<url>https://github.com/spring-projects-experimental/spring-grpc</url>
+	<url>https://github.com/spring-projects/spring-grpc</url>
 
 	<scm>
-		<url>https://github.com/spring-projects-experimental/spring-grpc</url>
-		<connection>git://github.com/spring-projects-experimental/spring-grpc.git</connection>
-		<developerConnection>git@github.com:spring-projects-experimental/spring-grpc.git</developerConnection>
+		<url>https://github.com/spring-projects/spring-grpc</url>
+		<connection>git://github.com/spring-projects/spring-grpc.git</connection>
+		<developerConnection>git@github.com:spring-projects/spring-grpc.git</developerConnection>
 	</scm>
 
 	<distributionManagement>
-		<downloadUrl>https://github.com/spring-projects-experimental/spring-grpc</downloadUrl>
+		<downloadUrl>https://github.com/spring-projects/spring-grpc</downloadUrl>
 		<site>
 			<id>spring-docs</id>
 			<url>scp://static.springframework.org/var/www/domains/springframework.org/static/htdocs/spring-grpc/docs/${project.artifactId}/${project.version}</url>

@@ -10,7 +10,7 @@ jobs:
     name: Build and Deploy On Push
 
     runs-on: ubuntu-latest
-    if: ${{ github.repository == 'spring-projects-experimental/spring-grpc' }}
+    if: ${{ github.repository == 'spring-projects/spring-grpc' }}
 
     steps:
     - uses: actions/checkout@v4

@@ -6,7 +6,7 @@ Edit the files in the spring-grpc-docs/src/main/antora/ directory instead.
 :doctype: book
 
 = Spring gRPC
-image::https://github.com/spring-projects-experimental/spring-grpc/actions/workflows/deploy.yml/badge.svg["Build Status", link="https://github.com/spring-projects/spring-grpc/actions/workflows/deploy.yml"]
+image::https://github.com/spring-projects/spring-grpc/actions/workflows/deploy.yml/badge.svg["Build Status", link="https://github.com/spring-projects/spring-grpc/actions/workflows/deploy.yml"]
 
 Welcome to the Spring gRPC project!
 

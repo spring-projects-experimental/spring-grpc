@@ -1,5 +1,5 @@
 # Spring gRPC
-!["Build Status"](https://github.com/spring-projects-experimental/spring-grpc/actions/workflows/deploy.yml/badge.svg)
+!["Build Status"](https://github.com/spring-projects/spring-grpc/actions/workflows/deploy.yml/badge.svg)
 
 Welcome to the Spring gRPC project!
 
@@ -9,7 +9,7 @@ For further information go to our [Spring gRPC reference documentation](https://
 
 # Getting Started
 
-This section offers jumping off points for how to get started using Spring gRPC. There is a simple sample project in the `samples` directory (e.g. [`grpc-server`](https://github.com/spring-projects-experimental/spring-grpc/tree/main/samples/grpc-server)). You can run it with `mvn spring-boot:run` or `gradle bootRun`. You will see the following code in that sample.
+This section offers jumping off points for how to get started using Spring gRPC. There is a simple sample project in the `samples` directory (e.g. [`grpc-server`](https://github.com/spring-projects/spring-grpc/tree/main/samples/grpc-server)). You can run it with `mvn spring-boot:run` or `gradle bootRun`. You will see the following code in that sample.
 
 Want to get started? Let’s speedrun a working service.
 

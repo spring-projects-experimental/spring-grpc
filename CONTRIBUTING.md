@@ -14,7 +14,7 @@ The `-Pjavadoc` is a profile that enables Javadoc processing so as to avoid a lo
 
 We use the [Spring JavaFormat](https://github.com/spring-io/spring-javaformat) project to apply code formatting conventions as well as checkstyle rules for many of our code conventions.
 
-The code can also be formatted from your IDE when the formatter plugin [has been installed](https://github.com/spring-projects-experimental/spring-grpc/wiki/Working-with-the-Code#install-the-spring-formatter-plugin).
+The code can also be formatted from your IDE when the formatter plugin [has been installed](https://github.com/spring-projects/spring-grpc/wiki/Working-with-the-Code#install-the-spring-formatter-plugin).
 </dd></dl>
 
 ## Contributing a New GRPC Features

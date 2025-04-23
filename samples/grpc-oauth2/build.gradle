@@ -39,7 +39,7 @@ dependencies {
 	implementation 'io.grpc:grpc-services'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.grpc:spring-grpc-test'
-	testImplementation 'org.springframework.experimental.boot:spring-boot-testjars-maven:0.0.3'
+	testImplementation 'org.springframework.experimental.boot:spring-boot-testjars-maven:0.0.4'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 

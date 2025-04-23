@@ -12,12 +12,12 @@
 	<packaging>jar</packaging>
 	<name>Spring gRPC Auto Configuration</name>
 	<description>Spring gRPC Auto Configuration</description>
-	<url>https://github.com/spring-projects-experimental/spring-grpc</url>
+	<url>https://github.com/spring-projects/spring-grpc</url>
 
 	<scm>
-		<url>https://github.com/spring-projects-experimental/spring-grpc</url>
-		<connection>git://github.com/spring-projects-experimental/spring-grpc.git</connection>
-		<developerConnection>git@github.com:spring-projects-experimental/spring-grpc.git</developerConnection>
+		<url>https://github.com/spring-projects/spring-grpc</url>
+		<connection>git://github.com/spring-projects/spring-grpc.git</connection>
+		<developerConnection>git@github.com:spring-projects/spring-grpc.git</developerConnection>
 	</scm>
 
 	<properties>

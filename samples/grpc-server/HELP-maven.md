@@ -13,7 +13,7 @@ For further reference, please consider the following sections:
 These additional references should also help you:
 
 * [Configure AOT settings in Build Plugin](https://docs.spring.io/spring-boot/3.4.4/how-to/aot.html)
-* [Various sample apps using Spring gRPC](https://github.com/spring-projects-experimental/spring-grpc/tree/main/samples)
+* [Various sample apps using Spring gRPC](https://github.com/spring-projects/spring-grpc/tree/main/samples)
 
 ## GraalVM Native Support
 
