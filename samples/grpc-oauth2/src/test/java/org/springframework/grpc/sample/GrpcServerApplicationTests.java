@@ -124,9 +124,9 @@ public class GrpcServerApplicationTests {
 		@OAuth2ClientProviderIssuerUri
 		static CommonsExecWebServerFactoryBean authServer() {
 			return CommonsExecWebServerFactoryBean.builder()
-				.defaultSpringBootApplicationMain()
-				.classpath(classpath -> classpath
-					.entries(MavenClasspathEntry.springBootStarter("oauth2-authorization-server")));
+				.useGenericSpringBootMain()
+				.classpath(classpath -> classpath.entries(new MavenClasspathEntry(
+						"org.springframework.boot:spring-boot-starter-oauth2-authorization-server:3.4.4")));
 		}
 
 		@Bean

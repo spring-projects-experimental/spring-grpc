@@ -71,7 +71,7 @@
 		<dependency>
 			<groupId>org.springframework.experimental.boot</groupId>
 			<artifactId>spring-boot-testjars-maven</artifactId>
-			<version>0.0.3</version>
+			<version>0.0.4</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
