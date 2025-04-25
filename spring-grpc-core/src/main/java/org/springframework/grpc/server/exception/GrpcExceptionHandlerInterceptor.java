@@ -64,16 +64,17 @@ public class GrpcExceptionHandlerInterceptor implements ServerInterceptor {
 	public <ReqT, RespT> Listener<ReqT> interceptCall(ServerCall<ReqT, RespT> call, Metadata headers,
 			ServerCallHandler<ReqT, RespT> next) {
 		Listener<ReqT> listener;
+		FallbackHandler handler = new FallbackHandler(this.exceptionHandler);
 		try {
 			listener = next.startCall(call, headers);
 		}
 		catch (Throwable t) {
-			call.close(this.exceptionHandler.handleException(t).getStatus(), headers(t));
+			call.close(handler.handleException(t).getStatus(), headers(t));
 			listener = new Listener<ReqT>() {
 			};
 			return listener;
 		}
-		return new ExceptionHandlerListener<>(listener, call, new FallbackHandler(this.exceptionHandler));
+		return new ExceptionHandlerListener<>(listener, call, handler);
 	}
 
 	private static Metadata headers(Throwable t) {
