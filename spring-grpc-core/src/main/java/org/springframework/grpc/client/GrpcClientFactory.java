@@ -46,7 +46,9 @@ import io.grpc.stub.AbstractStub;
  */
 public class GrpcClientFactory {
 
-	private static Map<Class<?>, StubFactory<?>> FACTORIES = new HashMap<>();
+	private static Map<Class<?>, StubFactory<?>> DEFAULT_FACTORIES = new HashMap<>();
+
+	private Map<Class<?>, StubFactory<?>> factories = new HashMap<>();
 
 	private final ApplicationContext context;
 
@@ -89,23 +91,39 @@ public class GrpcClientFactory {
 	}
 
 	private static void stubs(StubFactory<? extends AbstractStub<?>> factory) {
-		FACTORIES.put(factory.getClass(), factory);
+		DEFAULT_FACTORIES.put(factory.getClass(), factory);
 	}
 
-	public static StubFactory<?> findFactory(Class<?> type) {
-		return findFactory(null, type);
+	private StubFactory<?> findFactory(Class<?> factoryType, Class<?> type) {
+		if (this.factories.isEmpty()) {
+			for (StubFactory<?> factory : this.context.getBeansOfType(StubFactory.class).values()) {
+				this.factories.put(factory.getClass(), factory);
+			}
+			for (StubFactory<?> factory : DEFAULT_FACTORIES.values()) {
+				if (!this.factories.containsKey(factory.getClass())) {
+					this.context.getAutowireCapableBeanFactory().initializeBean(factory, factory.getClass().getName());
+					this.factories.put(factory.getClass(), factory);
+				}
+			}
+		}
+		return findFactory(this.factories, factoryType, type);
 	}
 
-	private static StubFactory<?> findFactory(Class<?> factoryType, Class<?> type) {
+	private static StubFactory<?> findDefaultFactory(Class<?> factoryType, Class<?> type) {
+		return findFactory(DEFAULT_FACTORIES, factoryType, type);
+	}
+
+	private static StubFactory<?> findFactory(Map<Class<?>, StubFactory<?>> values, Class<?> factoryType,
+			Class<?> type) {
 		StubFactory<? extends AbstractStub<?>> factory = null;
 		if (factoryType != null && factoryType != UnspecifiedStubFactory.class) {
-			factory = FACTORIES.get(factoryType);
+			factory = values.get(factoryType);
 			if (!factory.supports(type)) {
 				factory = null;
 			}
 		}
 		else {
-			List<StubFactory<?>> factories = new ArrayList<>(FACTORIES.values());
+			List<StubFactory<?>> factories = new ArrayList<>(values.values());
 			AnnotationAwareOrderComparator.sort(factories);
 			for (StubFactory<? extends AbstractStub<?>> value : factories) {
 				if (value.supports(type)) {
@@ -123,7 +141,7 @@ public class GrpcClientFactory {
 
 	public static void register(BeanDefinitionRegistry registry, GrpcClientRegistrationSpec spec) {
 		for (Class<?> type : spec.types()) {
-			StubFactory<?> factory = GrpcClientFactory.findFactory(spec.factory(), type);
+			StubFactory<?> factory = GrpcClientFactory.findDefaultFactory(spec.factory(), type);
 			if (factory == null) {
 				continue;
 			}
